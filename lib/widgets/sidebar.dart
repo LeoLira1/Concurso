@@ -9,7 +9,6 @@ import '../screens/lembretes_screen.dart';
 import '../screens/revisoes_screen.dart';
 import '../screens/sincronizacao_screen.dart';
 import '../state/sincronizacao.dart';
-import '../screens/topico_screen.dart';
 import '../screens/edital_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/materia_screen.dart';
@@ -17,6 +16,7 @@ import '../state/app_state.dart';
 import '../theme.dart';
 import 'assistir.dart';
 import 'comuns.dart';
+import 'topico_rapido.dart';
 
 /// Sidebar de matérias (referência: biblioteca — bolinha colorida,
 /// contagem à direita e subitens aninhados com linha-guia).
@@ -575,10 +575,7 @@ class _TopicoMini extends StatelessWidget {
       onTap: () {
         final s = Scaffold.maybeOf(context);
         if (s != null && s.isDrawerOpen) Navigator.pop(context);
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => TopicoScreen(topicoId: t.id)),
-        );
+        abrirTopicoRapido(context, t.id);
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 7),

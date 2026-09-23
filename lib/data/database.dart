@@ -848,6 +848,22 @@ class AppDatabase extends _$AppDatabase {
 
   Stream<List<Sessao>> watchTodasSessoes() => select(sessoes).watch();
 
+  /// Sessões de um tópico, da mais recente para a mais antiga.
+  Stream<List<Sessao>> watchSessoesDoTopico(String topicoId) =>
+      (select(sessoes)
+            ..where((s) => s.topicoId.equals(topicoId))
+            ..orderBy([
+              (s) => OrderingTerm.desc(s.dia),
+              (s) => OrderingTerm.desc(s.inicio),
+            ]))
+          .watch();
+
+  Stream<List<Revisao>> watchRevisoesDoTopico(String topicoId) =>
+      (select(revisoes)
+            ..where((r) => r.topicoId.equals(topicoId))
+            ..orderBy([(r) => OrderingTerm.asc(r.dataPrevista)]))
+          .watch();
+
   Future<void> registrarSessao({
     required DateTime dia,
     required int minutos,

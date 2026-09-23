@@ -18,7 +18,13 @@ class SessaoResumo {
 }
 
 class Barra {
-  const Barra(this.inicio, this.rotulo, this.detalhe, this.minutos);
+  const Barra(
+    this.inicio,
+    this.rotulo,
+    this.detalhe,
+    this.minutos, [
+    this.porMateria = const {},
+  ]);
 
   /// Início do período (dia, domingo da semana ou dia 1 do mês).
   final DateTime inicio;
@@ -29,6 +35,9 @@ class Barra {
   /// Rótulo completo para o toque/tabela (ex.: "Qua, 16/09").
   final String detalhe;
   final int minutos;
+
+  /// Minutos por matéria no período (chave nula = estudo livre).
+  final Map<String?, int> porMateria;
 }
 
 class PorMateria {
@@ -71,7 +80,20 @@ class Estatisticas {
     for (final s in sessoes) {
       final d = _dia(s.dia);
       _porDia[d] = (_porDia[d] ?? 0) + s.minutos;
+      final pm = _porDiaMateria[d] ??= {};
+      pm[s.materiaId] = (pm[s.materiaId] ?? 0) + s.minutos;
     }
+  }
+
+  final _porDiaMateria = <DateTime, Map<String?, int>>{};
+
+  Map<String?, int> _materiasEntre(DateTime de, DateTime ateExclusivo) {
+    final r = <String?, int>{};
+    _porDiaMateria.forEach((d, m) {
+      if (d.isBefore(de) || !d.isBefore(ateExclusivo)) return;
+      m.forEach((k, v) => r[k] = (r[k] ?? 0) + v);
+    });
+    return r;
   }
 
   final List<SessaoResumo> sessoes;
@@ -162,6 +184,7 @@ class Estatisticas {
                 '${d.day}',
                 '${_semanaCurto[d.weekday % 7]}, ${_dd(d.day)}/${_dd(d.month)}',
                 minutosNoDia(d),
+                _materiasEntre(d, DateTime(d.year, d.month, d.day + 1)),
               );
             }(),
         ];
@@ -177,6 +200,7 @@ class Estatisticas {
                 '${_dd(ini.day)}/${_dd(ini.month)}',
                 '${_dd(ini.day)}/${_dd(ini.month)} a ${_dd(fim.day)}/${_dd(fim.month)}',
                 _somaEntre(ini, DateTime(ini.year, ini.month, ini.day + 7)),
+                _materiasEntre(ini, DateTime(ini.year, ini.month, ini.day + 7)),
               );
             }(),
         ];
@@ -190,6 +214,7 @@ class Estatisticas {
                 _mesesCurto[ini.month - 1],
                 '${_mesesCurto[ini.month - 1]} ${ini.year}',
                 _somaEntre(ini, DateTime(ini.year, ini.month + 1)),
+                _materiasEntre(ini, DateTime(ini.year, ini.month + 1)),
               );
             }(),
         ];

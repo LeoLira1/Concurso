@@ -195,6 +195,10 @@ class _Corpo extends StatelessWidget {
           ),
           child: GraficoColunas(
             barras: e.barras(periodo),
+            series: [
+              for (final m in materias.values)
+                SerieGrafico(m.id, m.nome, Color(m.cor)),
+            ],
             altura: largo ? 250 : 220,
           ),
         );
@@ -498,7 +502,11 @@ class _LinhaBarra extends StatelessWidget {
     required this.valor,
     this.detalhe,
     this.trilho = false,
+    this.naCorDaMateria = false,
   });
+
+  /// Barra na cor da matéria (horas); senão, em tinta (acerto).
+  final bool naCorDaMateria;
 
   final Materia? materia;
   final double fracao;
@@ -548,7 +556,9 @@ class _LinhaBarra extends StatelessWidget {
                     height: 12,
                     width: box.maxWidth * fracao.clamp(0.0, 1.0),
                     decoration: BoxDecoration(
-                      color: Cores.tinta,
+                      color: naCorDaMateria && materia != null
+                          ? Color(materia!.cor)
+                          : Cores.tinta,
                       borderRadius: const BorderRadius.horizontal(
                         right: Radius.circular(4),
                       ),
@@ -604,6 +614,7 @@ class _HorasPorMateria extends StatelessWidget {
       children: [
         for (final x in l)
           _LinhaBarra(
+            naCorDaMateria: true,
             materia: materias[x.materiaId],
             fracao: x.minutos / max,
             valor: minutosFmt(x.minutos),

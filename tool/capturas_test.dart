@@ -28,6 +28,7 @@ import 'package:edital/screens/importar_screen.dart';
 import 'package:edital/state/arquivos.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:edital/theme.dart';
+import 'package:edital/widgets/sidebar.dart';
 import 'package:edital/util/texto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -70,7 +71,7 @@ Future<AppDatabase> popular() async {
     cor: 0xFFE5407A,
   );
   await db.adicionarMateria(pm, 'Língua Portuguesa', 0);
-  final mat = await db.adicionarMateria(pm, 'Matemática', 0xFFF5A524);
+  final mat = await db.adicionarMateria(pm, 'Matemática', 0xFFE08A00);
   await db.adicionarTopicosEmLote(mat, 'Frações\nPorcentagem\nGeometria plana');
 
   final gm = (await db.watchConcursos().first).firstWhere((c) => c.exemplo);
@@ -797,6 +798,62 @@ NOÇÕES DE DIREITO ADMINISTRATIVO: 1 Noções de organização administrativa. 
           ..token = 'x'
           ..ultima = DateTime.now().subtract(const Duration(minutes: 3)),
       ),
+    ),
+  );
+
+  // --- Janela rápida do tópico (sidebar) ---
+  testWidgets(
+    'topico rapido paisagem',
+    (t) => captura(
+      t,
+      '21_topico_rapido_paisagem',
+      paisagem,
+      home,
+      antes: (t) async {
+        await t.tap(find.byIcon(Icons.chevron_right_rounded).first);
+        await t.pumpAndSettle();
+        final lista = find
+            .descendant(
+              of: find.byType(Sidebar),
+              matching: find.byType(Scrollable),
+            )
+            .first;
+        await t.scrollUntilVisible(
+          find.text('Crase').first,
+          120,
+          scrollable: lista,
+        );
+        await t.pumpAndSettle();
+        await t.tap(find.text('Crase').first);
+        await t.pumpAndSettle();
+      },
+    ),
+  );
+  testWidgets(
+    'topico rapido retrato',
+    (t) => captura(
+      t,
+      '21b_topico_rapido_retrato',
+      retrato,
+      home,
+      antes: (t) async {
+        await t.tap(find.byTooltip('Matérias'));
+        await t.pumpAndSettle();
+        final gaveta = find.byType(Drawer);
+        await t.tap(
+          find
+              .descendant(
+                of: gaveta,
+                matching: find.byIcon(Icons.chevron_right_rounded),
+              )
+              .first,
+        );
+        await t.pumpAndSettle();
+        await t.tap(
+          find.descendant(of: gaveta, matching: find.text('Crase')).first,
+        );
+        await t.pumpAndSettle();
+      },
     ),
   );
 }
