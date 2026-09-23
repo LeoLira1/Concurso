@@ -677,6 +677,8 @@ class AppDatabase extends _$AppDatabase {
             ..orderBy([(s) => OrderingTerm.asc(s.inicio)]))
           .watch();
 
+  Stream<List<Sessao>> watchTodasSessoes() => select(sessoes).watch();
+
   Future<void> registrarSessao({
     required DateTime dia,
     required int minutos,

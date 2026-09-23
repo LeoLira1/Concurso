@@ -19,6 +19,7 @@ import 'package:edital/state/sessao_ativa.dart';
 import 'package:edital/state/notificacoes.dart';
 import 'package:edital/screens/revisoes_screen.dart';
 import 'package:edital/screens/lembretes_screen.dart';
+import 'package:edital/screens/estatisticas_screen.dart';
 import 'package:edital/theme.dart';
 import 'package:edital/util/texto.dart';
 import 'package:flutter/material.dart';
@@ -167,6 +168,28 @@ Future<AppDatabase> popular() async {
     Metodo.leiSeca,
     'Li até o art. 5º — falta competências específicas',
   );
+  // Histórico dos meses anteriores (para as estatísticas).
+  for (var i = hoje.day; i <= hoje.day + 75; i++) {
+    if (i % 7 == 3 || i % 11 == 0) continue; // alguns dias sem estudo
+    final dia = hoje.subtract(Duration(days: i));
+    for (var k = 0; k < 1 + i % 3; k++) {
+      await db.registrarSessao(
+        dia: dia,
+        minutos: 25 + ((i * 7 + k * 13) % 5) * 15,
+        materiaId: mats[(i + k * 3) % mats.length].materia.id,
+        questoesFeitas: k == 0 ? 10 + i % 4 * 5 : 0,
+        questoesAcertos: k == 0 ? 5 + (i * 3 + (i ~/ 3)) % 6 + i % 4 * 3 : 0,
+      );
+    }
+  }
+  await db.atualizarConcurso(
+    gm.id,
+    nome: gm.nome,
+    banca: gm.banca,
+    dataProva: hoje.add(const Duration(days: 48)),
+    cor: gm.cor,
+  );
+
   // Algumas revisões vencendo hoje e uma atrasada.
   final revs =
       await (db.select(db.revisoes)
@@ -531,6 +554,43 @@ void main() {
       '15b_lembretes_retrato',
       retrato,
       (db) => app(db, const LembretesScreen()),
+    ),
+  );
+
+  // --- Etapa 5: estatísticas ---
+  Future<void> rolar(WidgetTester t) async {
+    await t.drag(find.byType(ListView).first, const Offset(0, -560));
+    await t.pumpAndSettle();
+  }
+
+  Widget estatisticas(AppDatabase db) => app(db, const EstatisticasScreen());
+
+  testWidgets(
+    'estatisticas paisagem',
+    (t) => captura(t, '16_estatisticas_paisagem', paisagem, estatisticas),
+  );
+  testWidgets(
+    'estatisticas paisagem rolada',
+    (t) => captura(
+      t,
+      '16c_estatisticas_paisagem_rolada',
+      paisagem,
+      estatisticas,
+      antes: rolar,
+    ),
+  );
+  testWidgets(
+    'estatisticas retrato',
+    (t) => captura(t, '16b_estatisticas_retrato', retrato, estatisticas),
+  );
+  testWidgets(
+    'estatisticas retrato rolada',
+    (t) => captura(
+      t,
+      '16d_estatisticas_retrato_rolada',
+      retrato,
+      estatisticas,
+      antes: rolar,
     ),
   );
 }

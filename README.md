@@ -65,12 +65,28 @@ No tablet: abra o link, baixe e toque em `edital.apk` (autorize "instalar apps d
   - Salvar uma sessão com método "Revisão" no tópico conclui a revisão sozinho.
 - Tocar numa notificação abre a tela certa: revisões, ou o cronômetro em andamento.
 
+## Etapa 5: estatísticas
+
+Menu lateral → "Estatísticas". A tela segue o mesmo escopo da tela inicial: concurso em foco ou tudo junto.
+
+- **Números do dia a dia:**
+  - hoje, com a média diária dos últimos 30 dias;
+  - esta semana (domingo a sábado), com a variação sobre a semana passada;
+  - este mês, com o total do mês passado;
+  - sequência de dias seguidos e o recorde. O dia de hoje não quebra a sequência antes de acabar;
+  - % de acerto geral, com o total de questões.
+- **Horas estudadas:** colunas dos últimos 30 dias, das últimas 12 semanas ou dos últimos 12 meses.
+  - O período atual fica destacado.
+  - Tocar ou arrastar sobre as colunas mostra o valor de cada uma.
+  - Também há uma visão em tabela.
+- **Horas por matéria** (com % do total) e **% de acerto por matéria** (acertos/feitas).
+- **Contagem regressiva** para a prova mais próxima e os dias até as demais.
+
 ## Próximas etapas
 
-1. Estatísticas: horas por dia/semana/mês e por matéria, % de acerto, sequência de dias, contagem regressiva.
-2. Anexos (foto/PDF) e flashcards por tópico.
-3. Colar o conteúdo programático do edital e separar automaticamente em matérias e tópicos.
-4. Sincronização celular + tablet via Turso (o banco já está preparado: ids UUID + `atualizado_em`; veja `lib/data/sync/`).
+1. Anexos (foto/PDF) e flashcards por tópico.
+2. Colar o conteúdo programático do edital e separar automaticamente em matérias e tópicos.
+3. Sincronização celular + tablet via Turso (o banco já está preparado: ids UUID + `atualizado_em`; veja `lib/data/sync/`).
 
 ## Estrutura
 

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../data/database.dart';
 import '../screens/ciclo_screen.dart';
 import '../screens/concursos_screen.dart';
+import '../screens/estatisticas_screen.dart';
 import '../screens/lembretes_screen.dart';
 import '../screens/revisoes_screen.dart';
 import '../screens/edital_screen.dart';
@@ -168,7 +169,7 @@ class _SidebarState extends State<Sidebar> {
           ),
           const Divider(),
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+            padding: const EdgeInsets.fromLTRB(12, 6, 12, 8),
             child: Column(
               children: [
                 if (!estado.verTudo)
@@ -206,6 +207,19 @@ class _SidebarState extends State<Sidebar> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const RevisoesScreen()),
+                    );
+                  },
+                ),
+                _Linha(
+                  icone: Icons.insights_rounded,
+                  rotulo: 'Estatísticas',
+                  aoTocar: () {
+                    _fecharDrawer();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const EstatisticasScreen(),
+                      ),
                     );
                   },
                 ),
@@ -449,7 +463,7 @@ class _Linha extends StatelessWidget {
           onTap: aoTocar,
           onLongPress: aoSegurar,
           child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 50),
+            constraints: const BoxConstraints(minHeight: 46),
             child: Row(
               children: [
                 const SizedBox(width: 14),
