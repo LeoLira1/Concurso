@@ -683,11 +683,12 @@ Future<void> finalizarSessao(
   await sessao.encerrar();
   if (context.mounted) {
     Navigator.pop(context);
-    if (r.salvar)
+    if (r.salvar) {
       avisar(
         context,
         'Sessão salva: ${minutosFmt(math.max(1, (c.liquido.inSeconds / 60).round()))}',
       );
+    }
   }
 }
 

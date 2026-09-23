@@ -187,6 +187,7 @@ Cronometro cronometroExemplo(String materiaId, {bool pomodoro = false}) {
 
 void main() {
   setUpAll(carregarFontes);
+  // ignore: invalid_use_of_visible_for_testing_member
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   Future<void> captura(

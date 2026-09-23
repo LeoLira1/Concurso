@@ -407,8 +407,9 @@ class _NoTopico extends StatelessWidget {
           dica: 'Subtópico de "${topico.nome}"',
           confirmar: 'Adicionar',
         );
-        if (nome != null)
+        if (nome != null) {
           await db.adicionarTopico(topico.materiaId, nome, paiId: topico.id);
+        }
       case 'subir' || 'descer':
         final ids = irmaos.map((t) => t.id).toList();
         final i = ids.indexOf(topico.id);

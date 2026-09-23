@@ -71,8 +71,9 @@ class _SidebarState extends State<Sidebar> {
                 );
                 final raizPorMateria = <String, List<Topico>>{};
                 for (final t in topicos ?? const <Topico>[]) {
-                  if (t.paiId == null)
+                  if (t.paiId == null) {
                     (raizPorMateria[t.materiaId] ??= []).add(t);
+                  }
                 }
                 return ListView(
                   padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
