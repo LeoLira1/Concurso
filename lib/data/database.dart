@@ -3,6 +3,8 @@ import 'package:drift_flutter/drift_flutter.dart';
 
 import '../logic/ciclo.dart';
 import '../logic/flashcards.dart';
+import '../logic/importar_edital.dart';
+import '../theme.dart' show Cores;
 import '../util/texto.dart';
 import 'exemplo_guarda_municipal.dart';
 import 'streams.dart';
@@ -904,6 +906,61 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> excluirSessao(String id) =>
       (delete(sessoes)..where((s) => s.id.equals(id))).go();
+
+  // ---------------------------------------------------------------------------
+  // Importar conteúdo programático
+  // ---------------------------------------------------------------------------
+
+  /// Adiciona as matérias e tópicos separados do edital ao concurso.
+  /// Matérias que já existem (mesmo nome) são reaproveitadas e tópicos com o
+  /// mesmo nome no mesmo nível não são duplicados.
+  /// Retorna (matérias, tópicos novos).
+  Future<(int, int)> importarConteudo(
+    String concursoId,
+    List<MateriaImportada> itens,
+  ) {
+    return transaction(() async {
+      final cores = {for (final m in await select(materias).get()) m.cor};
+      var nMaterias = 0, nTopicos = 0;
+
+      Future<void> inserir(
+        String materiaId,
+        String? paiId,
+        List<TopicoImportado> lista,
+      ) async {
+        final existentes =
+            await (select(topicos)..where(
+                  (t) =>
+                      t.materiaId.equals(materiaId) &
+                      (paiId == null
+                          ? t.paiId.isNull()
+                          : t.paiId.equals(paiId)),
+                ))
+                .get();
+        final porNome = {for (final t in existentes) chaveTexto(t.nome): t.id};
+        for (final t in lista) {
+          var id = porNome[chaveTexto(t.nome)];
+          if (id == null) {
+            id = await adicionarTopico(materiaId, t.nome, paiId: paiId);
+            porNome[chaveTexto(t.nome)] = id;
+            nTopicos++;
+          }
+          if (t.filhos.isNotEmpty) await inserir(materiaId, id, t.filhos);
+        }
+      }
+
+      for (final m in itens) {
+        if (!m.incluir || m.nome.trim().isEmpty) continue;
+        final existente = await materiaPorNome(m.nome);
+        final cor = existente?.cor ?? Cores.proximaCor(cores);
+        cores.add(cor);
+        final id = await adicionarMateria(concursoId, m.nome, cor);
+        nMaterias++;
+        await inserir(id, null, m.topicos);
+      }
+      return (nMaterias, nTopicos);
+    });
+  }
 
   // ---------------------------------------------------------------------------
   // Exemplo

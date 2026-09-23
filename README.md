@@ -97,10 +97,25 @@ Menu lateral → "Estatísticas". A tela segue o mesmo escopo da tela inicial: c
   - Atalhos: "Flashcards · N para revisar" na matéria e o card de flashcards do dia na tela de Revisões.
 - Na lista de tópicos, ícones mostram quantos anexos e cartões cada tópico tem.
 
+## Colar o conteúdo programático
+
+No edital do concurso, toque em **"Colar edital"**. Com o edital vazio, também aparece um card com esse atalho.
+
+- Cole o texto copiado do PDF, pelo botão **Colar** ou segurando o dedo no campo. A separação aparece na hora: lado a lado no tablet deitado, ou na aba **Prévia** em pé.
+- **O que o app reconhece:**
+  - matérias em MAIÚSCULAS ("LÍNGUA PORTUGUESA:"), no formato "Nome: conteúdo" ou numa linha só com o nome;
+  - tópicos numerados (1, 1.1, 1.1.1) e algarismos romanos;
+  - marcadores (•, -) e frases separadas por ponto ou ponto e vírgula.
+- **O que o app ignora ou corrige:**
+  - cabeçalhos de grupo, como "CONHECIMENTOS BÁSICOS";
+  - quebras de linha e palavras hifenizadas do PDF;
+  - números que não são numeração (Lei nº 8.112/1990, art. 5).
+- Na prévia dá para **renomear** e **desmarcar** matérias antes de importar.
+- Matérias que já existem são reaproveitadas, com a mesma cor e o mesmo progresso. Tópicos com o mesmo nome não são duplicados, então dá para colar de novo sem problema.
+
 ## Próximas etapas
 
-1. Colar o conteúdo programático do edital e separar automaticamente em matérias e tópicos.
-2. Sincronização celular + tablet via Turso (o banco já está preparado: ids UUID + `atualizado_em`; veja `lib/data/sync/`).
+1. Sincronização celular + tablet via Turso (o banco já está preparado: ids UUID + `atualizado_em`; veja `lib/data/sync/`).
 
 ## Estrutura
 
