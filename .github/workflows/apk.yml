@@ -1,0 +1,66 @@
+name: APK
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Dependências
+        run: flutter pub get
+
+      - name: Gerar código do banco (drift)
+        run: dart run build_runner build
+
+      - name: Análise
+        run: flutter analyze --no-fatal-infos
+
+      - name: Testes
+        run: flutter test
+
+      - name: Gerar APK
+        run: |
+          flutter build apk --release --build-number=${{ github.run_number }}
+          cp build/app/outputs/flutter-apk/app-release.apk edital.apk
+
+      - name: Guardar APK (aba Actions)
+        uses: actions/upload-artifact@v4
+        with:
+          name: edital-apk
+          path: edital.apk
+
+      # Link fixo para baixar direto no tablet:
+      # https://github.com/<dono>/<repo>/releases/download/apk-<branch>/edital.apk
+      - name: Publicar em Releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          TAG="apk-${BRANCH//\//-}"
+          gh release delete "$TAG" --cleanup-tag --yes || true
+          gh release create "$TAG" edital.apk \
+            --target "$GITHUB_SHA" \
+            --prerelease \
+            --title "Edital · $BRANCH · build ${{ github.run_number }}" \
+            --notes "APK gerado do commit ${GITHUB_SHA::7}. No tablet: baixe edital.apk e toque para instalar."

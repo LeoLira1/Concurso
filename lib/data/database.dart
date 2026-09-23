@@ -1,0 +1,509 @@
+import 'package:drift/drift.dart';
+import 'package:drift_flutter/drift_flutter.dart';
+
+import '../util/texto.dart';
+import 'exemplo_guarda_municipal.dart';
+import 'tables.dart';
+
+// Sincronização futura: ver sync/sincronizacao.dart.
+
+export 'tables.dart';
+
+part 'database.g.dart';
+
+/// Matéria com o progresso agregado (tópicos-folha vistos / total).
+class MateriaInfo {
+  MateriaInfo(this.materia, this.total, this.vistos, this.ordem);
+  final Materia materia;
+  final int total;
+  final int vistos;
+  final int ordem;
+
+  double get progresso => total == 0 ? 0 : vistos / total;
+}
+
+class ProgressoConcurso {
+  const ProgressoConcurso(this.materias, this.total, this.vistos);
+  final int materias;
+  final int total;
+  final int vistos;
+  double get progresso => total == 0 ? 0 : vistos / total;
+}
+
+@DriftDatabase(
+  tables: [
+    Concursos,
+    Materias,
+    ConcursoMaterias,
+    Topicos,
+    Revisoes,
+    Questoes,
+    Sessoes,
+  ],
+)
+class AppDatabase extends _$AppDatabase {
+  AppDatabase([QueryExecutor? executor])
+    : super(executor ?? driftDatabase(name: 'edital'));
+
+  @override
+  int get schemaVersion => 1;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    beforeOpen: (details) async {
+      await customStatement('PRAGMA foreign_keys = ON');
+    },
+  );
+
+  // ---------------------------------------------------------------------------
+  // Concursos
+  // ---------------------------------------------------------------------------
+
+  Stream<List<Concurso>> watchConcursos() =>
+      (select(concursos)..orderBy([
+            (c) => OrderingTerm.desc(c.foco),
+            (c) => OrderingTerm.asc(c.ordem),
+            (c) => OrderingTerm.asc(c.criadoEm),
+          ]))
+          .watch();
+
+  Stream<Concurso?> watchConcurso(String id) =>
+      (select(concursos)..where((c) => c.id.equals(id))).watchSingleOrNull();
+
+  Stream<Concurso?> watchFoco() =>
+      (select(concursos)..where((c) => c.foco.equals(true))).watch().map(
+        (l) => l.isEmpty ? null : l.first,
+      );
+
+  /// Progresso por concurso: considera só tópicos-folha (sem subtópicos).
+  Stream<Map<String, ProgressoConcurso>> watchProgressoConcursos() {
+    return customSelect(
+      '''
+      SELECT cm.concurso_id AS cid,
+             COUNT(DISTINCT cm.materia_id) AS mats,
+             COUNT(t.id) AS total,
+             COALESCE(SUM(t.visto), 0) AS vistos
+      FROM concurso_materias cm
+      LEFT JOIN topicos t ON t.materia_id = cm.materia_id
+        AND NOT EXISTS (SELECT 1 FROM topicos f WHERE f.pai_id = t.id)
+      GROUP BY cm.concurso_id
+      ''',
+      readsFrom: {concursoMaterias, topicos},
+    ).watch().map(
+      (rows) => {
+        for (final r in rows)
+          r.read<String>('cid'): ProgressoConcurso(
+            r.read<int>('mats'),
+            r.read<int>('total'),
+            r.read<int>('vistos'),
+          ),
+      },
+    );
+  }
+
+  Future<String> criarConcurso({
+    required String nome,
+    String banca = '',
+    DateTime? dataProva,
+    required int cor,
+    bool exemplo = false,
+  }) async {
+    return transaction(() async {
+      final temFoco = await (select(
+        concursos,
+      )..where((c) => c.foco.equals(true))).get();
+      final row = await into(concursos).insertReturning(
+        ConcursosCompanion.insert(
+          nome: nome.trim(),
+          banca: Value(banca.trim()),
+          dataProva: Value(dataProva),
+          cor: cor,
+          foco: Value(temFoco.isEmpty),
+          exemplo: Value(exemplo),
+        ),
+      );
+      return row.id;
+    });
+  }
+
+  Future<void> atualizarConcurso(
+    String id, {
+    required String nome,
+    required String banca,
+    required DateTime? dataProva,
+    required int cor,
+  }) {
+    return (update(concursos)..where((c) => c.id.equals(id))).write(
+      ConcursosCompanion(
+        nome: Value(nome.trim()),
+        banca: Value(banca.trim()),
+        dataProva: Value(dataProva),
+        cor: Value(cor),
+        atualizadoEm: Value(DateTime.now()),
+      ),
+    );
+  }
+
+  Future<void> definirFoco(String id) {
+    return transaction(() async {
+      await update(concursos)
+          .write(const ConcursosCompanion(foco: Value(false)));
+      await (update(concursos)..where((c) => c.id.equals(id))).write(
+        ConcursosCompanion(
+          foco: const Value(true),
+          atualizadoEm: Value(DateTime.now()),
+        ),
+      );
+    });
+  }
+
+  Future<void> excluirConcurso(String id) {
+    return transaction(() async {
+      final eraFoco =
+          (await (select(
+            concursos,
+          )..where((c) => c.id.equals(id))).getSingleOrNull())?.foco ??
+          false;
+      await (delete(concursos)..where((c) => c.id.equals(id))).go();
+      await _limparMateriasOrfas();
+      if (eraFoco) {
+        final outro =
+            await (select(concursos)
+                  ..orderBy([(c) => OrderingTerm.asc(c.criadoEm)])
+                  ..limit(1))
+                .getSingleOrNull();
+        if (outro != null) {
+          await (update(concursos)..where((c) => c.id.equals(outro.id))).write(
+            const ConcursosCompanion(foco: Value(true)),
+          );
+        }
+      }
+    });
+  }
+
+  /// Matérias que não pertencem a nenhum concurso são apagadas
+  /// (junto com tópicos, revisões e questões, via cascade).
+  Future<void> _limparMateriasOrfas() => customStatement(
+    'DELETE FROM materias WHERE id NOT IN '
+    '(SELECT materia_id FROM concurso_materias)',
+  );
+
+  // ---------------------------------------------------------------------------
+  // Matérias
+  // ---------------------------------------------------------------------------
+
+  /// Matérias de um concurso (na ordem do edital) ou, com [concursoId] nulo,
+  /// todas as matérias de todos os concursos (ordem alfabética).
+  Stream<List<MateriaInfo>> watchMaterias(String? concursoId) {
+    const progresso = '''
+      (SELECT COUNT(*) FROM topicos t WHERE t.materia_id = m.id
+         AND NOT EXISTS (SELECT 1 FROM topicos f WHERE f.pai_id = t.id)) AS total,
+      (SELECT COUNT(*) FROM topicos t WHERE t.materia_id = m.id AND t.visto = 1
+         AND NOT EXISTS (SELECT 1 FROM topicos f WHERE f.pai_id = t.id)) AS vistos
+    ''';
+    final query = concursoId == null
+        ? customSelect(
+            '''
+            SELECT m.*, 0 AS ordem_cm, $progresso
+            FROM materias m
+            WHERE m.id IN (SELECT materia_id FROM concurso_materias)
+            ORDER BY m.nome COLLATE NOCASE
+            ''',
+            readsFrom: {materias, topicos, concursoMaterias},
+          )
+        : customSelect(
+            '''
+            SELECT m.*, cm.ordem AS ordem_cm, $progresso
+            FROM materias m
+            JOIN concurso_materias cm ON cm.materia_id = m.id
+            WHERE cm.concurso_id = ?
+            ORDER BY cm.ordem, m.nome COLLATE NOCASE
+            ''',
+            variables: [Variable.withString(concursoId)],
+            readsFrom: {materias, topicos, concursoMaterias},
+          );
+    return query.watch().map(
+      (rows) => [
+        for (final r in rows)
+          MateriaInfo(
+            materias.map(r.data),
+            r.read<int>('total'),
+            r.read<int>('vistos'),
+            r.read<int>('ordem_cm'),
+          ),
+      ],
+    );
+  }
+
+  Stream<Materia?> watchMateria(String id) =>
+      (select(materias)..where((m) => m.id.equals(id))).watchSingleOrNull();
+
+  Stream<List<Materia>> watchTodasMaterias() =>
+      (select(materias)..orderBy([(m) => OrderingTerm.asc(m.nome)])).watch();
+
+  Future<List<Materia>> todasMaterias() =>
+      (select(materias)..orderBy([(m) => OrderingTerm.asc(m.nome)])).get();
+
+  /// Concursos que usam a matéria (para mostrar que o progresso é compartilhado).
+  Stream<List<Concurso>> watchConcursosDaMateria(String materiaId) {
+    final q = select(concursos).join([
+      innerJoin(
+        concursoMaterias,
+        concursoMaterias.concursoId.equalsExp(concursos.id),
+      ),
+    ])..where(concursoMaterias.materiaId.equals(materiaId));
+    return q.watch().map(
+      (rows) => rows.map((r) => r.readTable(concursos)).toList(),
+    );
+  }
+
+  Future<Materia?> materiaPorNome(String nome) => (select(
+    materias,
+  )..where((m) => m.chave.equals(chaveMateria(nome)))).getSingleOrNull();
+
+  /// Adiciona a matéria ao concurso. Se já existir uma matéria com o mesmo
+  /// nome (em qualquer concurso), ela é reaproveitada.
+  Future<String> adicionarMateria(String concursoId, String nome, int cor) {
+    return transaction(() async {
+      var materia = await materiaPorNome(nome);
+      materia ??= await into(materias).insertReturning(
+        MateriasCompanion.insert(
+          nome: nome.trim(),
+          chave: chaveMateria(nome),
+          cor: cor,
+        ),
+      );
+      final maxOrdem = await _maxOrdemMateria(concursoId);
+      await into(concursoMaterias).insert(
+        ConcursoMateriasCompanion.insert(
+          concursoId: concursoId,
+          materiaId: materia.id,
+          ordem: Value(maxOrdem + 1),
+        ),
+        mode: InsertMode.insertOrIgnore,
+      );
+      return materia.id;
+    });
+  }
+
+  Future<int> _maxOrdemMateria(String concursoId) async {
+    final r = await customSelect(
+      'SELECT COALESCE(MAX(ordem), -1) AS m FROM concurso_materias WHERE concurso_id = ?',
+      variables: [Variable.withString(concursoId)],
+    ).getSingle();
+    return r.read<int>('m');
+  }
+
+  /// Renomeia. Retorna `false` se já existe outra matéria com esse nome.
+  Future<bool> renomearMateria(String id, String nome) async {
+    final existente = await materiaPorNome(nome);
+    if (existente != null && existente.id != id) return false;
+    await (update(materias)..where((m) => m.id.equals(id))).write(
+      MateriasCompanion(
+        nome: Value(nome.trim()),
+        chave: Value(chaveMateria(nome)),
+        atualizadoEm: Value(DateTime.now()),
+      ),
+    );
+    return true;
+  }
+
+  Future<void> corMateria(String id, int cor) =>
+      (update(materias)..where((m) => m.id.equals(id))).write(
+        MateriasCompanion(cor: Value(cor), atualizadoEm: Value(DateTime.now())),
+      );
+
+  Future<void> removerMateriaDoConcurso(String concursoId, String materiaId) {
+    return transaction(() async {
+      await (delete(concursoMaterias)..where(
+            (cm) =>
+                cm.concursoId.equals(concursoId) &
+                cm.materiaId.equals(materiaId),
+          ))
+          .go();
+      await _limparMateriasOrfas();
+    });
+  }
+
+  Future<void> reordenarMaterias(String concursoId, List<String> idsNaOrdem) {
+    return batch((b) {
+      for (var i = 0; i < idsNaOrdem.length; i++) {
+        b.update(
+          concursoMaterias,
+          ConcursoMateriasCompanion(
+            ordem: Value(i),
+            atualizadoEm: Value(DateTime.now()),
+          ),
+          where: (cm) =>
+              cm.concursoId.equals(concursoId) &
+              cm.materiaId.equals(idsNaOrdem[i]),
+        );
+      }
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Tópicos
+  // ---------------------------------------------------------------------------
+
+  Stream<List<Topico>> watchTopicos(String materiaId) =>
+      (select(topicos)
+            ..where((t) => t.materiaId.equals(materiaId))
+            ..orderBy([(t) => OrderingTerm.asc(t.ordem)]))
+          .watch();
+
+  Stream<List<Topico>> watchTodosTopicos() =>
+      (select(topicos)..orderBy([(t) => OrderingTerm.asc(t.ordem)])).watch();
+
+  Future<String> adicionarTopico(
+    String materiaId,
+    String nome, {
+    String? paiId,
+  }) async {
+    final r = await customSelect(
+      'SELECT COALESCE(MAX(ordem), -1) AS m FROM topicos WHERE materia_id = ? AND '
+      '${paiId == null ? 'pai_id IS NULL' : 'pai_id = ?'}',
+      variables: [
+        Variable.withString(materiaId),
+        if (paiId != null) Variable.withString(paiId),
+      ],
+    ).getSingle();
+    final row = await into(topicos).insertReturning(
+      TopicosCompanion.insert(
+        materiaId: materiaId,
+        nome: nome.trim(),
+        paiId: Value(paiId),
+        ordem: Value(r.read<int>('m') + 1),
+      ),
+    );
+    return row.id;
+  }
+
+  /// Adiciona vários tópicos de uma vez: uma linha por tópico; linhas
+  /// iniciadas por "-", "•", "*" ou recuo viram subtópicos do anterior.
+  Future<void> adicionarTopicosEmLote(String materiaId, String texto) {
+    return transaction(() async {
+      String? ultimoPai;
+      for (final linha in texto.split('\n')) {
+        if (linha.trim().isEmpty) continue;
+        final sub =
+            RegExp(r'^(\s+|\s*[-•*–]\s*)').hasMatch(linha) && ultimoPai != null;
+        final nome = linha.replaceFirst(RegExp(r'^\s*[-•*–]?\s*'), '').trim();
+        if (nome.isEmpty) continue;
+        if (sub) {
+          await adicionarTopico(materiaId, nome, paiId: ultimoPai);
+        } else {
+          ultimoPai = await adicionarTopico(materiaId, nome);
+        }
+      }
+    });
+  }
+
+  Future<void> renomearTopico(String id, String nome) =>
+      (update(topicos)..where((t) => t.id.equals(id))).write(
+        TopicosCompanion(
+          nome: Value(nome.trim()),
+          atualizadoEm: Value(DateTime.now()),
+        ),
+      );
+
+  Future<void> excluirTopico(String id) =>
+      (delete(topicos)..where((t) => t.id.equals(id))).go();
+
+  Future<void> reordenarTopicos(List<String> idsNaOrdem) {
+    return batch((b) {
+      for (var i = 0; i < idsNaOrdem.length; i++) {
+        b.update(
+          topicos,
+          TopicosCompanion(
+            ordem: Value(i),
+            atualizadoEm: Value(DateTime.now()),
+          ),
+          where: (t) => t.id.equals(idsNaOrdem[i]),
+        );
+      }
+    });
+  }
+
+  static const intervalosRevisao = [1, 7, 30];
+
+  /// Marca/desmarca "visto". Ao marcar, agenda revisões em 1, 7 e 30 dias.
+  /// Ao desmarcar, remove as revisões ainda não feitas.
+  Future<void> marcarVisto(String id, bool visto) {
+    return transaction(() async {
+      final agora = DateTime.now();
+      await (update(topicos)..where((t) => t.id.equals(id))).write(
+        TopicosCompanion(
+          visto: Value(visto),
+          vistoEm: Value(visto ? agora : null),
+          atualizadoEm: Value(agora),
+        ),
+      );
+      await (delete(
+        revisoes,
+      )..where((r) => r.topicoId.equals(id) & r.feitaEm.isNull())).go();
+      if (visto) {
+        final hoje = soDia(agora);
+        for (final d in intervalosRevisao) {
+          await into(revisoes).insert(
+            RevisoesCompanion.insert(
+              topicoId: id,
+              dataPrevista: hoje.add(Duration(days: d)),
+              intervaloDias: d,
+            ),
+          );
+        }
+      }
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Sessões
+  // ---------------------------------------------------------------------------
+
+  Stream<List<Sessao>> watchSessoes(DateTime de, DateTime ate) =>
+      (select(sessoes)
+            ..where((s) => s.dia.isBetweenValues(de, ate))
+            ..orderBy([(s) => OrderingTerm.asc(s.inicio)]))
+          .watch();
+
+  Future<void> registrarSessao({
+    required DateTime dia,
+    required int minutos,
+    String? materiaId,
+    String? topicoId,
+  }) => into(sessoes).insert(
+    SessoesCompanion.insert(
+      dia: soDia(dia),
+      minutos: minutos,
+      materiaId: Value(materiaId),
+      topicoId: Value(topicoId),
+    ),
+  );
+
+  Future<void> excluirSessao(String id) =>
+      (delete(sessoes)..where((s) => s.id.equals(id))).go();
+
+  // ---------------------------------------------------------------------------
+  // Exemplo
+  // ---------------------------------------------------------------------------
+
+  Future<bool> temExemplo() async => (await (select(
+    concursos,
+  )..where((c) => c.exemplo.equals(true))).get()).isNotEmpty;
+
+  Future<void> carregarExemplo() => transaction(() async {
+    final id = await criarConcurso(
+      nome: exemploGuardaMunicipal.nome,
+      banca: exemploGuardaMunicipal.banca,
+      cor: exemploGuardaMunicipal.cor,
+      exemplo: true,
+    );
+    for (final m in exemploGuardaMunicipal.materias) {
+      final existente = await materiaPorNome(m.nome);
+      final mid = await adicionarMateria(id, m.nome, m.cor);
+      if (existente != null) continue; // já tem tópicos próprios
+      await adicionarTopicosEmLote(mid, m.topicos);
+    }
+  });
+}
