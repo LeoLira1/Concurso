@@ -587,6 +587,87 @@ class AppDatabase extends _$AppDatabase {
   }
 
   // ---------------------------------------------------------------------------
+  // Revisões
+  // ---------------------------------------------------------------------------
+
+  JoinedSelectStatement<HasResultSet, dynamic> _consultaRevisoes(DateTime ate) {
+    return select(revisoes).join([
+        innerJoin(topicos, topicos.id.equalsExp(revisoes.topicoId)),
+        innerJoin(materias, materias.id.equalsExp(topicos.materiaId)),
+      ])
+      ..where(
+        revisoes.feitaEm.isNull() &
+            revisoes.dataPrevista.isSmallerOrEqualValue(ate),
+      )
+      ..orderBy([
+        OrderingTerm.asc(revisoes.dataPrevista),
+        OrderingTerm.asc(materias.nome),
+      ]);
+  }
+
+  List<RevisaoInfo> _lerRevisoes(List<TypedResult> rows) => [
+    for (final r in rows)
+      RevisaoInfo(
+        r.readTable(revisoes),
+        r.readTable(topicos),
+        r.readTable(materias),
+      ),
+  ];
+
+  /// Revisões ainda não feitas com data até [ate] (inclui as atrasadas).
+  Stream<List<RevisaoInfo>> watchRevisoesPendentes(DateTime ate) =>
+      _consultaRevisoes(ate).watch().map(_lerRevisoes);
+
+  Future<List<RevisaoInfo>> revisoesPendentes(DateTime ate) async =>
+      _lerRevisoes(await _consultaRevisoes(ate).get());
+
+  Future<void> concluirRevisao(String id) =>
+      (update(revisoes)..where((r) => r.id.equals(id))).write(
+        RevisoesCompanion(
+          feitaEm: Value(DateTime.now()),
+          atualizadoEm: Value(DateTime.now()),
+        ),
+      );
+
+  /// Marca como feitas as revisões do tópico vencidas até [ate].
+  Future<void> concluirRevisoesDoTopico(String topicoId, DateTime ate) =>
+      (update(revisoes)..where(
+            (r) =>
+                r.topicoId.equals(topicoId) &
+                r.feitaEm.isNull() &
+                r.dataPrevista.isSmallerOrEqualValue(ate),
+          ))
+          .write(
+            RevisoesCompanion(
+              feitaEm: Value(DateTime.now()),
+              atualizadoEm: Value(DateTime.now()),
+            ),
+          );
+
+  Future<bool> estudouNoDia(DateTime dia) async {
+    final d = soDia(dia);
+    final l =
+        await (select(sessoes)
+              ..where((s) => s.dia.equals(d))
+              ..limit(1))
+            .get();
+    return l.isNotEmpty;
+  }
+
+  /// Dispara sempre que algo que afeta os lembretes muda.
+  Stream<void> watchMudancasLembretes() => customSelect(
+    'SELECT 1',
+    readsFrom: {
+      revisoes,
+      sessoes,
+      concursos,
+      concursoMaterias,
+      materias,
+      topicos,
+    },
+  ).watch().map((_) {});
+
+  // ---------------------------------------------------------------------------
   // Sessões
   // ---------------------------------------------------------------------------
 
@@ -720,4 +801,11 @@ class EstadoCiclo {
   ];
 
   Materia? materiaDe(ItemCiclo it) => materias[it.materiaId]?.materia;
+}
+
+class RevisaoInfo {
+  const RevisaoInfo(this.revisao, this.topico, this.materia);
+  final Revisao revisao;
+  final Topico topico;
+  final Materia materia;
 }

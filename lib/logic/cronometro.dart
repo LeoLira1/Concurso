@@ -15,6 +15,7 @@ class Cronometro extends ChangeNotifier {
   Cronometro({
     this.materiaId,
     this.topicoId,
+    this.metodo,
     this.metaMin,
     this.cicloConcursoId,
     this.modo = ModoCronometro.livre,
@@ -34,6 +35,9 @@ class Cronometro extends ChangeNotifier {
 
   String? materiaId;
   String? topicoId;
+
+  /// Método sugerido para o registro (ex.: 'revisao' ao vir das revisões).
+  String? metodo;
   int? metaMin;
 
   /// Se a sessão veio do ciclo, o concurso cujo ciclo avança ao finalizar.
@@ -68,6 +72,24 @@ class Cronometro extends ChangeNotifier {
   Duration get restanteFase {
     final r = duracaoFase - faseDecorrido;
     return r.isNegative ? Duration.zero : r;
+  }
+
+  /// Quanto falta para o próximo alarme (meta ou troca de fase), se rodando.
+  (Duration, String)? proximoAlarme() {
+    if (!_rodando) return null;
+    atualizar();
+    final candidatos = <(Duration, String)>[
+      if (meta != null && !metaAvisada && fase == Fase.foco)
+        (meta! - liquido, 'Meta da sessão atingida'),
+      if (modo == ModoCronometro.pomodoro)
+        (
+          restanteFase,
+          fase == Fase.foco
+              ? 'Hora da pausa'
+              : 'Pausa encerrada — de volta ao foco',
+        ),
+    ]..sort((a, b) => a.$1.compareTo(b.$1));
+    return candidatos.isEmpty ? null : candidatos.first;
   }
 
   Duration? get meta => metaMin == null ? null : Duration(minutes: metaMin!);
@@ -193,6 +215,7 @@ class Cronometro extends ChangeNotifier {
     return {
       'materiaId': materiaId,
       'topicoId': topicoId,
+      'metodo': metodo,
       'metaMin': metaMin,
       'cicloConcursoId': cicloConcursoId,
       'modo': modo.name,
@@ -218,6 +241,7 @@ class Cronometro extends ChangeNotifier {
     final c = Cronometro(
       materiaId: j['materiaId'] as String?,
       topicoId: j['topicoId'] as String?,
+      metodo: j['metodo'] as String?,
       metaMin: j['metaMin'] as int?,
       cicloConcursoId: j['cicloConcursoId'] as String?,
       modo: ModoCronometro.values.byName(j['modo'] as String? ?? 'livre'),

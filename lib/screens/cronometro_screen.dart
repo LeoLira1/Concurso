@@ -7,6 +7,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../data/database.dart';
 import '../logic/cronometro.dart';
+import '../logic/metodo.dart';
 import '../state/sessao_ativa.dart';
 import '../theme.dart';
 import '../util/texto.dart';
@@ -27,12 +28,16 @@ String formatarRelogio(Duration d, {bool horas = true}) {
 Future<void> abrirCronometro(
   BuildContext context, {
   String? materiaId,
+  String? topicoId,
+  String? metodo,
   int? metaMin,
   String? cicloConcursoId,
 }) {
   final sessao = context.read<SessaoAtiva>();
   if (sessao.atual == null) {
     sessao.iniciar(
+      topicoId: topicoId,
+      metodo: metodo,
       materiaId: materiaId,
       metaMin: metaMin,
       cicloConcursoId: cicloConcursoId,
@@ -705,6 +710,7 @@ Future<void> finalizarSessao(
       materiaId: c.materiaId,
       topicoId: topicoId,
       minutos: minutos,
+      metodo: Metodo.deChave(c.metodo),
       avancar: c.cicloConcursoId != null,
     ),
   );

@@ -16,6 +16,9 @@ import 'package:edital/screens/home_screen.dart';
 import 'package:edital/screens/materia_screen.dart';
 import 'package:edital/state/app_state.dart';
 import 'package:edital/state/sessao_ativa.dart';
+import 'package:edital/state/notificacoes.dart';
+import 'package:edital/screens/revisoes_screen.dart';
+import 'package:edital/screens/lembretes_screen.dart';
 import 'package:edital/theme.dart';
 import 'package:edital/util/texto.dart';
 import 'package:flutter/material.dart';
@@ -164,6 +167,19 @@ Future<AppDatabase> popular() async {
     Metodo.leiSeca,
     'Li até o art. 5º — falta competências específicas',
   );
+  // Algumas revisões vencendo hoje e uma atrasada.
+  final revs =
+      await (db.select(db.revisoes)
+            ..where((r) => r.intervaloDias.equals(1))
+            ..limit(5))
+          .get();
+  for (final (i, r) in revs.indexed) {
+    await (db.update(db.revisoes)..where((x) => x.id.equals(r.id))).write(
+      RevisoesCompanion(
+        dataPrevista: Value(hoje.subtract(Duration(days: i == 0 ? 2 : 0))),
+      ),
+    );
+  }
   return db;
 }
 
@@ -176,6 +192,11 @@ Widget app(
   providers: [
     Provider<AppDatabase>.value(value: db),
     ChangeNotifierProvider(create: (_) => estado ?? AppState()),
+    ChangeNotifierProvider(
+      create: (_) => Notificacoes(db: db)
+        ..disponivel = true
+        ..permitido = true,
+    ),
     ChangeNotifierProvider(create: (_) => sessao ?? SessaoAtiva()),
   ],
   child: MaterialApp(
@@ -473,5 +494,43 @@ void main() {
   testWidgets(
     'dia retrato',
     (t) => captura(t, '13b_dia_retrato', retrato, home, antes: abrirDia),
+  );
+
+  // --- Etapa 4: revisões e lembretes ---
+  testWidgets(
+    'revisoes paisagem',
+    (t) => captura(
+      t,
+      '14_revisoes_paisagem',
+      paisagem,
+      (db) => app(db, const RevisoesScreen()),
+    ),
+  );
+  testWidgets(
+    'revisoes retrato',
+    (t) => captura(
+      t,
+      '14b_revisoes_retrato',
+      retrato,
+      (db) => app(db, const RevisoesScreen()),
+    ),
+  );
+  testWidgets(
+    'lembretes paisagem',
+    (t) => captura(
+      t,
+      '15_lembretes_paisagem',
+      paisagem,
+      (db) => app(db, const LembretesScreen()),
+    ),
+  );
+  testWidgets(
+    'lembretes retrato',
+    (t) => captura(
+      t,
+      '15b_lembretes_retrato',
+      retrato,
+      (db) => app(db, const LembretesScreen()),
+    ),
   );
 }

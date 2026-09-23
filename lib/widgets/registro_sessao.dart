@@ -53,6 +53,10 @@ class RegistroSessao {
       pontoParada: pontoParada,
     );
     if (marcarVisto && topicoId != null) await db.marcarVisto(topicoId!, true);
+    // Uma sessão de revisão do tópico conta como revisão feita.
+    if (metodo == Metodo.revisao && topicoId != null) {
+      await db.concluirRevisoesDoTopico(topicoId!, soDia(dia));
+    }
   }
 }
 

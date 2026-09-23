@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../data/database.dart';
 import '../screens/ciclo_screen.dart';
 import '../screens/concursos_screen.dart';
+import '../screens/lembretes_screen.dart';
+import '../screens/revisoes_screen.dart';
 import '../screens/edital_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/materia_screen.dart';
@@ -42,9 +44,28 @@ class _SidebarState extends State<Sidebar> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(28, 28, 28, 20),
-            child: Marca(tamanho: 34),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(28, 20, 12, 12),
+            child: Row(
+              children: [
+                const Marca(tamanho: 34),
+                const Spacer(),
+                IconButton(
+                  tooltip: 'Lembretes',
+                  iconSize: 26,
+                  onPressed: () {
+                    _fecharDrawer();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const LembretesScreen(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.notifications_none_rounded),
+                ),
+              ],
+            ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -174,6 +195,17 @@ class _SidebarState extends State<Sidebar> {
                       MaterialPageRoute(
                         builder: (_) => CicloScreen(concursoId: p.foco.id),
                       ),
+                    );
+                  },
+                ),
+                _Linha(
+                  icone: Icons.replay_rounded,
+                  rotulo: 'Revisões',
+                  aoTocar: () {
+                    _fecharDrawer();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const RevisoesScreen()),
                     );
                   },
                 ),

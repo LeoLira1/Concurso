@@ -6,13 +6,18 @@ import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../logic/cronometro.dart';
+import 'notificacoes.dart';
 
 /// Guarda o cronômetro em andamento (no máximo um) e as preferências do
 /// pomodoro. Sobrevive a fechar o app: o estado vai para SharedPreferences.
 class SessaoAtiva extends ChangeNotifier with WidgetsBindingObserver {
-  SessaoAtiva() {
+  SessaoAtiva({this.notificacoes}) {
     WidgetsBinding.instance.addObserver(this);
   }
+
+  /// Para o alarme com o app em segundo plano.
+  final Notificacoes? notificacoes;
+  bool _emSegundoPlano = false;
 
   static const _chave = 'cronometro_ativo';
 
@@ -49,6 +54,7 @@ class SessaoAtiva extends ChangeNotifier with WidgetsBindingObserver {
   Cronometro iniciar({
     String? materiaId,
     String? topicoId,
+    String? metodo,
     int? metaMin,
     String? cicloConcursoId,
     bool comecarRodando = true,
@@ -57,6 +63,7 @@ class SessaoAtiva extends ChangeNotifier with WidgetsBindingObserver {
     final c = Cronometro(
       materiaId: materiaId,
       topicoId: topicoId,
+      metodo: metodo,
       metaMin: metaMin,
       cicloConcursoId: cicloConcursoId,
       modo: modoPadrao,
@@ -86,6 +93,7 @@ class SessaoAtiva extends ChangeNotifier with WidgetsBindingObserver {
   Future<void> encerrar() async {
     _atual?.dispose();
     _atual = null;
+    notificacoes?.cancelarCronometro();
     notifyListeners();
     try {
       final p = await SharedPreferences.getInstance();
@@ -105,9 +113,27 @@ class SessaoAtiva extends ChangeNotifier with WidgetsBindingObserver {
     } catch (_) {}
   }
 
+  /// Com o app em segundo plano, agenda uma notificação para o próximo
+  /// alarme (em primeiro plano o próprio app toca o alarme).
+  void _agendarAlarme() {
+    final n = notificacoes;
+    if (n == null) return;
+    final prox = _emSegundoPlano ? _atual?.proximoAlarme() : null;
+    if (prox == null) {
+      n.cancelarCronometro();
+    } else {
+      n.agendarCronometro(
+        DateTime.now().add(prox.$1),
+        prox.$2,
+        'Toque para voltar ao cronômetro',
+      );
+    }
+  }
+
   Future<void> _salvar() async {
     final c = _atual;
     if (c == null) return;
+    _agendarAlarme();
     try {
       final p = await SharedPreferences.getInstance();
       await p.setString(_chave, jsonEncode(c.paraJson()));
@@ -129,9 +155,12 @@ class SessaoAtiva extends ChangeNotifier with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.detached) {
+      _emSegundoPlano = true;
       _salvar();
     } else if (state == AppLifecycleState.resumed) {
+      _emSegundoPlano = false;
       _atual?.atualizar();
+      _agendarAlarme();
     }
   }
 

@@ -51,13 +51,26 @@ No tablet: abra o link, baixe e toque em `edital.apk` (autorize "instalar apps d
 - O tópico da última sessão da matéria já vem sugerido, se ainda não foi visto.
 - A folha do dia mostra cada sessão com método, questões, páginas e ponto de parada, e o total do dia com a % de acerto.
 
+## Etapa 4: notificações e revisões
+
+- **Lembretes** (sino ao lado do logo):
+  - **Lembrete diário de estudo** no horário que você escolher (padrão 19:00). Mostra a próxima matéria do ciclo e, por padrão, não toca se você já estudou no dia.
+  - **Revisões do dia** (padrão 08:00): quantas revisões vencem, com os nomes dos tópicos e quantas estão atrasadas. Só avisa nos dias que têm revisão.
+  - Os avisos dos próximos 14 dias são reagendados sozinhos quando algo muda (tópico visto, sessão salva, ciclo andou) e toda vez que o app abre.
+  - Botão para enviar uma notificação de teste. No Android 13+ o app pede permissão para notificar.
+- **Alarme do cronômetro em segundo plano**: com o app minimizado, a meta da sessão e o fim do foco/pausa chegam como notificação.
+- **Revisões** (botão na tela inicial com o contador, ou no menu lateral): atrasadas, de hoje e dos próximos 7 dias.
+  - "Revisar" abre o cronômetro já com o tópico e o método "Revisão".
+  - ✓ marca a revisão como feita.
+  - Salvar uma sessão com método "Revisão" no tópico conclui a revisão sozinho.
+- Tocar numa notificação abre a tela certa: revisões, ou o cronômetro em andamento.
+
 ## Próximas etapas
 
-1. Notificações: revisões do dia e lembrete diário de estudo.
-2. Estatísticas: horas por dia/semana/mês e por matéria, % de acerto, sequência de dias, contagem regressiva.
-3. Anexos (foto/PDF) e flashcards por tópico.
-4. Colar o conteúdo programático do edital e separar automaticamente em matérias e tópicos.
-5. Sincronização celular + tablet via Turso (o banco já está preparado: ids UUID + `atualizado_em`; veja `lib/data/sync/`).
+1. Estatísticas: horas por dia/semana/mês e por matéria, % de acerto, sequência de dias, contagem regressiva.
+2. Anexos (foto/PDF) e flashcards por tópico.
+3. Colar o conteúdo programático do edital e separar automaticamente em matérias e tópicos.
+4. Sincronização celular + tablet via Turso (o banco já está preparado: ids UUID + `atualizado_em`; veja `lib/data/sync/`).
 
 ## Estrutura
 
