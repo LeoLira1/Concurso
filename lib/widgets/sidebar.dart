@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../data/database.dart';
+import '../screens/ciclo_screen.dart';
 import '../screens/concursos_screen.dart';
 import '../screens/edital_screen.dart';
 import '../screens/home_screen.dart';
@@ -162,6 +163,19 @@ class _SidebarState extends State<Sidebar> {
                       );
                     },
                   ),
+                _Linha(
+                  icone: Icons.autorenew_rounded,
+                  rotulo: 'Ciclo de estudos',
+                  aoTocar: () {
+                    _fecharDrawer();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => CicloScreen(concursoId: p.foco.id),
+                      ),
+                    );
+                  },
+                ),
                 _Linha(
                   icone: Icons.folder_open_rounded,
                   rotulo: 'Meus concursos',

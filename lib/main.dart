@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'data/database.dart';
 import 'screens/home_screen.dart';
 import 'state/app_state.dart';
+import 'state/sessao_ativa.dart';
 import 'theme.dart';
 
 void main() {
@@ -36,6 +37,7 @@ class EditalApp extends StatelessWidget {
           dispose: (_, db) => db.close(),
         ),
         ChangeNotifierProvider(create: (_) => AppState()),
+        ChangeNotifierProvider(create: (_) => SessaoAtiva()..restaurar()),
       ],
       child: MaterialApp(
         title: 'Edital',

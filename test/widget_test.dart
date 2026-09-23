@@ -4,12 +4,14 @@ import 'package:edital/data/database.dart';
 import 'package:edital/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 AppDatabase bancoMemoria() => AppDatabase(
   DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true),
 );
 
 void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
   group('banco', () {
     late AppDatabase db;
     setUp(() => db = bancoMemoria());

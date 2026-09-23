@@ -39,6 +39,7 @@ abstract final class Cores {
 ThemeData temaEdital() {
   final base = ThemeData(
     useMaterial3: true,
+    fontFamily: 'Roboto',
     colorScheme: ColorScheme.fromSeed(
       seedColor: Cores.tinta,
       brightness: Brightness.light,
@@ -102,7 +103,11 @@ ThemeData temaEdital() {
         foregroundColor: Colors.white,
         minimumSize: const Size(56, 56),
         padding: const EdgeInsets.symmetric(horizontal: 24),
-        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+        textStyle: const TextStyle(
+          fontFamily: 'Roboto',
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
+        ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       ),
     ),
@@ -112,7 +117,11 @@ ThemeData temaEdital() {
         minimumSize: const Size(56, 56),
         padding: const EdgeInsets.symmetric(horizontal: 24),
         side: const BorderSide(color: Cores.linha, width: 1.5),
-        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+        textStyle: const TextStyle(
+          fontFamily: 'Roboto',
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
+        ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       ),
     ),
@@ -120,7 +129,11 @@ ThemeData temaEdital() {
       style: TextButton.styleFrom(
         foregroundColor: Cores.tinta,
         minimumSize: const Size(48, 48),
-        textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+        textStyle: const TextStyle(
+          fontFamily: 'Roboto',
+          fontSize: 15,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     ),
     inputDecorationTheme: InputDecorationTheme(
@@ -150,6 +163,18 @@ ThemeData temaEdital() {
       color: Cores.fundo,
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    ),
+    chipTheme: ChipThemeData(
+      backgroundColor: Cores.fundo,
+      selectedColor: Cores.tinta,
+      checkmarkColor: Colors.white,
+      labelStyle: const TextStyle(fontFamily: 'Roboto', color: Cores.tinta),
+      secondaryLabelStyle: const TextStyle(
+        fontFamily: 'Roboto',
+        color: Colors.white,
+      ),
+      side: const BorderSide(color: Cores.linha, width: 1.5),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ),
     checkboxTheme: CheckboxThemeData(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),

@@ -1,8 +1,10 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 
+import '../logic/ciclo.dart';
 import '../util/texto.dart';
 import 'exemplo_guarda_municipal.dart';
+import 'streams.dart';
 import 'tables.dart';
 
 // Sincronização futura: ver sync/sincronizacao.dart.
@@ -13,11 +15,24 @@ part 'database.g.dart';
 
 /// Matéria com o progresso agregado (tópicos-folha vistos / total).
 class MateriaInfo {
-  MateriaInfo(this.materia, this.total, this.vistos, this.ordem);
+  MateriaInfo(
+    this.materia,
+    this.total,
+    this.vistos,
+    this.ordem, {
+    this.peso = 3,
+    this.dificuldade = 3,
+    this.noCiclo = true,
+  });
   final Materia materia;
   final int total;
   final int vistos;
   final int ordem;
+
+  /// Peso e dificuldade (1–5) no ciclo do concurso consultado.
+  final int peso;
+  final int dificuldade;
+  final bool noCiclo;
 
   double get progresso => total == 0 ? 0 : vistos / total;
 }
@@ -46,10 +61,21 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? driftDatabase(name: 'edital'));
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
+    onUpgrade: (m, de, para) async {
+      if (de < 2) {
+        await m.addColumn(concursos, concursos.cicloMinutos);
+        await m.addColumn(concursos, concursos.cicloBlocoMin);
+        await m.addColumn(concursos, concursos.cicloPosicao);
+        await m.addColumn(concursos, concursos.cicloVoltas);
+        await m.addColumn(concursoMaterias, concursoMaterias.peso);
+        await m.addColumn(concursoMaterias, concursoMaterias.dificuldade);
+        await m.addColumn(concursoMaterias, concursoMaterias.noCiclo);
+      }
+    },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
     },
@@ -204,7 +230,8 @@ class AppDatabase extends _$AppDatabase {
     final query = concursoId == null
         ? customSelect(
             '''
-            SELECT m.*, 0 AS ordem_cm, $progresso
+            SELECT m.*, 0 AS ordem_cm, 3 AS peso_cm, 3 AS dif_cm, 1 AS ciclo_cm,
+              $progresso
             FROM materias m
             WHERE m.id IN (SELECT materia_id FROM concurso_materias)
             ORDER BY m.nome COLLATE NOCASE
@@ -213,7 +240,8 @@ class AppDatabase extends _$AppDatabase {
           )
         : customSelect(
             '''
-            SELECT m.*, cm.ordem AS ordem_cm, $progresso
+            SELECT m.*, cm.ordem AS ordem_cm, cm.peso AS peso_cm,
+              cm.dificuldade AS dif_cm, cm.no_ciclo AS ciclo_cm, $progresso
             FROM materias m
             JOIN concurso_materias cm ON cm.materia_id = m.id
             WHERE cm.concurso_id = ?
@@ -230,6 +258,9 @@ class AppDatabase extends _$AppDatabase {
             r.read<int>('total'),
             r.read<int>('vistos'),
             r.read<int>('ordem_cm'),
+            peso: r.read<int>('peso_cm'),
+            dificuldade: r.read<int>('dif_cm'),
+            noCiclo: r.read<int>('ciclo_cm') == 1,
           ),
       ],
     );
@@ -340,6 +371,97 @@ class AppDatabase extends _$AppDatabase {
         );
       }
     });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Ciclo de estudos
+  // ---------------------------------------------------------------------------
+
+  Future<void> definirPesoDificuldade(
+    String concursoId,
+    String materiaId, {
+    int? peso,
+    int? dificuldade,
+    bool? noCiclo,
+  }) {
+    return (update(concursoMaterias)..where(
+          (cm) =>
+              cm.concursoId.equals(concursoId) & cm.materiaId.equals(materiaId),
+        ))
+        .write(
+          ConcursoMateriasCompanion(
+            peso: peso == null ? const Value.absent() : Value(peso.clamp(1, 5)),
+            dificuldade: dificuldade == null
+                ? const Value.absent()
+                : Value(dificuldade.clamp(1, 5)),
+            noCiclo: noCiclo == null ? const Value.absent() : Value(noCiclo),
+            atualizadoEm: Value(DateTime.now()),
+          ),
+        );
+  }
+
+  Future<void> configurarCiclo(
+    String concursoId, {
+    int? minutosTotais,
+    int? blocoMin,
+  }) {
+    return (update(concursos)..where((c) => c.id.equals(concursoId))).write(
+      ConcursosCompanion(
+        cicloMinutos: minutosTotais == null
+            ? const Value.absent()
+            : Value(minutosTotais.clamp(60, 6000)),
+        cicloBlocoMin: blocoMin == null
+            ? const Value.absent()
+            : Value(blocoMin.clamp(15, 240)),
+        atualizadoEm: Value(DateTime.now()),
+      ),
+    );
+  }
+
+  /// Vai para a próxima etapa do ciclo (fila circular de [tamanho] etapas).
+  Future<void> avancarCiclo(String concursoId, int tamanho) {
+    return transaction(() async {
+      final c = await (select(
+        concursos,
+      )..where((c) => c.id.equals(concursoId))).getSingle();
+      if (tamanho <= 0) return;
+      final atual = c.cicloPosicao % tamanho;
+      final virou = atual + 1 >= tamanho;
+      await (update(concursos)..where((x) => x.id.equals(concursoId))).write(
+        ConcursosCompanion(
+          cicloPosicao: Value(virou ? 0 : atual + 1),
+          cicloVoltas: Value(c.cicloVoltas + (virou ? 1 : 0)),
+          atualizadoEm: Value(DateTime.now()),
+        ),
+      );
+    });
+  }
+
+  Future<void> irParaEtapa(String concursoId, int posicao) =>
+      (update(concursos)..where((c) => c.id.equals(concursoId))).write(
+        ConcursosCompanion(
+          cicloPosicao: Value(posicao),
+          atualizadoEm: Value(DateTime.now()),
+        ),
+      );
+
+  Future<void> reiniciarCiclo(String concursoId) =>
+      (update(concursos)..where((c) => c.id.equals(concursoId))).write(
+        ConcursosCompanion(
+          cicloPosicao: const Value(0),
+          cicloVoltas: const Value(0),
+          atualizadoEm: Value(DateTime.now()),
+        ),
+      );
+
+  /// Fila do ciclo de um concurso, recalculada sempre que o concurso ou as
+  /// matérias mudam.
+  Stream<EstadoCiclo> watchCiclo(String concursoId) {
+    return combinarUltimos(
+      watchConcurso(concursoId),
+      watchMaterias(concursoId),
+      EstadoCiclo.calcular,
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -506,4 +628,45 @@ class AppDatabase extends _$AppDatabase {
       await adicionarTopicosEmLote(mid, m.topicos);
     }
   });
+}
+
+/// Fila do ciclo + onde o concurso está nela.
+class EstadoCiclo {
+  EstadoCiclo._(this.concurso, this.fila, this.materias);
+
+  factory EstadoCiclo.calcular(Concurso? c, List<MateriaInfo> materias) {
+    if (c == null) return EstadoCiclo._(null, const [], const {});
+    final entradas = [
+      for (final m in materias)
+        if (m.noCiclo)
+          EntradaCiclo(
+            materiaId: m.materia.id,
+            peso: m.peso,
+            dificuldade: m.dificuldade,
+          ),
+    ];
+    final fila = gerarCiclo(
+      entradas,
+      minutosTotais: c.cicloMinutos,
+      blocoMin: c.cicloBlocoMin,
+    );
+    return EstadoCiclo._(c, fila, {for (final m in materias) m.materia.id: m});
+  }
+
+  final Concurso? concurso;
+  final List<ItemCiclo> fila;
+  final Map<String, MateriaInfo> materias;
+
+  bool get vazio => fila.isEmpty;
+  int get posicao =>
+      fila.isEmpty ? 0 : (concurso?.cicloPosicao ?? 0) % fila.length;
+  ItemCiclo? get atual => fila.isEmpty ? null : fila[posicao];
+
+  /// As próximas [n] etapas depois da atual (dando a volta na fila).
+  List<ItemCiclo> proximas(int n) => [
+    for (var i = 1; i <= n && i < fila.length; i++)
+      fila[(posicao + i) % fila.length],
+  ];
+
+  Materia? materiaDe(ItemCiclo it) => materias[it.materiaId]?.materia;
 }

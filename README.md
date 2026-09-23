@@ -22,12 +22,32 @@ No tablet: abra o link, baixe e toque em `edital.apk` (autorize "instalar apps d
 - **Modelo de exemplo** "Guarda Municipal (exemplo)": fica marcado como EXEMPLO e pode ser apagado em Meus concursos.
 - Marcar um tópico como visto já agenda as revisões de 1, 7 e 30 dias no banco. A tela de revisões vem na etapa 2.
 
+## Etapa 2: ciclo de estudos e cronômetro
+
+- **Ciclo de estudos** (menu lateral → "Ciclo de estudos"):
+  - Cada matéria tem **peso** e **dificuldade** de 1 a 5, definidos por concurso.
+  - O app monta uma fila circular de sessões. O tempo de cada matéria é proporcional a peso + dificuldade.
+  - Você ajusta quanto dura uma volta (ex.: 20h) e o tamanho das sessões (30 min a 2h).
+  - A fila espalha as sessões e evita repetir a mesma matéria duas vezes seguidas.
+  - Se pular um dia, nada atrasa: a fila continua de onde parou.
+  - Tocar numa etapa da fila pula direto para ela.
+- **Próxima do ciclo**: o botão preto na tela inicial mostra qual matéria estudar agora. Nele você começa, pula a etapa ou vê a fila.
+- **Cronômetro** em tela cheia (funciona em pé e deitado):
+  - Play/pausa, contando só as horas líquidas.
+  - Modo pomodoro opcional (25/5, ajustável). O tempo de pausa não conta.
+  - Alarme sonoro com vibração quando bate a meta da sessão e a cada troca foco/pausa.
+  - A tela fica acesa enquanto o cronômetro está aberto.
+  - O tempo continua certo com o app em segundo plano, e até se o Android fechar o app.
+- Ao **finalizar**, a sessão é salva, o dia é marcado na grade e o ciclo avança (dá para desligar o avanço na hora).
+
 ## Próximas etapas
 
-1. Tela de sessão (retrato/celular): timer pomodoro 25/5 ajustável, tópicos do dia e revisões pendentes. Ao terminar, a sessão é salva e o dia é marcado na grade.
-2. Registro de questões por matéria (feitas / acertos / % de acerto).
-3. Colar o conteúdo programático do edital e separar automaticamente em matérias e tópicos.
-4. Sincronização celular + tablet via Turso (o banco já está preparado: ids UUID + `atualizado_em`; veja `lib/data/sync/`).
+1. Registro ao finalizar: tópico, método (videoaula, PDF, questões, revisão, lei seca), questões/acertos, páginas e "ponto de parada" (mostrado na próxima sessão da matéria).
+2. Notificações: revisões do dia e lembrete diário de estudo.
+3. Estatísticas: horas por dia/semana/mês e por matéria, % de acerto, sequência de dias, contagem regressiva.
+4. Anexos (foto/PDF) e flashcards por tópico.
+5. Colar o conteúdo programático do edital e separar automaticamente em matérias e tópicos.
+6. Sincronização celular + tablet via Turso (o banco já está preparado: ids UUID + `atualizado_em`; veja `lib/data/sync/`).
 
 ## Estrutura
 

@@ -120,6 +120,54 @@ class $ConcursosTable extends Concursos
     requiredDuringInsert: false,
     clientDefault: DateTime.now,
   );
+  static const VerificationMeta _cicloMinutosMeta = const VerificationMeta(
+    'cicloMinutos',
+  );
+  @override
+  late final GeneratedColumn<int> cicloMinutos = GeneratedColumn<int>(
+    'ciclo_minutos',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1200),
+  );
+  static const VerificationMeta _cicloBlocoMinMeta = const VerificationMeta(
+    'cicloBlocoMin',
+  );
+  @override
+  late final GeneratedColumn<int> cicloBlocoMin = GeneratedColumn<int>(
+    'ciclo_bloco_min',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(60),
+  );
+  static const VerificationMeta _cicloPosicaoMeta = const VerificationMeta(
+    'cicloPosicao',
+  );
+  @override
+  late final GeneratedColumn<int> cicloPosicao = GeneratedColumn<int>(
+    'ciclo_posicao',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _cicloVoltasMeta = const VerificationMeta(
+    'cicloVoltas',
+  );
+  @override
+  late final GeneratedColumn<int> cicloVoltas = GeneratedColumn<int>(
+    'ciclo_voltas',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -132,6 +180,10 @@ class $ConcursosTable extends Concursos
     exemplo,
     ordem,
     criadoEm,
+    cicloMinutos,
+    cicloBlocoMin,
+    cicloPosicao,
+    cicloVoltas,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -209,6 +261,42 @@ class $ConcursosTable extends Concursos
         criadoEm.isAcceptableOrUnknown(data['criado_em']!, _criadoEmMeta),
       );
     }
+    if (data.containsKey('ciclo_minutos')) {
+      context.handle(
+        _cicloMinutosMeta,
+        cicloMinutos.isAcceptableOrUnknown(
+          data['ciclo_minutos']!,
+          _cicloMinutosMeta,
+        ),
+      );
+    }
+    if (data.containsKey('ciclo_bloco_min')) {
+      context.handle(
+        _cicloBlocoMinMeta,
+        cicloBlocoMin.isAcceptableOrUnknown(
+          data['ciclo_bloco_min']!,
+          _cicloBlocoMinMeta,
+        ),
+      );
+    }
+    if (data.containsKey('ciclo_posicao')) {
+      context.handle(
+        _cicloPosicaoMeta,
+        cicloPosicao.isAcceptableOrUnknown(
+          data['ciclo_posicao']!,
+          _cicloPosicaoMeta,
+        ),
+      );
+    }
+    if (data.containsKey('ciclo_voltas')) {
+      context.handle(
+        _cicloVoltasMeta,
+        cicloVoltas.isAcceptableOrUnknown(
+          data['ciclo_voltas']!,
+          _cicloVoltasMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -258,6 +346,22 @@ class $ConcursosTable extends Concursos
         DriftSqlType.dateTime,
         data['${effectivePrefix}criado_em'],
       )!,
+      cicloMinutos: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}ciclo_minutos'],
+      )!,
+      cicloBlocoMin: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}ciclo_bloco_min'],
+      )!,
+      cicloPosicao: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}ciclo_posicao'],
+      )!,
+      cicloVoltas: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}ciclo_voltas'],
+      )!,
     );
   }
 
@@ -278,6 +382,18 @@ class Concurso extends DataClass implements Insertable<Concurso> {
   final bool exemplo;
   final int ordem;
   final DateTime criadoEm;
+
+  /// Duração de uma volta completa do ciclo, em minutos.
+  final int cicloMinutos;
+
+  /// Tamanho de referência de cada sessão do ciclo, em minutos.
+  final int cicloBlocoMin;
+
+  /// Índice da próxima etapa na fila do ciclo.
+  final int cicloPosicao;
+
+  /// Quantas voltas completas já foram feitas.
+  final int cicloVoltas;
   const Concurso({
     required this.id,
     required this.atualizadoEm,
@@ -289,6 +405,10 @@ class Concurso extends DataClass implements Insertable<Concurso> {
     required this.exemplo,
     required this.ordem,
     required this.criadoEm,
+    required this.cicloMinutos,
+    required this.cicloBlocoMin,
+    required this.cicloPosicao,
+    required this.cicloVoltas,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -305,6 +425,10 @@ class Concurso extends DataClass implements Insertable<Concurso> {
     map['exemplo'] = Variable<bool>(exemplo);
     map['ordem'] = Variable<int>(ordem);
     map['criado_em'] = Variable<DateTime>(criadoEm);
+    map['ciclo_minutos'] = Variable<int>(cicloMinutos);
+    map['ciclo_bloco_min'] = Variable<int>(cicloBlocoMin);
+    map['ciclo_posicao'] = Variable<int>(cicloPosicao);
+    map['ciclo_voltas'] = Variable<int>(cicloVoltas);
     return map;
   }
 
@@ -322,6 +446,10 @@ class Concurso extends DataClass implements Insertable<Concurso> {
       exemplo: Value(exemplo),
       ordem: Value(ordem),
       criadoEm: Value(criadoEm),
+      cicloMinutos: Value(cicloMinutos),
+      cicloBlocoMin: Value(cicloBlocoMin),
+      cicloPosicao: Value(cicloPosicao),
+      cicloVoltas: Value(cicloVoltas),
     );
   }
 
@@ -341,6 +469,10 @@ class Concurso extends DataClass implements Insertable<Concurso> {
       exemplo: serializer.fromJson<bool>(json['exemplo']),
       ordem: serializer.fromJson<int>(json['ordem']),
       criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
+      cicloMinutos: serializer.fromJson<int>(json['cicloMinutos']),
+      cicloBlocoMin: serializer.fromJson<int>(json['cicloBlocoMin']),
+      cicloPosicao: serializer.fromJson<int>(json['cicloPosicao']),
+      cicloVoltas: serializer.fromJson<int>(json['cicloVoltas']),
     );
   }
   @override
@@ -357,6 +489,10 @@ class Concurso extends DataClass implements Insertable<Concurso> {
       'exemplo': serializer.toJson<bool>(exemplo),
       'ordem': serializer.toJson<int>(ordem),
       'criadoEm': serializer.toJson<DateTime>(criadoEm),
+      'cicloMinutos': serializer.toJson<int>(cicloMinutos),
+      'cicloBlocoMin': serializer.toJson<int>(cicloBlocoMin),
+      'cicloPosicao': serializer.toJson<int>(cicloPosicao),
+      'cicloVoltas': serializer.toJson<int>(cicloVoltas),
     };
   }
 
@@ -371,6 +507,10 @@ class Concurso extends DataClass implements Insertable<Concurso> {
     bool? exemplo,
     int? ordem,
     DateTime? criadoEm,
+    int? cicloMinutos,
+    int? cicloBlocoMin,
+    int? cicloPosicao,
+    int? cicloVoltas,
   }) => Concurso(
     id: id ?? this.id,
     atualizadoEm: atualizadoEm ?? this.atualizadoEm,
@@ -382,6 +522,10 @@ class Concurso extends DataClass implements Insertable<Concurso> {
     exemplo: exemplo ?? this.exemplo,
     ordem: ordem ?? this.ordem,
     criadoEm: criadoEm ?? this.criadoEm,
+    cicloMinutos: cicloMinutos ?? this.cicloMinutos,
+    cicloBlocoMin: cicloBlocoMin ?? this.cicloBlocoMin,
+    cicloPosicao: cicloPosicao ?? this.cicloPosicao,
+    cicloVoltas: cicloVoltas ?? this.cicloVoltas,
   );
   Concurso copyWithCompanion(ConcursosCompanion data) {
     return Concurso(
@@ -397,6 +541,18 @@ class Concurso extends DataClass implements Insertable<Concurso> {
       exemplo: data.exemplo.present ? data.exemplo.value : this.exemplo,
       ordem: data.ordem.present ? data.ordem.value : this.ordem,
       criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
+      cicloMinutos: data.cicloMinutos.present
+          ? data.cicloMinutos.value
+          : this.cicloMinutos,
+      cicloBlocoMin: data.cicloBlocoMin.present
+          ? data.cicloBlocoMin.value
+          : this.cicloBlocoMin,
+      cicloPosicao: data.cicloPosicao.present
+          ? data.cicloPosicao.value
+          : this.cicloPosicao,
+      cicloVoltas: data.cicloVoltas.present
+          ? data.cicloVoltas.value
+          : this.cicloVoltas,
     );
   }
 
@@ -412,7 +568,11 @@ class Concurso extends DataClass implements Insertable<Concurso> {
           ..write('foco: $foco, ')
           ..write('exemplo: $exemplo, ')
           ..write('ordem: $ordem, ')
-          ..write('criadoEm: $criadoEm')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('cicloMinutos: $cicloMinutos, ')
+          ..write('cicloBlocoMin: $cicloBlocoMin, ')
+          ..write('cicloPosicao: $cicloPosicao, ')
+          ..write('cicloVoltas: $cicloVoltas')
           ..write(')'))
         .toString();
   }
@@ -429,6 +589,10 @@ class Concurso extends DataClass implements Insertable<Concurso> {
     exemplo,
     ordem,
     criadoEm,
+    cicloMinutos,
+    cicloBlocoMin,
+    cicloPosicao,
+    cicloVoltas,
   );
   @override
   bool operator ==(Object other) =>
@@ -443,7 +607,11 @@ class Concurso extends DataClass implements Insertable<Concurso> {
           other.foco == this.foco &&
           other.exemplo == this.exemplo &&
           other.ordem == this.ordem &&
-          other.criadoEm == this.criadoEm);
+          other.criadoEm == this.criadoEm &&
+          other.cicloMinutos == this.cicloMinutos &&
+          other.cicloBlocoMin == this.cicloBlocoMin &&
+          other.cicloPosicao == this.cicloPosicao &&
+          other.cicloVoltas == this.cicloVoltas);
 }
 
 class ConcursosCompanion extends UpdateCompanion<Concurso> {
@@ -457,6 +625,10 @@ class ConcursosCompanion extends UpdateCompanion<Concurso> {
   final Value<bool> exemplo;
   final Value<int> ordem;
   final Value<DateTime> criadoEm;
+  final Value<int> cicloMinutos;
+  final Value<int> cicloBlocoMin;
+  final Value<int> cicloPosicao;
+  final Value<int> cicloVoltas;
   final Value<int> rowid;
   const ConcursosCompanion({
     this.id = const Value.absent(),
@@ -469,6 +641,10 @@ class ConcursosCompanion extends UpdateCompanion<Concurso> {
     this.exemplo = const Value.absent(),
     this.ordem = const Value.absent(),
     this.criadoEm = const Value.absent(),
+    this.cicloMinutos = const Value.absent(),
+    this.cicloBlocoMin = const Value.absent(),
+    this.cicloPosicao = const Value.absent(),
+    this.cicloVoltas = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ConcursosCompanion.insert({
@@ -482,6 +658,10 @@ class ConcursosCompanion extends UpdateCompanion<Concurso> {
     this.exemplo = const Value.absent(),
     this.ordem = const Value.absent(),
     this.criadoEm = const Value.absent(),
+    this.cicloMinutos = const Value.absent(),
+    this.cicloBlocoMin = const Value.absent(),
+    this.cicloPosicao = const Value.absent(),
+    this.cicloVoltas = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : nome = Value(nome),
        cor = Value(cor);
@@ -496,6 +676,10 @@ class ConcursosCompanion extends UpdateCompanion<Concurso> {
     Expression<bool>? exemplo,
     Expression<int>? ordem,
     Expression<DateTime>? criadoEm,
+    Expression<int>? cicloMinutos,
+    Expression<int>? cicloBlocoMin,
+    Expression<int>? cicloPosicao,
+    Expression<int>? cicloVoltas,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -509,6 +693,10 @@ class ConcursosCompanion extends UpdateCompanion<Concurso> {
       if (exemplo != null) 'exemplo': exemplo,
       if (ordem != null) 'ordem': ordem,
       if (criadoEm != null) 'criado_em': criadoEm,
+      if (cicloMinutos != null) 'ciclo_minutos': cicloMinutos,
+      if (cicloBlocoMin != null) 'ciclo_bloco_min': cicloBlocoMin,
+      if (cicloPosicao != null) 'ciclo_posicao': cicloPosicao,
+      if (cicloVoltas != null) 'ciclo_voltas': cicloVoltas,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -524,6 +712,10 @@ class ConcursosCompanion extends UpdateCompanion<Concurso> {
     Value<bool>? exemplo,
     Value<int>? ordem,
     Value<DateTime>? criadoEm,
+    Value<int>? cicloMinutos,
+    Value<int>? cicloBlocoMin,
+    Value<int>? cicloPosicao,
+    Value<int>? cicloVoltas,
     Value<int>? rowid,
   }) {
     return ConcursosCompanion(
@@ -537,6 +729,10 @@ class ConcursosCompanion extends UpdateCompanion<Concurso> {
       exemplo: exemplo ?? this.exemplo,
       ordem: ordem ?? this.ordem,
       criadoEm: criadoEm ?? this.criadoEm,
+      cicloMinutos: cicloMinutos ?? this.cicloMinutos,
+      cicloBlocoMin: cicloBlocoMin ?? this.cicloBlocoMin,
+      cicloPosicao: cicloPosicao ?? this.cicloPosicao,
+      cicloVoltas: cicloVoltas ?? this.cicloVoltas,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -574,6 +770,18 @@ class ConcursosCompanion extends UpdateCompanion<Concurso> {
     if (criadoEm.present) {
       map['criado_em'] = Variable<DateTime>(criadoEm.value);
     }
+    if (cicloMinutos.present) {
+      map['ciclo_minutos'] = Variable<int>(cicloMinutos.value);
+    }
+    if (cicloBlocoMin.present) {
+      map['ciclo_bloco_min'] = Variable<int>(cicloBlocoMin.value);
+    }
+    if (cicloPosicao.present) {
+      map['ciclo_posicao'] = Variable<int>(cicloPosicao.value);
+    }
+    if (cicloVoltas.present) {
+      map['ciclo_voltas'] = Variable<int>(cicloVoltas.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -593,6 +801,10 @@ class ConcursosCompanion extends UpdateCompanion<Concurso> {
           ..write('exemplo: $exemplo, ')
           ..write('ordem: $ordem, ')
           ..write('criadoEm: $criadoEm, ')
+          ..write('cicloMinutos: $cicloMinutos, ')
+          ..write('cicloBlocoMin: $cicloBlocoMin, ')
+          ..write('cicloPosicao: $cicloPosicao, ')
+          ..write('cicloVoltas: $cicloVoltas, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1006,12 +1218,52 @@ class $ConcursoMateriasTable extends ConcursoMaterias
     requiredDuringInsert: false,
     clientDefault: DateTime.now,
   );
+  static const VerificationMeta _pesoMeta = const VerificationMeta('peso');
+  @override
+  late final GeneratedColumn<int> peso = GeneratedColumn<int>(
+    'peso',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(3),
+  );
+  static const VerificationMeta _dificuldadeMeta = const VerificationMeta(
+    'dificuldade',
+  );
+  @override
+  late final GeneratedColumn<int> dificuldade = GeneratedColumn<int>(
+    'dificuldade',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(3),
+  );
+  static const VerificationMeta _noCicloMeta = const VerificationMeta(
+    'noCiclo',
+  );
+  @override
+  late final GeneratedColumn<bool> noCiclo = GeneratedColumn<bool>(
+    'no_ciclo',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("no_ciclo" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     concursoId,
     materiaId,
     ordem,
     atualizadoEm,
+    peso,
+    dificuldade,
+    noCiclo,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1056,6 +1308,27 @@ class $ConcursoMateriasTable extends ConcursoMaterias
         ),
       );
     }
+    if (data.containsKey('peso')) {
+      context.handle(
+        _pesoMeta,
+        peso.isAcceptableOrUnknown(data['peso']!, _pesoMeta),
+      );
+    }
+    if (data.containsKey('dificuldade')) {
+      context.handle(
+        _dificuldadeMeta,
+        dificuldade.isAcceptableOrUnknown(
+          data['dificuldade']!,
+          _dificuldadeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('no_ciclo')) {
+      context.handle(
+        _noCicloMeta,
+        noCiclo.isAcceptableOrUnknown(data['no_ciclo']!, _noCicloMeta),
+      );
+    }
     return context;
   }
 
@@ -1081,6 +1354,18 @@ class $ConcursoMateriasTable extends ConcursoMaterias
         DriftSqlType.dateTime,
         data['${effectivePrefix}atualizado_em'],
       )!,
+      peso: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}peso'],
+      )!,
+      dificuldade: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}dificuldade'],
+      )!,
+      noCiclo: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}no_ciclo'],
+      )!,
     );
   }
 
@@ -1095,11 +1380,17 @@ class ConcursoMateria extends DataClass implements Insertable<ConcursoMateria> {
   final String materiaId;
   final int ordem;
   final DateTime atualizadoEm;
+  final int peso;
+  final int dificuldade;
+  final bool noCiclo;
   const ConcursoMateria({
     required this.concursoId,
     required this.materiaId,
     required this.ordem,
     required this.atualizadoEm,
+    required this.peso,
+    required this.dificuldade,
+    required this.noCiclo,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1108,6 +1399,9 @@ class ConcursoMateria extends DataClass implements Insertable<ConcursoMateria> {
     map['materia_id'] = Variable<String>(materiaId);
     map['ordem'] = Variable<int>(ordem);
     map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
+    map['peso'] = Variable<int>(peso);
+    map['dificuldade'] = Variable<int>(dificuldade);
+    map['no_ciclo'] = Variable<bool>(noCiclo);
     return map;
   }
 
@@ -1117,6 +1411,9 @@ class ConcursoMateria extends DataClass implements Insertable<ConcursoMateria> {
       materiaId: Value(materiaId),
       ordem: Value(ordem),
       atualizadoEm: Value(atualizadoEm),
+      peso: Value(peso),
+      dificuldade: Value(dificuldade),
+      noCiclo: Value(noCiclo),
     );
   }
 
@@ -1130,6 +1427,9 @@ class ConcursoMateria extends DataClass implements Insertable<ConcursoMateria> {
       materiaId: serializer.fromJson<String>(json['materiaId']),
       ordem: serializer.fromJson<int>(json['ordem']),
       atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
+      peso: serializer.fromJson<int>(json['peso']),
+      dificuldade: serializer.fromJson<int>(json['dificuldade']),
+      noCiclo: serializer.fromJson<bool>(json['noCiclo']),
     );
   }
   @override
@@ -1140,6 +1440,9 @@ class ConcursoMateria extends DataClass implements Insertable<ConcursoMateria> {
       'materiaId': serializer.toJson<String>(materiaId),
       'ordem': serializer.toJson<int>(ordem),
       'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
+      'peso': serializer.toJson<int>(peso),
+      'dificuldade': serializer.toJson<int>(dificuldade),
+      'noCiclo': serializer.toJson<bool>(noCiclo),
     };
   }
 
@@ -1148,11 +1451,17 @@ class ConcursoMateria extends DataClass implements Insertable<ConcursoMateria> {
     String? materiaId,
     int? ordem,
     DateTime? atualizadoEm,
+    int? peso,
+    int? dificuldade,
+    bool? noCiclo,
   }) => ConcursoMateria(
     concursoId: concursoId ?? this.concursoId,
     materiaId: materiaId ?? this.materiaId,
     ordem: ordem ?? this.ordem,
     atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+    peso: peso ?? this.peso,
+    dificuldade: dificuldade ?? this.dificuldade,
+    noCiclo: noCiclo ?? this.noCiclo,
   );
   ConcursoMateria copyWithCompanion(ConcursoMateriasCompanion data) {
     return ConcursoMateria(
@@ -1164,6 +1473,11 @@ class ConcursoMateria extends DataClass implements Insertable<ConcursoMateria> {
       atualizadoEm: data.atualizadoEm.present
           ? data.atualizadoEm.value
           : this.atualizadoEm,
+      peso: data.peso.present ? data.peso.value : this.peso,
+      dificuldade: data.dificuldade.present
+          ? data.dificuldade.value
+          : this.dificuldade,
+      noCiclo: data.noCiclo.present ? data.noCiclo.value : this.noCiclo,
     );
   }
 
@@ -1173,13 +1487,24 @@ class ConcursoMateria extends DataClass implements Insertable<ConcursoMateria> {
           ..write('concursoId: $concursoId, ')
           ..write('materiaId: $materiaId, ')
           ..write('ordem: $ordem, ')
-          ..write('atualizadoEm: $atualizadoEm')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('peso: $peso, ')
+          ..write('dificuldade: $dificuldade, ')
+          ..write('noCiclo: $noCiclo')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(concursoId, materiaId, ordem, atualizadoEm);
+  int get hashCode => Object.hash(
+    concursoId,
+    materiaId,
+    ordem,
+    atualizadoEm,
+    peso,
+    dificuldade,
+    noCiclo,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1187,7 +1512,10 @@ class ConcursoMateria extends DataClass implements Insertable<ConcursoMateria> {
           other.concursoId == this.concursoId &&
           other.materiaId == this.materiaId &&
           other.ordem == this.ordem &&
-          other.atualizadoEm == this.atualizadoEm);
+          other.atualizadoEm == this.atualizadoEm &&
+          other.peso == this.peso &&
+          other.dificuldade == this.dificuldade &&
+          other.noCiclo == this.noCiclo);
 }
 
 class ConcursoMateriasCompanion extends UpdateCompanion<ConcursoMateria> {
@@ -1195,12 +1523,18 @@ class ConcursoMateriasCompanion extends UpdateCompanion<ConcursoMateria> {
   final Value<String> materiaId;
   final Value<int> ordem;
   final Value<DateTime> atualizadoEm;
+  final Value<int> peso;
+  final Value<int> dificuldade;
+  final Value<bool> noCiclo;
   final Value<int> rowid;
   const ConcursoMateriasCompanion({
     this.concursoId = const Value.absent(),
     this.materiaId = const Value.absent(),
     this.ordem = const Value.absent(),
     this.atualizadoEm = const Value.absent(),
+    this.peso = const Value.absent(),
+    this.dificuldade = const Value.absent(),
+    this.noCiclo = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ConcursoMateriasCompanion.insert({
@@ -1208,6 +1542,9 @@ class ConcursoMateriasCompanion extends UpdateCompanion<ConcursoMateria> {
     required String materiaId,
     this.ordem = const Value.absent(),
     this.atualizadoEm = const Value.absent(),
+    this.peso = const Value.absent(),
+    this.dificuldade = const Value.absent(),
+    this.noCiclo = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : concursoId = Value(concursoId),
        materiaId = Value(materiaId);
@@ -1216,6 +1553,9 @@ class ConcursoMateriasCompanion extends UpdateCompanion<ConcursoMateria> {
     Expression<String>? materiaId,
     Expression<int>? ordem,
     Expression<DateTime>? atualizadoEm,
+    Expression<int>? peso,
+    Expression<int>? dificuldade,
+    Expression<bool>? noCiclo,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1223,6 +1563,9 @@ class ConcursoMateriasCompanion extends UpdateCompanion<ConcursoMateria> {
       if (materiaId != null) 'materia_id': materiaId,
       if (ordem != null) 'ordem': ordem,
       if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
+      if (peso != null) 'peso': peso,
+      if (dificuldade != null) 'dificuldade': dificuldade,
+      if (noCiclo != null) 'no_ciclo': noCiclo,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1232,6 +1575,9 @@ class ConcursoMateriasCompanion extends UpdateCompanion<ConcursoMateria> {
     Value<String>? materiaId,
     Value<int>? ordem,
     Value<DateTime>? atualizadoEm,
+    Value<int>? peso,
+    Value<int>? dificuldade,
+    Value<bool>? noCiclo,
     Value<int>? rowid,
   }) {
     return ConcursoMateriasCompanion(
@@ -1239,6 +1585,9 @@ class ConcursoMateriasCompanion extends UpdateCompanion<ConcursoMateria> {
       materiaId: materiaId ?? this.materiaId,
       ordem: ordem ?? this.ordem,
       atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+      peso: peso ?? this.peso,
+      dificuldade: dificuldade ?? this.dificuldade,
+      noCiclo: noCiclo ?? this.noCiclo,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1258,6 +1607,15 @@ class ConcursoMateriasCompanion extends UpdateCompanion<ConcursoMateria> {
     if (atualizadoEm.present) {
       map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
     }
+    if (peso.present) {
+      map['peso'] = Variable<int>(peso.value);
+    }
+    if (dificuldade.present) {
+      map['dificuldade'] = Variable<int>(dificuldade.value);
+    }
+    if (noCiclo.present) {
+      map['no_ciclo'] = Variable<bool>(noCiclo.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1271,6 +1629,9 @@ class ConcursoMateriasCompanion extends UpdateCompanion<ConcursoMateria> {
           ..write('materiaId: $materiaId, ')
           ..write('ordem: $ordem, ')
           ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('peso: $peso, ')
+          ..write('dificuldade: $dificuldade, ')
+          ..write('noCiclo: $noCiclo, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -3187,6 +3548,10 @@ typedef $$ConcursosTableCreateCompanionBuilder = ConcursosCompanion Function({
   Value<bool> exemplo,
   Value<int> ordem,
   Value<DateTime> criadoEm,
+  Value<int> cicloMinutos,
+  Value<int> cicloBlocoMin,
+  Value<int> cicloPosicao,
+  Value<int> cicloVoltas,
   Value<int> rowid,
 });
 typedef $$ConcursosTableUpdateCompanionBuilder = ConcursosCompanion Function({
@@ -3200,6 +3565,10 @@ typedef $$ConcursosTableUpdateCompanionBuilder = ConcursosCompanion Function({
   Value<bool> exemplo,
   Value<int> ordem,
   Value<DateTime> criadoEm,
+  Value<int> cicloMinutos,
+  Value<int> cicloBlocoMin,
+  Value<int> cicloPosicao,
+  Value<int> cicloVoltas,
   Value<int> rowid,
 });
 
@@ -3287,6 +3656,26 @@ class $$ConcursosTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<int> get cicloMinutos => $composableBuilder(
+    column: $table.cicloMinutos,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get cicloBlocoMin => $composableBuilder(
+    column: $table.cicloBlocoMin,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get cicloPosicao => $composableBuilder(
+    column: $table.cicloPosicao,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get cicloVoltas => $composableBuilder(
+    column: $table.cicloVoltas,
+    builder: (column) => ColumnFilters(column),
+  );
+
   Expression<bool> concursoMateriasRefs(
     Expression<bool> Function($$ConcursoMateriasTableFilterComposer f) f,
   ) {
@@ -3371,6 +3760,26 @@ class $$ConcursosTableOrderingComposer
     column: $table.criadoEm,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get cicloMinutos => $composableBuilder(
+    column: $table.cicloMinutos,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get cicloBlocoMin => $composableBuilder(
+    column: $table.cicloBlocoMin,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get cicloPosicao => $composableBuilder(
+    column: $table.cicloPosicao,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get cicloVoltas => $composableBuilder(
+    column: $table.cicloVoltas,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$ConcursosTableAnnotationComposer
@@ -3413,6 +3822,26 @@ class $$ConcursosTableAnnotationComposer
 
   GeneratedColumn<DateTime> get criadoEm =>
       $composableBuilder(column: $table.criadoEm, builder: (column) => column);
+
+  GeneratedColumn<int> get cicloMinutos => $composableBuilder(
+    column: $table.cicloMinutos,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get cicloBlocoMin => $composableBuilder(
+    column: $table.cicloBlocoMin,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get cicloPosicao => $composableBuilder(
+    column: $table.cicloPosicao,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get cicloVoltas => $composableBuilder(
+    column: $table.cicloVoltas,
+    builder: (column) => column,
+  );
 
   Expression<T> concursoMateriasRefs<T extends Object>(
     Expression<T> Function($$ConcursoMateriasTableAnnotationComposer a) f,
@@ -3478,6 +3907,10 @@ class $$ConcursosTableTableManager
                 Value<bool> exemplo = const Value.absent(),
                 Value<int> ordem = const Value.absent(),
                 Value<DateTime> criadoEm = const Value.absent(),
+                Value<int> cicloMinutos = const Value.absent(),
+                Value<int> cicloBlocoMin = const Value.absent(),
+                Value<int> cicloPosicao = const Value.absent(),
+                Value<int> cicloVoltas = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ConcursosCompanion(
                 id: id,
@@ -3490,6 +3923,10 @@ class $$ConcursosTableTableManager
                 exemplo: exemplo,
                 ordem: ordem,
                 criadoEm: criadoEm,
+                cicloMinutos: cicloMinutos,
+                cicloBlocoMin: cicloBlocoMin,
+                cicloPosicao: cicloPosicao,
+                cicloVoltas: cicloVoltas,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -3504,6 +3941,10 @@ class $$ConcursosTableTableManager
                 Value<bool> exemplo = const Value.absent(),
                 Value<int> ordem = const Value.absent(),
                 Value<DateTime> criadoEm = const Value.absent(),
+                Value<int> cicloMinutos = const Value.absent(),
+                Value<int> cicloBlocoMin = const Value.absent(),
+                Value<int> cicloPosicao = const Value.absent(),
+                Value<int> cicloVoltas = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ConcursosCompanion.insert(
                 id: id,
@@ -3516,6 +3957,10 @@ class $$ConcursosTableTableManager
                 exemplo: exemplo,
                 ordem: ordem,
                 criadoEm: criadoEm,
+                cicloMinutos: cicloMinutos,
+                cicloBlocoMin: cicloBlocoMin,
+                cicloPosicao: cicloPosicao,
+                cicloVoltas: cicloVoltas,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -4177,6 +4622,9 @@ typedef $$ConcursoMateriasTableCreateCompanionBuilder =
       required String materiaId,
       Value<int> ordem,
       Value<DateTime> atualizadoEm,
+      Value<int> peso,
+      Value<int> dificuldade,
+      Value<bool> noCiclo,
       Value<int> rowid,
     });
 typedef $$ConcursoMateriasTableUpdateCompanionBuilder =
@@ -4185,6 +4633,9 @@ typedef $$ConcursoMateriasTableUpdateCompanionBuilder =
       Value<String> materiaId,
       Value<int> ordem,
       Value<DateTime> atualizadoEm,
+      Value<int> peso,
+      Value<int> dificuldade,
+      Value<bool> noCiclo,
       Value<int> rowid,
     });
 
@@ -4248,6 +4699,21 @@ class $$ConcursoMateriasTableFilterComposer
 
   ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
     column: $table.atualizadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get peso => $composableBuilder(
+    column: $table.peso,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get dificuldade => $composableBuilder(
+    column: $table.dificuldade,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get noCiclo => $composableBuilder(
+    column: $table.noCiclo,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4317,6 +4783,21 @@ class $$ConcursoMateriasTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get peso => $composableBuilder(
+    column: $table.peso,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get dificuldade => $composableBuilder(
+    column: $table.dificuldade,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get noCiclo => $composableBuilder(
+    column: $table.noCiclo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$ConcursosTableOrderingComposer get concursoId {
     final $$ConcursosTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -4380,6 +4861,17 @@ class $$ConcursoMateriasTableAnnotationComposer
     column: $table.atualizadoEm,
     builder: (column) => column,
   );
+
+  GeneratedColumn<int> get peso =>
+      $composableBuilder(column: $table.peso, builder: (column) => column);
+
+  GeneratedColumn<int> get dificuldade => $composableBuilder(
+    column: $table.dificuldade,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get noCiclo =>
+      $composableBuilder(column: $table.noCiclo, builder: (column) => column);
 
   $$ConcursosTableAnnotationComposer get concursoId {
     final $$ConcursosTableAnnotationComposer composer = $composerBuilder(
@@ -4462,12 +4954,18 @@ class $$ConcursoMateriasTableTableManager
                 Value<String> materiaId = const Value.absent(),
                 Value<int> ordem = const Value.absent(),
                 Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<int> peso = const Value.absent(),
+                Value<int> dificuldade = const Value.absent(),
+                Value<bool> noCiclo = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ConcursoMateriasCompanion(
                 concursoId: concursoId,
                 materiaId: materiaId,
                 ordem: ordem,
                 atualizadoEm: atualizadoEm,
+                peso: peso,
+                dificuldade: dificuldade,
+                noCiclo: noCiclo,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -4476,12 +4974,18 @@ class $$ConcursoMateriasTableTableManager
                 required String materiaId,
                 Value<int> ordem = const Value.absent(),
                 Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<int> peso = const Value.absent(),
+                Value<int> dificuldade = const Value.absent(),
+                Value<bool> noCiclo = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ConcursoMateriasCompanion.insert(
                 concursoId: concursoId,
                 materiaId: materiaId,
                 ordem: ordem,
                 atualizadoEm: atualizadoEm,
+                peso: peso,
+                dificuldade: dificuldade,
+                noCiclo: noCiclo,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

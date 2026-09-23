@@ -25,6 +25,19 @@ class Concursos extends Table with Sincronizavel {
   BoolColumn get exemplo => boolean().withDefault(const Constant(false))();
   IntColumn get ordem => integer().withDefault(const Constant(0))();
   DateTimeColumn get criadoEm => dateTime().clientDefault(DateTime.now)();
+
+  // Ciclo de estudos (v2).
+  /// Duração de uma volta completa do ciclo, em minutos.
+  IntColumn get cicloMinutos => integer().withDefault(const Constant(1200))();
+
+  /// Tamanho de referência de cada sessão do ciclo, em minutos.
+  IntColumn get cicloBlocoMin => integer().withDefault(const Constant(60))();
+
+  /// Índice da próxima etapa na fila do ciclo.
+  IntColumn get cicloPosicao => integer().withDefault(const Constant(0))();
+
+  /// Quantas voltas completas já foram feitas.
+  IntColumn get cicloVoltas => integer().withDefault(const Constant(0))();
 }
 
 /// Matéria global. O nome normalizado (`chave`) é único: "Português" em dois
@@ -43,6 +56,11 @@ class ConcursoMaterias extends Table {
       text().references(Materias, #id, onDelete: KeyAction.cascade)();
   IntColumn get ordem => integer().withDefault(const Constant(0))();
   DateTimeColumn get atualizadoEm => dateTime().clientDefault(DateTime.now)();
+
+  // Ciclo de estudos (v2): cada concurso tem seu peso/dificuldade por matéria.
+  IntColumn get peso => integer().withDefault(const Constant(3))();
+  IntColumn get dificuldade => integer().withDefault(const Constant(3))();
+  BoolColumn get noCiclo => boolean().withDefault(const Constant(true))();
 
   @override
   Set<Column> get primaryKey => {concursoId, materiaId};
