@@ -11,6 +11,8 @@ import '../state/sessao_ativa.dart';
 import '../theme.dart';
 import '../util/texto.dart';
 import '../widgets/comuns.dart';
+import '../widgets/ponto_parada.dart';
+import '../widgets/registro_sessao.dart';
 
 const _corPausa = Color(0xFFEAF6EE);
 const _verdePausa = Color(0xFF1F9D55);
@@ -289,97 +291,113 @@ class _Centro extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, box) {
-        final tamanho = math.min(
-          box.maxWidth / (pomodoro ? 2.9 : 4.1),
-          box.maxHeight / 2.4,
+        // Reserva espaço para matéria, ponto de parada e meta.
+        final reserva =
+            (c.materiaId == null ? 190.0 : 300.0) + (pomodoro ? 30 : 0);
+        final tamanho = math.max(
+          48.0,
+          math.min(
+            box.maxWidth / (pomodoro ? 2.9 : 4.1),
+            (box.maxHeight - reserva) / 1.1,
+          ),
         );
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Matéria da sessão.
-            GestureDetector(
-              onTap: () => _escolherMateria(context, c),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 18,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: Cores.fundo,
-                  border: Border.all(color: Cores.linha, width: 1.5),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Bolinha(
-                      materia == null ? Cores.tintaFraca : cor,
-                      tamanho: 14,
+        return FittedBox(
+          fit: BoxFit.scaleDown,
+          child: SizedBox(
+            width: box.maxWidth,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Matéria da sessão.
+                GestureDetector(
+                  onTap: () => _escolherMateria(context, c),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 10,
                     ),
-                    const SizedBox(width: 10),
-                    Flexible(
-                      child: Text(
-                        materia?.nome ?? 'Escolher matéria',
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
+                    decoration: BoxDecoration(
+                      color: Cores.fundo,
+                      border: Border.all(color: Cores.linha, width: 1.5),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Bolinha(
+                          materia == null ? Cores.tintaFraca : cor,
+                          tamanho: 14,
                         ),
-                      ),
+                        const SizedBox(width: 10),
+                        Flexible(
+                          child: Text(
+                            materia?.nome ?? 'Escolher matéria',
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        const Icon(
+                          Icons.expand_more_rounded,
+                          color: Cores.tintaSuave,
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 6),
-                    const Icon(
-                      Icons.expand_more_rounded,
-                      color: Cores.tintaSuave,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(height: retrato ? 40 : 16),
-            Text(
-              rotulo,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 3,
-                color: emPausa
-                    ? _verdePausa
-                    : (c.rodando ? Cores.acento : Cores.tintaSuave),
-              ),
-            ),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                principal,
-                style: TextStyle(
-                  fontSize: tamanho,
-                  height: 1.05,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -tamanho * 0.03,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                  color: c.rodando ? Cores.tinta : Cores.tintaSuave,
-                ),
-              ),
-            ),
-            if (pomodoro)
-              Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Text(
-                  'Líquido ${formatarRelogio(c.liquido)}  ·  '
-                  '${c.pomodoros} ${c.pomodoros == 1 ? 'pomodoro' : 'pomodoros'}  ·  '
-                  '${c.focoMin}/${c.pausaMin}',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    color: Cores.tintaSuave,
-                    fontWeight: FontWeight.w600,
-                    fontFeatures: [FontFeature.tabularFigures()],
                   ),
                 ),
-              ),
-            SizedBox(height: retrato ? 40 : 20),
-            _Meta(c: c, cor: cor),
-          ],
+                if (c.materiaId != null) ...[
+                  const SizedBox(height: 16),
+                  PontoDeParada(materiaId: c.materiaId!, compacto: !retrato),
+                ],
+                SizedBox(height: retrato ? 40 : 16),
+                Text(
+                  rotulo,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 3,
+                    color: emPausa
+                        ? _verdePausa
+                        : (c.rodando ? Cores.acento : Cores.tintaSuave),
+                  ),
+                ),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    principal,
+                    style: TextStyle(
+                      fontSize: tamanho,
+                      height: 1.05,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -tamanho * 0.03,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                      color: c.rodando ? Cores.tinta : Cores.tintaSuave,
+                    ),
+                  ),
+                ),
+                if (pomodoro)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      'Líquido ${formatarRelogio(c.liquido)}  ·  '
+                      '${c.pomodoros} ${c.pomodoros == 1 ? 'pomodoro' : 'pomodoros'}  ·  '
+                      '${c.focoMin}/${c.pausaMin}',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        color: Cores.tintaSuave,
+                        fontWeight: FontWeight.w600,
+                        fontFeatures: [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                  ),
+                SizedBox(height: retrato ? 40 : 20),
+                _Meta(c: c, cor: cor),
+              ],
+            ),
+          ),
         );
       },
     );
@@ -651,7 +669,8 @@ Future<void> _escolherMateria(BuildContext context, Cronometro c) async {
   c.definirMateria(id);
 }
 
-/// Pergunta como finalizar e salva a sessão (marca o dia na grade).
+/// Abre o registro da sessão (matéria, tópico, método, questões, páginas e
+/// ponto de parada) e salva. Salvar marca o dia na grade e avança o ciclo.
 Future<void> finalizarSessao(
   BuildContext context,
   Cronometro c,
@@ -660,21 +679,41 @@ Future<void> finalizarSessao(
   final estavaRodando = c.rodando;
   c.pausar();
   final db = context.read<AppDatabase>();
-  final r = await showDialog<_Final>(
-    context: context,
-    builder: (_) => _FinalizarDialog(c: c),
+  final foco = await db.watchFoco().first;
+  final materias = await db.watchMaterias(foco?.id).first;
+
+  // Sugere o tópico da última sessão da matéria, se ainda não foi visto.
+  var topicoId = c.topicoId;
+  if (topicoId == null && c.materiaId != null) {
+    final ultima = await db.ultimaSessao(c.materiaId!);
+    if (ultima?.topicoId != null) {
+      final t = await db.topico(ultima!.topicoId!);
+      if (t != null && !t.visto) topicoId = t.id;
+    }
+  }
+  if (!context.mounted) return;
+
+  final minutos = math.max(1, (c.liquido.inSeconds / 60).round());
+  final r = await abrirRegistro(
+    context,
+    titulo: 'Finalizar sessão',
+    materias: materias,
+    liquido: c.liquido,
+    podeAvancar: c.cicloConcursoId != null,
+    podeDescartar: true,
+    inicial: RegistroSessao(
+      materiaId: c.materiaId,
+      topicoId: topicoId,
+      minutos: minutos,
+      avancar: c.cicloConcursoId != null,
+    ),
   );
   if (r == null) {
     if (estavaRodando) c.iniciar();
     return;
   }
-  if (r.salvar) {
-    await db.registrarSessao(
-      dia: soDia(c.inicio),
-      minutos: math.max(1, (c.liquido.inSeconds / 60).round()),
-      materiaId: c.materiaId,
-      topicoId: c.topicoId,
-    );
+  if (!r.descartar) {
+    await r.salvar(db, soDia(c.inicio));
     if (r.avancar && c.cicloConcursoId != null) {
       final ciclo = await db.watchCiclo(c.cicloConcursoId!).first;
       await db.avancarCiclo(c.cicloConcursoId!, ciclo.fila.length);
@@ -683,98 +722,6 @@ Future<void> finalizarSessao(
   await sessao.encerrar();
   if (context.mounted) {
     Navigator.pop(context);
-    if (r.salvar) {
-      avisar(
-        context,
-        'Sessão salva: ${minutosFmt(math.max(1, (c.liquido.inSeconds / 60).round()))}',
-      );
-    }
-  }
-}
-
-class _Final {
-  const _Final(this.salvar, this.avancar);
-  final bool salvar;
-  final bool avancar;
-}
-
-class _FinalizarDialog extends StatefulWidget {
-  const _FinalizarDialog({required this.c});
-  final Cronometro c;
-
-  @override
-  State<_FinalizarDialog> createState() => _FinalizarDialogState();
-}
-
-class _FinalizarDialogState extends State<_FinalizarDialog> {
-  late bool _avancar = widget.c.cicloConcursoId != null;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = widget.c;
-    final curta = c.liquido < const Duration(minutes: 1);
-    return AlertDialog(
-      title: Text(
-        'Finalizar sessão',
-        style: Theme.of(context).textTheme.headlineSmall,
-      ),
-      content: SizedBox(
-        width: 460,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              formatarRelogio(c.liquido),
-              style: const TextStyle(
-                fontSize: 48,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -1,
-                fontFeatures: [FontFeature.tabularFigures()],
-              ),
-            ),
-            const Text(
-              'de estudo líquido',
-              style: TextStyle(fontSize: 16, color: Cores.tintaSuave),
-            ),
-            if (curta)
-              const Padding(
-                padding: EdgeInsets.only(top: 12),
-                child: Text(
-                  'Menos de 1 minuto — será salvo como 1 min.',
-                  style: TextStyle(color: Cores.tintaSuave),
-                ),
-              ),
-            if (c.cicloConcursoId != null) ...[
-              const SizedBox(height: 16),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                value: _avancar,
-                onChanged: (v) => setState(() => _avancar = v),
-                title: const Text(
-                  'Avançar para a próxima do ciclo',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          style: TextButton.styleFrom(foregroundColor: Cores.acento),
-          onPressed: () => Navigator.pop(context, const _Final(false, false)),
-          child: const Text('Descartar'),
-        ),
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Continuar'),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.pop(context, _Final(true, _avancar)),
-          child: const Text('Salvar'),
-        ),
-      ],
-    );
+    if (!r.descartar) avisar(context, 'Sessão salva: ${minutosFmt(minutos)}');
   }
 }

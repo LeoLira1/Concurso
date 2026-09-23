@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 /// Quem instalou a versão 1 do app precisa abrir a versão 2 sem perder dados.
 void main() {
-  test('migra banco v1 -> v2 mantendo os dados', () async {
+  test('migra banco v1 -> v3 mantendo os dados', () async {
     final dir = await Directory.systemTemp.createTemp('edital');
     final arquivo = File('${dir.path}/edital.sqlite');
 
@@ -22,6 +22,15 @@ void main() {
     ]) {
       await db.customStatement('ALTER TABLE concursos DROP COLUMN $col');
     }
+    for (final col in [
+      'metodo',
+      'questoes_feitas',
+      'questoes_acertos',
+      'paginas',
+      'ponto_parada',
+    ]) {
+      await db.customStatement('ALTER TABLE sessoes DROP COLUMN $col');
+    }
     for (final col in ['peso', 'dificuldade', 'no_ciclo']) {
       await db.customStatement(
         'ALTER TABLE concurso_materias DROP COLUMN $col',
@@ -36,6 +45,16 @@ void main() {
     expect(concursos.single.cicloMinutos, 1200);
     final mats = await db.watchMaterias(c).first;
     expect(mats.single.peso, 3);
+    await db.registrarSessao(
+      dia: DateTime.now(),
+      minutos: 30,
+      materiaId: mats.single.materia.id,
+      pontoParada: 'pág. 10',
+    );
+    expect(
+      (await db.watchUltimaParada(mats.single.materia.id).first)?.pontoParada,
+      'pág. 10',
+    );
     final ciclo = await db.watchCiclo(c).first;
     expect(ciclo.fila, isNotEmpty);
     await db.close();

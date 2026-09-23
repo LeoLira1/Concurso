@@ -61,7 +61,7 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? driftDatabase(name: 'edital'));
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -74,6 +74,13 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(concursoMaterias, concursoMaterias.peso);
         await m.addColumn(concursoMaterias, concursoMaterias.dificuldade);
         await m.addColumn(concursoMaterias, concursoMaterias.noCiclo);
+      }
+      if (de < 3) {
+        await m.addColumn(sessoes, sessoes.metodo);
+        await m.addColumn(sessoes, sessoes.questoesFeitas);
+        await m.addColumn(sessoes, sessoes.questoesAcertos);
+        await m.addColumn(sessoes, sessoes.paginas);
+        await m.addColumn(sessoes, sessoes.pontoParada);
       }
     },
     beforeOpen: (details) async {
@@ -594,14 +601,58 @@ class AppDatabase extends _$AppDatabase {
     required int minutos,
     String? materiaId,
     String? topicoId,
-  }) => into(sessoes).insert(
-    SessoesCompanion.insert(
-      dia: soDia(dia),
-      minutos: minutos,
-      materiaId: Value(materiaId),
-      topicoId: Value(topicoId),
-    ),
-  );
+    String? metodo,
+    int questoesFeitas = 0,
+    int questoesAcertos = 0,
+    int paginas = 0,
+    String? pontoParada,
+  }) {
+    final parada = pontoParada?.trim();
+    return into(sessoes).insert(
+      SessoesCompanion.insert(
+        dia: soDia(dia),
+        minutos: minutos,
+        materiaId: Value(materiaId),
+        topicoId: Value(topicoId),
+        metodo: Value(metodo),
+        questoesFeitas: Value(questoesFeitas < 0 ? 0 : questoesFeitas),
+        questoesAcertos: Value(
+          questoesAcertos.clamp(0, questoesFeitas < 0 ? 0 : questoesFeitas),
+        ),
+        paginas: Value(paginas < 0 ? 0 : paginas),
+        pontoParada: Value(parada == null || parada.isEmpty ? null : parada),
+      ),
+    );
+  }
+
+  /// Última sessão da matéria que deixou um ponto de parada.
+  Stream<Sessao?> watchUltimaParada(String materiaId) =>
+      (select(sessoes)
+            ..where(
+              (s) => s.materiaId.equals(materiaId) & s.pontoParada.isNotNull(),
+            )
+            ..orderBy([
+              (s) => OrderingTerm.desc(s.inicio),
+              // Desempate: datas têm precisão de segundos.
+              (_) => OrderingTerm.desc(const CustomExpression<int>('rowid')),
+            ])
+            ..limit(1))
+          .watchSingleOrNull();
+
+  /// Última sessão registrada da matéria (para sugerir o tópico).
+  Future<Sessao?> ultimaSessao(String materiaId) =>
+      (select(sessoes)
+            ..where((s) => s.materiaId.equals(materiaId))
+            ..orderBy([
+              (s) => OrderingTerm.desc(s.inicio),
+              // Desempate: datas têm precisão de segundos.
+              (_) => OrderingTerm.desc(const CustomExpression<int>('rowid')),
+            ])
+            ..limit(1))
+          .getSingleOrNull();
+
+  Future<Topico?> topico(String id) =>
+      (select(topicos)..where((t) => t.id.equals(id))).getSingleOrNull();
 
   Future<void> excluirSessao(String id) =>
       (delete(sessoes)..where((s) => s.id.equals(id))).go();

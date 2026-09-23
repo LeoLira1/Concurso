@@ -3075,6 +3075,62 @@ class $SessoesTable extends Sessoes with TableInfo<$SessoesTable, Sessao> {
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _metodoMeta = const VerificationMeta('metodo');
+  @override
+  late final GeneratedColumn<String> metodo = GeneratedColumn<String>(
+    'metodo',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _questoesFeitasMeta = const VerificationMeta(
+    'questoesFeitas',
+  );
+  @override
+  late final GeneratedColumn<int> questoesFeitas = GeneratedColumn<int>(
+    'questoes_feitas',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _questoesAcertosMeta = const VerificationMeta(
+    'questoesAcertos',
+  );
+  @override
+  late final GeneratedColumn<int> questoesAcertos = GeneratedColumn<int>(
+    'questoes_acertos',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _paginasMeta = const VerificationMeta(
+    'paginas',
+  );
+  @override
+  late final GeneratedColumn<int> paginas = GeneratedColumn<int>(
+    'paginas',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _pontoParadaMeta = const VerificationMeta(
+    'pontoParada',
+  );
+  @override
+  late final GeneratedColumn<String> pontoParada = GeneratedColumn<String>(
+    'ponto_parada',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -3084,6 +3140,11 @@ class $SessoesTable extends Sessoes with TableInfo<$SessoesTable, Sessao> {
     dia,
     inicio,
     minutos,
+    metodo,
+    questoesFeitas,
+    questoesAcertos,
+    paginas,
+    pontoParada,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3143,6 +3204,45 @@ class $SessoesTable extends Sessoes with TableInfo<$SessoesTable, Sessao> {
     } else if (isInserting) {
       context.missing(_minutosMeta);
     }
+    if (data.containsKey('metodo')) {
+      context.handle(
+        _metodoMeta,
+        metodo.isAcceptableOrUnknown(data['metodo']!, _metodoMeta),
+      );
+    }
+    if (data.containsKey('questoes_feitas')) {
+      context.handle(
+        _questoesFeitasMeta,
+        questoesFeitas.isAcceptableOrUnknown(
+          data['questoes_feitas']!,
+          _questoesFeitasMeta,
+        ),
+      );
+    }
+    if (data.containsKey('questoes_acertos')) {
+      context.handle(
+        _questoesAcertosMeta,
+        questoesAcertos.isAcceptableOrUnknown(
+          data['questoes_acertos']!,
+          _questoesAcertosMeta,
+        ),
+      );
+    }
+    if (data.containsKey('paginas')) {
+      context.handle(
+        _paginasMeta,
+        paginas.isAcceptableOrUnknown(data['paginas']!, _paginasMeta),
+      );
+    }
+    if (data.containsKey('ponto_parada')) {
+      context.handle(
+        _pontoParadaMeta,
+        pontoParada.isAcceptableOrUnknown(
+          data['ponto_parada']!,
+          _pontoParadaMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -3180,6 +3280,26 @@ class $SessoesTable extends Sessoes with TableInfo<$SessoesTable, Sessao> {
         DriftSqlType.int,
         data['${effectivePrefix}minutos'],
       )!,
+      metodo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}metodo'],
+      ),
+      questoesFeitas: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}questoes_feitas'],
+      )!,
+      questoesAcertos: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}questoes_acertos'],
+      )!,
+      paginas: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}paginas'],
+      )!,
+      pontoParada: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}ponto_parada'],
+      ),
     );
   }
 
@@ -3199,6 +3319,15 @@ class Sessao extends DataClass implements Insertable<Sessao> {
   final DateTime dia;
   final DateTime inicio;
   final int minutos;
+
+  /// videoaula, pdf, questoes, revisao, lei_seca (ver logic/metodo.dart).
+  final String? metodo;
+  final int questoesFeitas;
+  final int questoesAcertos;
+  final int paginas;
+
+  /// Onde parou (texto curto), mostrado na próxima sessão da mesma matéria.
+  final String? pontoParada;
   const Sessao({
     required this.id,
     required this.atualizadoEm,
@@ -3207,6 +3336,11 @@ class Sessao extends DataClass implements Insertable<Sessao> {
     required this.dia,
     required this.inicio,
     required this.minutos,
+    this.metodo,
+    required this.questoesFeitas,
+    required this.questoesAcertos,
+    required this.paginas,
+    this.pontoParada,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3222,6 +3356,15 @@ class Sessao extends DataClass implements Insertable<Sessao> {
     map['dia'] = Variable<DateTime>(dia);
     map['inicio'] = Variable<DateTime>(inicio);
     map['minutos'] = Variable<int>(minutos);
+    if (!nullToAbsent || metodo != null) {
+      map['metodo'] = Variable<String>(metodo);
+    }
+    map['questoes_feitas'] = Variable<int>(questoesFeitas);
+    map['questoes_acertos'] = Variable<int>(questoesAcertos);
+    map['paginas'] = Variable<int>(paginas);
+    if (!nullToAbsent || pontoParada != null) {
+      map['ponto_parada'] = Variable<String>(pontoParada);
+    }
     return map;
   }
 
@@ -3238,6 +3381,15 @@ class Sessao extends DataClass implements Insertable<Sessao> {
       dia: Value(dia),
       inicio: Value(inicio),
       minutos: Value(minutos),
+      metodo: metodo == null && nullToAbsent
+          ? const Value.absent()
+          : Value(metodo),
+      questoesFeitas: Value(questoesFeitas),
+      questoesAcertos: Value(questoesAcertos),
+      paginas: Value(paginas),
+      pontoParada: pontoParada == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pontoParada),
     );
   }
 
@@ -3254,6 +3406,11 @@ class Sessao extends DataClass implements Insertable<Sessao> {
       dia: serializer.fromJson<DateTime>(json['dia']),
       inicio: serializer.fromJson<DateTime>(json['inicio']),
       minutos: serializer.fromJson<int>(json['minutos']),
+      metodo: serializer.fromJson<String?>(json['metodo']),
+      questoesFeitas: serializer.fromJson<int>(json['questoesFeitas']),
+      questoesAcertos: serializer.fromJson<int>(json['questoesAcertos']),
+      paginas: serializer.fromJson<int>(json['paginas']),
+      pontoParada: serializer.fromJson<String?>(json['pontoParada']),
     );
   }
   @override
@@ -3267,6 +3424,11 @@ class Sessao extends DataClass implements Insertable<Sessao> {
       'dia': serializer.toJson<DateTime>(dia),
       'inicio': serializer.toJson<DateTime>(inicio),
       'minutos': serializer.toJson<int>(minutos),
+      'metodo': serializer.toJson<String?>(metodo),
+      'questoesFeitas': serializer.toJson<int>(questoesFeitas),
+      'questoesAcertos': serializer.toJson<int>(questoesAcertos),
+      'paginas': serializer.toJson<int>(paginas),
+      'pontoParada': serializer.toJson<String?>(pontoParada),
     };
   }
 
@@ -3278,6 +3440,11 @@ class Sessao extends DataClass implements Insertable<Sessao> {
     DateTime? dia,
     DateTime? inicio,
     int? minutos,
+    Value<String?> metodo = const Value.absent(),
+    int? questoesFeitas,
+    int? questoesAcertos,
+    int? paginas,
+    Value<String?> pontoParada = const Value.absent(),
   }) => Sessao(
     id: id ?? this.id,
     atualizadoEm: atualizadoEm ?? this.atualizadoEm,
@@ -3286,6 +3453,11 @@ class Sessao extends DataClass implements Insertable<Sessao> {
     dia: dia ?? this.dia,
     inicio: inicio ?? this.inicio,
     minutos: minutos ?? this.minutos,
+    metodo: metodo.present ? metodo.value : this.metodo,
+    questoesFeitas: questoesFeitas ?? this.questoesFeitas,
+    questoesAcertos: questoesAcertos ?? this.questoesAcertos,
+    paginas: paginas ?? this.paginas,
+    pontoParada: pontoParada.present ? pontoParada.value : this.pontoParada,
   );
   Sessao copyWithCompanion(SessoesCompanion data) {
     return Sessao(
@@ -3298,6 +3470,17 @@ class Sessao extends DataClass implements Insertable<Sessao> {
       dia: data.dia.present ? data.dia.value : this.dia,
       inicio: data.inicio.present ? data.inicio.value : this.inicio,
       minutos: data.minutos.present ? data.minutos.value : this.minutos,
+      metodo: data.metodo.present ? data.metodo.value : this.metodo,
+      questoesFeitas: data.questoesFeitas.present
+          ? data.questoesFeitas.value
+          : this.questoesFeitas,
+      questoesAcertos: data.questoesAcertos.present
+          ? data.questoesAcertos.value
+          : this.questoesAcertos,
+      paginas: data.paginas.present ? data.paginas.value : this.paginas,
+      pontoParada: data.pontoParada.present
+          ? data.pontoParada.value
+          : this.pontoParada,
     );
   }
 
@@ -3310,14 +3493,31 @@ class Sessao extends DataClass implements Insertable<Sessao> {
           ..write('topicoId: $topicoId, ')
           ..write('dia: $dia, ')
           ..write('inicio: $inicio, ')
-          ..write('minutos: $minutos')
+          ..write('minutos: $minutos, ')
+          ..write('metodo: $metodo, ')
+          ..write('questoesFeitas: $questoesFeitas, ')
+          ..write('questoesAcertos: $questoesAcertos, ')
+          ..write('paginas: $paginas, ')
+          ..write('pontoParada: $pontoParada')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, atualizadoEm, materiaId, topicoId, dia, inicio, minutos);
+  int get hashCode => Object.hash(
+    id,
+    atualizadoEm,
+    materiaId,
+    topicoId,
+    dia,
+    inicio,
+    minutos,
+    metodo,
+    questoesFeitas,
+    questoesAcertos,
+    paginas,
+    pontoParada,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -3328,7 +3528,12 @@ class Sessao extends DataClass implements Insertable<Sessao> {
           other.topicoId == this.topicoId &&
           other.dia == this.dia &&
           other.inicio == this.inicio &&
-          other.minutos == this.minutos);
+          other.minutos == this.minutos &&
+          other.metodo == this.metodo &&
+          other.questoesFeitas == this.questoesFeitas &&
+          other.questoesAcertos == this.questoesAcertos &&
+          other.paginas == this.paginas &&
+          other.pontoParada == this.pontoParada);
 }
 
 class SessoesCompanion extends UpdateCompanion<Sessao> {
@@ -3339,6 +3544,11 @@ class SessoesCompanion extends UpdateCompanion<Sessao> {
   final Value<DateTime> dia;
   final Value<DateTime> inicio;
   final Value<int> minutos;
+  final Value<String?> metodo;
+  final Value<int> questoesFeitas;
+  final Value<int> questoesAcertos;
+  final Value<int> paginas;
+  final Value<String?> pontoParada;
   final Value<int> rowid;
   const SessoesCompanion({
     this.id = const Value.absent(),
@@ -3348,6 +3558,11 @@ class SessoesCompanion extends UpdateCompanion<Sessao> {
     this.dia = const Value.absent(),
     this.inicio = const Value.absent(),
     this.minutos = const Value.absent(),
+    this.metodo = const Value.absent(),
+    this.questoesFeitas = const Value.absent(),
+    this.questoesAcertos = const Value.absent(),
+    this.paginas = const Value.absent(),
+    this.pontoParada = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   SessoesCompanion.insert({
@@ -3358,6 +3573,11 @@ class SessoesCompanion extends UpdateCompanion<Sessao> {
     required DateTime dia,
     this.inicio = const Value.absent(),
     required int minutos,
+    this.metodo = const Value.absent(),
+    this.questoesFeitas = const Value.absent(),
+    this.questoesAcertos = const Value.absent(),
+    this.paginas = const Value.absent(),
+    this.pontoParada = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : dia = Value(dia),
        minutos = Value(minutos);
@@ -3369,6 +3589,11 @@ class SessoesCompanion extends UpdateCompanion<Sessao> {
     Expression<DateTime>? dia,
     Expression<DateTime>? inicio,
     Expression<int>? minutos,
+    Expression<String>? metodo,
+    Expression<int>? questoesFeitas,
+    Expression<int>? questoesAcertos,
+    Expression<int>? paginas,
+    Expression<String>? pontoParada,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -3379,6 +3604,11 @@ class SessoesCompanion extends UpdateCompanion<Sessao> {
       if (dia != null) 'dia': dia,
       if (inicio != null) 'inicio': inicio,
       if (minutos != null) 'minutos': minutos,
+      if (metodo != null) 'metodo': metodo,
+      if (questoesFeitas != null) 'questoes_feitas': questoesFeitas,
+      if (questoesAcertos != null) 'questoes_acertos': questoesAcertos,
+      if (paginas != null) 'paginas': paginas,
+      if (pontoParada != null) 'ponto_parada': pontoParada,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -3391,6 +3621,11 @@ class SessoesCompanion extends UpdateCompanion<Sessao> {
     Value<DateTime>? dia,
     Value<DateTime>? inicio,
     Value<int>? minutos,
+    Value<String?>? metodo,
+    Value<int>? questoesFeitas,
+    Value<int>? questoesAcertos,
+    Value<int>? paginas,
+    Value<String?>? pontoParada,
     Value<int>? rowid,
   }) {
     return SessoesCompanion(
@@ -3401,6 +3636,11 @@ class SessoesCompanion extends UpdateCompanion<Sessao> {
       dia: dia ?? this.dia,
       inicio: inicio ?? this.inicio,
       minutos: minutos ?? this.minutos,
+      metodo: metodo ?? this.metodo,
+      questoesFeitas: questoesFeitas ?? this.questoesFeitas,
+      questoesAcertos: questoesAcertos ?? this.questoesAcertos,
+      paginas: paginas ?? this.paginas,
+      pontoParada: pontoParada ?? this.pontoParada,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -3429,6 +3669,21 @@ class SessoesCompanion extends UpdateCompanion<Sessao> {
     if (minutos.present) {
       map['minutos'] = Variable<int>(minutos.value);
     }
+    if (metodo.present) {
+      map['metodo'] = Variable<String>(metodo.value);
+    }
+    if (questoesFeitas.present) {
+      map['questoes_feitas'] = Variable<int>(questoesFeitas.value);
+    }
+    if (questoesAcertos.present) {
+      map['questoes_acertos'] = Variable<int>(questoesAcertos.value);
+    }
+    if (paginas.present) {
+      map['paginas'] = Variable<int>(paginas.value);
+    }
+    if (pontoParada.present) {
+      map['ponto_parada'] = Variable<String>(pontoParada.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -3445,6 +3700,11 @@ class SessoesCompanion extends UpdateCompanion<Sessao> {
           ..write('dia: $dia, ')
           ..write('inicio: $inicio, ')
           ..write('minutos: $minutos, ')
+          ..write('metodo: $metodo, ')
+          ..write('questoesFeitas: $questoesFeitas, ')
+          ..write('questoesAcertos: $questoesAcertos, ')
+          ..write('paginas: $paginas, ')
+          ..write('pontoParada: $pontoParada, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -6400,6 +6660,11 @@ typedef $$SessoesTableCreateCompanionBuilder = SessoesCompanion Function({
   required DateTime dia,
   Value<DateTime> inicio,
   required int minutos,
+  Value<String?> metodo,
+  Value<int> questoesFeitas,
+  Value<int> questoesAcertos,
+  Value<int> paginas,
+  Value<String?> pontoParada,
   Value<int> rowid,
 });
 typedef $$SessoesTableUpdateCompanionBuilder = SessoesCompanion Function({
@@ -6410,6 +6675,11 @@ typedef $$SessoesTableUpdateCompanionBuilder = SessoesCompanion Function({
   Value<DateTime> dia,
   Value<DateTime> inicio,
   Value<int> minutos,
+  Value<String?> metodo,
+  Value<int> questoesFeitas,
+  Value<int> questoesAcertos,
+  Value<int> paginas,
+  Value<String?> pontoParada,
   Value<int> rowid,
 });
 
@@ -6483,6 +6753,31 @@ class $$SessoesTableFilterComposer
 
   ColumnFilters<int> get minutos => $composableBuilder(
     column: $table.minutos,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get metodo => $composableBuilder(
+    column: $table.metodo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get questoesFeitas => $composableBuilder(
+    column: $table.questoesFeitas,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get questoesAcertos => $composableBuilder(
+    column: $table.questoesAcertos,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get paginas => $composableBuilder(
+    column: $table.paginas,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get pontoParada => $composableBuilder(
+    column: $table.pontoParada,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6567,6 +6862,31 @@ class $$SessoesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get metodo => $composableBuilder(
+    column: $table.metodo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get questoesFeitas => $composableBuilder(
+    column: $table.questoesFeitas,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get questoesAcertos => $composableBuilder(
+    column: $table.questoesAcertos,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get paginas => $composableBuilder(
+    column: $table.paginas,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get pontoParada => $composableBuilder(
+    column: $table.pontoParada,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$MateriasTableOrderingComposer get materiaId {
     final $$MateriasTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -6639,6 +6959,27 @@ class $$SessoesTableAnnotationComposer
 
   GeneratedColumn<int> get minutos =>
       $composableBuilder(column: $table.minutos, builder: (column) => column);
+
+  GeneratedColumn<String> get metodo =>
+      $composableBuilder(column: $table.metodo, builder: (column) => column);
+
+  GeneratedColumn<int> get questoesFeitas => $composableBuilder(
+    column: $table.questoesFeitas,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get questoesAcertos => $composableBuilder(
+    column: $table.questoesAcertos,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get paginas =>
+      $composableBuilder(column: $table.paginas, builder: (column) => column);
+
+  GeneratedColumn<String> get pontoParada => $composableBuilder(
+    column: $table.pontoParada,
+    builder: (column) => column,
+  );
 
   $$MateriasTableAnnotationComposer get materiaId {
     final $$MateriasTableAnnotationComposer composer = $composerBuilder(
@@ -6722,6 +7063,11 @@ class $$SessoesTableTableManager
                 Value<DateTime> dia = const Value.absent(),
                 Value<DateTime> inicio = const Value.absent(),
                 Value<int> minutos = const Value.absent(),
+                Value<String?> metodo = const Value.absent(),
+                Value<int> questoesFeitas = const Value.absent(),
+                Value<int> questoesAcertos = const Value.absent(),
+                Value<int> paginas = const Value.absent(),
+                Value<String?> pontoParada = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SessoesCompanion(
                 id: id,
@@ -6731,6 +7077,11 @@ class $$SessoesTableTableManager
                 dia: dia,
                 inicio: inicio,
                 minutos: minutos,
+                metodo: metodo,
+                questoesFeitas: questoesFeitas,
+                questoesAcertos: questoesAcertos,
+                paginas: paginas,
+                pontoParada: pontoParada,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -6742,6 +7093,11 @@ class $$SessoesTableTableManager
                 required DateTime dia,
                 Value<DateTime> inicio = const Value.absent(),
                 required int minutos,
+                Value<String?> metodo = const Value.absent(),
+                Value<int> questoesFeitas = const Value.absent(),
+                Value<int> questoesAcertos = const Value.absent(),
+                Value<int> paginas = const Value.absent(),
+                Value<String?> pontoParada = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SessoesCompanion.insert(
                 id: id,
@@ -6751,6 +7107,11 @@ class $$SessoesTableTableManager
                 dia: dia,
                 inicio: inicio,
                 minutos: minutos,
+                metodo: metodo,
+                questoesFeitas: questoesFeitas,
+                questoesAcertos: questoesAcertos,
+                paginas: paginas,
+                pontoParada: pontoParada,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

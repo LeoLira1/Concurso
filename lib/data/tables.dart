@@ -112,4 +112,14 @@ class Sessoes extends Table with Sincronizavel {
   DateTimeColumn get dia => dateTime()();
   DateTimeColumn get inicio => dateTime().clientDefault(DateTime.now)();
   IntColumn get minutos => integer()();
+
+  // Registro ao finalizar (v3).
+  /// videoaula, pdf, questoes, revisao, lei_seca (ver logic/metodo.dart).
+  TextColumn get metodo => text().nullable()();
+  IntColumn get questoesFeitas => integer().withDefault(const Constant(0))();
+  IntColumn get questoesAcertos => integer().withDefault(const Constant(0))();
+  IntColumn get paginas => integer().withDefault(const Constant(0))();
+
+  /// Onde parou (texto curto), mostrado na próxima sessão da mesma matéria.
+  TextColumn get pontoParada => text().nullable()();
 }

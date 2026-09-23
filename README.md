@@ -40,14 +40,24 @@ No tablet: abra o link, baixe e toque em `edital.apk` (autorize "instalar apps d
   - O tempo continua certo com o app em segundo plano, e até se o Android fechar o app.
 - Ao **finalizar**, a sessão é salva, o dia é marcado na grade e o ciclo avança (dá para desligar o avanço na hora).
 
+## Etapa 3: registro ao finalizar
+
+- Ao finalizar o cronômetro (ou em "Registrar estudo" num dia da grade) você registra:
+  - matéria e tópico, com a opção de já marcar o tópico como visto e agendar as revisões;
+  - método: videoaula, PDF, questões, revisão ou lei seca;
+  - questões feitas e acertos (a % aparece na hora) e páginas;
+  - **ponto de parada**, um texto curto.
+- **Onde você parou**: na próxima sessão da mesma matéria, o último ponto de parada aparece no cronômetro e na "Próxima do ciclo", com o tópico e o método.
+- O tópico da última sessão da matéria já vem sugerido, se ainda não foi visto.
+- A folha do dia mostra cada sessão com método, questões, páginas e ponto de parada, e o total do dia com a % de acerto.
+
 ## Próximas etapas
 
-1. Registro ao finalizar: tópico, método (videoaula, PDF, questões, revisão, lei seca), questões/acertos, páginas e "ponto de parada" (mostrado na próxima sessão da matéria).
-2. Notificações: revisões do dia e lembrete diário de estudo.
-3. Estatísticas: horas por dia/semana/mês e por matéria, % de acerto, sequência de dias, contagem regressiva.
-4. Anexos (foto/PDF) e flashcards por tópico.
-5. Colar o conteúdo programático do edital e separar automaticamente em matérias e tópicos.
-6. Sincronização celular + tablet via Turso (o banco já está preparado: ids UUID + `atualizado_em`; veja `lib/data/sync/`).
+1. Notificações: revisões do dia e lembrete diário de estudo.
+2. Estatísticas: horas por dia/semana/mês e por matéria, % de acerto, sequência de dias, contagem regressiva.
+3. Anexos (foto/PDF) e flashcards por tópico.
+4. Colar o conteúdo programático do edital e separar automaticamente em matérias e tópicos.
+5. Sincronização celular + tablet via Turso (o banco já está preparado: ids UUID + `atualizado_em`; veja `lib/data/sync/`).
 
 ## Estrutura
 

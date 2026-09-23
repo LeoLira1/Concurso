@@ -7,6 +7,7 @@ import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
 import 'package:edital/data/database.dart';
 import 'package:edital/logic/cronometro.dart';
+import 'package:edital/logic/metodo.dart';
 import 'package:edital/screens/ciclo_screen.dart';
 import 'package:edital/screens/concursos_screen.dart';
 import 'package:edital/screens/cronometro_screen.dart';
@@ -122,9 +123,47 @@ Future<AppDatabase> popular() async {
         dia: dia,
         minutos: i == 0 && e.key.isEven ? 50 : 25,
         materiaId: mats[idx % mats.length].materia.id,
+        metodo: Metodo.values[(e.key + i) % Metodo.values.length].chave,
+        questoesFeitas: e.key.isEven ? 20 : 0,
+        questoesAcertos: e.key.isEven ? 15 : 0,
+        paginas: e.key.isOdd ? 14 : 0,
       );
     }
   }
+
+  // Pontos de parada (aparecem na próxima sessão da matéria).
+  Future<void> parada(
+    String materia,
+    String topico,
+    Metodo m,
+    String texto,
+  ) async {
+    final mid = (await db.materiaPorNome(materia))!.id;
+    final tid = (await db.watchTopicos(mid).first)
+        .firstWhere((t) => t.nome == topico)
+        .id;
+    await db.registrarSessao(
+      dia: hoje.subtract(const Duration(days: 1)),
+      minutos: 50,
+      materiaId: mid,
+      topicoId: tid,
+      metodo: m.chave,
+      pontoParada: texto,
+    );
+  }
+
+  await parada(
+    'Língua Portuguesa',
+    'Crase',
+    Metodo.pdf,
+    'Parei nos casos facultativos (pág. 42)',
+  );
+  await parada(
+    'Legislação Específica',
+    'Estatuto Geral das Guardas Municipais (Lei 13.022/2014)',
+    Metodo.leiSeca,
+    'Li até o art. 5º — falta competências específicas',
+  );
   return db;
 }
 
@@ -324,6 +363,7 @@ void main() {
     String nome,
     Size tamanho, {
     bool pomodoro = false,
+    Future<void> Function(WidgetTester t)? antes,
   }) {
     final sessao = SessaoAtiva();
     return captura(
@@ -347,6 +387,7 @@ void main() {
         sessao: sessao,
       ),
       settle: false,
+      antes: antes,
       depois: () => sessao.atual?.pausar(),
     );
   }
@@ -367,5 +408,70 @@ void main() {
   testWidgets(
     'pomodoro retrato',
     (t) => cronometro(t, '11b_pomodoro_pausa_retrato', retrato, pomodoro: true),
+  );
+
+  // --- Etapa 3: registro ao finalizar e ponto de parada ---
+  Future<void> preencherRegistro(WidgetTester t) async {
+    await t.tap(find.text('Finalizar'));
+    for (var i = 0; i < 4; i++) {
+      await t.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 150)),
+      );
+      await t.pump(const Duration(milliseconds: 300));
+    }
+    await t.tap(find.text('PDF'));
+    await t.pump();
+    for (var i = 0; i < 12; i++) {
+      await t.tap(find.byTooltip('Mais').at(0));
+      await t.pump();
+    }
+    for (var i = 0; i < 10; i++) {
+      await t.tap(find.byTooltip('Mais').at(1));
+      await t.pump();
+    }
+    for (var i = 0; i < 6; i++) {
+      await t.tap(find.byTooltip('Mais').at(2));
+      await t.pump();
+    }
+    await t.enterText(
+      find.byType(TextField).last,
+      'Crase facultativa ok — próxima: crase com horas',
+    );
+    await t.pump(const Duration(milliseconds: 400));
+    FocusManager.instance.primaryFocus?.unfocus();
+    await t.pump(const Duration(milliseconds: 400));
+  }
+
+  testWidgets(
+    'registro paisagem',
+    (t) => cronometro(
+      t,
+      '12_registro_paisagem',
+      paisagem,
+      antes: preencherRegistro,
+    ),
+  );
+  testWidgets(
+    'registro retrato',
+    (t) => cronometro(
+      t,
+      '12b_registro_retrato',
+      retrato,
+      antes: preencherRegistro,
+    ),
+  );
+
+  Future<void> abrirDia(WidgetTester t) async {
+    await t.tap(find.text('22').first);
+    await t.pumpAndSettle();
+  }
+
+  testWidgets(
+    'dia paisagem',
+    (t) => captura(t, '13_dia_paisagem', paisagem, home, antes: abrirDia),
+  );
+  testWidgets(
+    'dia retrato',
+    (t) => captura(t, '13b_dia_retrato', retrato, home, antes: abrirDia),
   );
 }

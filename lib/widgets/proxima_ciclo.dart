@@ -10,6 +10,7 @@ import '../theme.dart';
 import '../util/texto.dart';
 import 'assistir.dart';
 import 'comuns.dart';
+import 'ponto_parada.dart';
 
 /// Botão "Próxima do ciclo" da tela inicial. Se há um cronômetro rodando,
 /// vira "Sessão em andamento" com o tempo ao vivo.
@@ -279,7 +280,9 @@ class FolhaProxima extends StatelessWidget {
                 '${atual.partes > 1 ? '  ·  sessão ${atual.parte} de ${atual.partes} desta matéria na volta' : ''}',
                 style: const TextStyle(fontSize: 16, color: Cores.tintaSuave),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
+              PontoDeParada(materiaId: atual.materiaId),
+              const SizedBox(height: 16),
               FilledButton.icon(
                 style: FilledButton.styleFrom(minimumSize: const Size(0, 64)),
                 onPressed: () {
