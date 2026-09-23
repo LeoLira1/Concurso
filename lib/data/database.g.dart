@@ -120,6 +120,54 @@ class $ConcursosTable extends Concursos
     requiredDuringInsert: false,
     clientDefault: DateTime.now,
   );
+  static const VerificationMeta _cicloMinutosMeta = const VerificationMeta(
+    'cicloMinutos',
+  );
+  @override
+  late final GeneratedColumn<int> cicloMinutos = GeneratedColumn<int>(
+    'ciclo_minutos',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1200),
+  );
+  static const VerificationMeta _cicloBlocoMinMeta = const VerificationMeta(
+    'cicloBlocoMin',
+  );
+  @override
+  late final GeneratedColumn<int> cicloBlocoMin = GeneratedColumn<int>(
+    'ciclo_bloco_min',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(60),
+  );
+  static const VerificationMeta _cicloPosicaoMeta = const VerificationMeta(
+    'cicloPosicao',
+  );
+  @override
+  late final GeneratedColumn<int> cicloPosicao = GeneratedColumn<int>(
+    'ciclo_posicao',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _cicloVoltasMeta = const VerificationMeta(
+    'cicloVoltas',
+  );
+  @override
+  late final GeneratedColumn<int> cicloVoltas = GeneratedColumn<int>(
+    'ciclo_voltas',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -132,6 +180,10 @@ class $ConcursosTable extends Concursos
     exemplo,
     ordem,
     criadoEm,
+    cicloMinutos,
+    cicloBlocoMin,
+    cicloPosicao,
+    cicloVoltas,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -209,6 +261,42 @@ class $ConcursosTable extends Concursos
         criadoEm.isAcceptableOrUnknown(data['criado_em']!, _criadoEmMeta),
       );
     }
+    if (data.containsKey('ciclo_minutos')) {
+      context.handle(
+        _cicloMinutosMeta,
+        cicloMinutos.isAcceptableOrUnknown(
+          data['ciclo_minutos']!,
+          _cicloMinutosMeta,
+        ),
+      );
+    }
+    if (data.containsKey('ciclo_bloco_min')) {
+      context.handle(
+        _cicloBlocoMinMeta,
+        cicloBlocoMin.isAcceptableOrUnknown(
+          data['ciclo_bloco_min']!,
+          _cicloBlocoMinMeta,
+        ),
+      );
+    }
+    if (data.containsKey('ciclo_posicao')) {
+      context.handle(
+        _cicloPosicaoMeta,
+        cicloPosicao.isAcceptableOrUnknown(
+          data['ciclo_posicao']!,
+          _cicloPosicaoMeta,
+        ),
+      );
+    }
+    if (data.containsKey('ciclo_voltas')) {
+      context.handle(
+        _cicloVoltasMeta,
+        cicloVoltas.isAcceptableOrUnknown(
+          data['ciclo_voltas']!,
+          _cicloVoltasMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -258,6 +346,22 @@ class $ConcursosTable extends Concursos
         DriftSqlType.dateTime,
         data['${effectivePrefix}criado_em'],
       )!,
+      cicloMinutos: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}ciclo_minutos'],
+      )!,
+      cicloBlocoMin: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}ciclo_bloco_min'],
+      )!,
+      cicloPosicao: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}ciclo_posicao'],
+      )!,
+      cicloVoltas: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}ciclo_voltas'],
+      )!,
     );
   }
 
@@ -278,6 +382,18 @@ class Concurso extends DataClass implements Insertable<Concurso> {
   final bool exemplo;
   final int ordem;
   final DateTime criadoEm;
+
+  /// Duração de uma volta completa do ciclo, em minutos.
+  final int cicloMinutos;
+
+  /// Tamanho de referência de cada sessão do ciclo, em minutos.
+  final int cicloBlocoMin;
+
+  /// Índice da próxima etapa na fila do ciclo.
+  final int cicloPosicao;
+
+  /// Quantas voltas completas já foram feitas.
+  final int cicloVoltas;
   const Concurso({
     required this.id,
     required this.atualizadoEm,
@@ -289,6 +405,10 @@ class Concurso extends DataClass implements Insertable<Concurso> {
     required this.exemplo,
     required this.ordem,
     required this.criadoEm,
+    required this.cicloMinutos,
+    required this.cicloBlocoMin,
+    required this.cicloPosicao,
+    required this.cicloVoltas,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -305,6 +425,10 @@ class Concurso extends DataClass implements Insertable<Concurso> {
     map['exemplo'] = Variable<bool>(exemplo);
     map['ordem'] = Variable<int>(ordem);
     map['criado_em'] = Variable<DateTime>(criadoEm);
+    map['ciclo_minutos'] = Variable<int>(cicloMinutos);
+    map['ciclo_bloco_min'] = Variable<int>(cicloBlocoMin);
+    map['ciclo_posicao'] = Variable<int>(cicloPosicao);
+    map['ciclo_voltas'] = Variable<int>(cicloVoltas);
     return map;
   }
 
@@ -322,6 +446,10 @@ class Concurso extends DataClass implements Insertable<Concurso> {
       exemplo: Value(exemplo),
       ordem: Value(ordem),
       criadoEm: Value(criadoEm),
+      cicloMinutos: Value(cicloMinutos),
+      cicloBlocoMin: Value(cicloBlocoMin),
+      cicloPosicao: Value(cicloPosicao),
+      cicloVoltas: Value(cicloVoltas),
     );
   }
 
@@ -341,6 +469,10 @@ class Concurso extends DataClass implements Insertable<Concurso> {
       exemplo: serializer.fromJson<bool>(json['exemplo']),
       ordem: serializer.fromJson<int>(json['ordem']),
       criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
+      cicloMinutos: serializer.fromJson<int>(json['cicloMinutos']),
+      cicloBlocoMin: serializer.fromJson<int>(json['cicloBlocoMin']),
+      cicloPosicao: serializer.fromJson<int>(json['cicloPosicao']),
+      cicloVoltas: serializer.fromJson<int>(json['cicloVoltas']),
     );
   }
   @override
@@ -357,6 +489,10 @@ class Concurso extends DataClass implements Insertable<Concurso> {
       'exemplo': serializer.toJson<bool>(exemplo),
       'ordem': serializer.toJson<int>(ordem),
       'criadoEm': serializer.toJson<DateTime>(criadoEm),
+      'cicloMinutos': serializer.toJson<int>(cicloMinutos),
+      'cicloBlocoMin': serializer.toJson<int>(cicloBlocoMin),
+      'cicloPosicao': serializer.toJson<int>(cicloPosicao),
+      'cicloVoltas': serializer.toJson<int>(cicloVoltas),
     };
   }
 
@@ -371,6 +507,10 @@ class Concurso extends DataClass implements Insertable<Concurso> {
     bool? exemplo,
     int? ordem,
     DateTime? criadoEm,
+    int? cicloMinutos,
+    int? cicloBlocoMin,
+    int? cicloPosicao,
+    int? cicloVoltas,
   }) => Concurso(
     id: id ?? this.id,
     atualizadoEm: atualizadoEm ?? this.atualizadoEm,
@@ -382,6 +522,10 @@ class Concurso extends DataClass implements Insertable<Concurso> {
     exemplo: exemplo ?? this.exemplo,
     ordem: ordem ?? this.ordem,
     criadoEm: criadoEm ?? this.criadoEm,
+    cicloMinutos: cicloMinutos ?? this.cicloMinutos,
+    cicloBlocoMin: cicloBlocoMin ?? this.cicloBlocoMin,
+    cicloPosicao: cicloPosicao ?? this.cicloPosicao,
+    cicloVoltas: cicloVoltas ?? this.cicloVoltas,
   );
   Concurso copyWithCompanion(ConcursosCompanion data) {
     return Concurso(
@@ -397,6 +541,18 @@ class Concurso extends DataClass implements Insertable<Concurso> {
       exemplo: data.exemplo.present ? data.exemplo.value : this.exemplo,
       ordem: data.ordem.present ? data.ordem.value : this.ordem,
       criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
+      cicloMinutos: data.cicloMinutos.present
+          ? data.cicloMinutos.value
+          : this.cicloMinutos,
+      cicloBlocoMin: data.cicloBlocoMin.present
+          ? data.cicloBlocoMin.value
+          : this.cicloBlocoMin,
+      cicloPosicao: data.cicloPosicao.present
+          ? data.cicloPosicao.value
+          : this.cicloPosicao,
+      cicloVoltas: data.cicloVoltas.present
+          ? data.cicloVoltas.value
+          : this.cicloVoltas,
     );
   }
 
@@ -412,7 +568,11 @@ class Concurso extends DataClass implements Insertable<Concurso> {
           ..write('foco: $foco, ')
           ..write('exemplo: $exemplo, ')
           ..write('ordem: $ordem, ')
-          ..write('criadoEm: $criadoEm')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('cicloMinutos: $cicloMinutos, ')
+          ..write('cicloBlocoMin: $cicloBlocoMin, ')
+          ..write('cicloPosicao: $cicloPosicao, ')
+          ..write('cicloVoltas: $cicloVoltas')
           ..write(')'))
         .toString();
   }
@@ -429,6 +589,10 @@ class Concurso extends DataClass implements Insertable<Concurso> {
     exemplo,
     ordem,
     criadoEm,
+    cicloMinutos,
+    cicloBlocoMin,
+    cicloPosicao,
+    cicloVoltas,
   );
   @override
   bool operator ==(Object other) =>
@@ -443,7 +607,11 @@ class Concurso extends DataClass implements Insertable<Concurso> {
           other.foco == this.foco &&
           other.exemplo == this.exemplo &&
           other.ordem == this.ordem &&
-          other.criadoEm == this.criadoEm);
+          other.criadoEm == this.criadoEm &&
+          other.cicloMinutos == this.cicloMinutos &&
+          other.cicloBlocoMin == this.cicloBlocoMin &&
+          other.cicloPosicao == this.cicloPosicao &&
+          other.cicloVoltas == this.cicloVoltas);
 }
 
 class ConcursosCompanion extends UpdateCompanion<Concurso> {
@@ -457,6 +625,10 @@ class ConcursosCompanion extends UpdateCompanion<Concurso> {
   final Value<bool> exemplo;
   final Value<int> ordem;
   final Value<DateTime> criadoEm;
+  final Value<int> cicloMinutos;
+  final Value<int> cicloBlocoMin;
+  final Value<int> cicloPosicao;
+  final Value<int> cicloVoltas;
   final Value<int> rowid;
   const ConcursosCompanion({
     this.id = const Value.absent(),
@@ -469,6 +641,10 @@ class ConcursosCompanion extends UpdateCompanion<Concurso> {
     this.exemplo = const Value.absent(),
     this.ordem = const Value.absent(),
     this.criadoEm = const Value.absent(),
+    this.cicloMinutos = const Value.absent(),
+    this.cicloBlocoMin = const Value.absent(),
+    this.cicloPosicao = const Value.absent(),
+    this.cicloVoltas = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ConcursosCompanion.insert({
@@ -482,6 +658,10 @@ class ConcursosCompanion extends UpdateCompanion<Concurso> {
     this.exemplo = const Value.absent(),
     this.ordem = const Value.absent(),
     this.criadoEm = const Value.absent(),
+    this.cicloMinutos = const Value.absent(),
+    this.cicloBlocoMin = const Value.absent(),
+    this.cicloPosicao = const Value.absent(),
+    this.cicloVoltas = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : nome = Value(nome),
        cor = Value(cor);
@@ -496,6 +676,10 @@ class ConcursosCompanion extends UpdateCompanion<Concurso> {
     Expression<bool>? exemplo,
     Expression<int>? ordem,
     Expression<DateTime>? criadoEm,
+    Expression<int>? cicloMinutos,
+    Expression<int>? cicloBlocoMin,
+    Expression<int>? cicloPosicao,
+    Expression<int>? cicloVoltas,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -509,6 +693,10 @@ class ConcursosCompanion extends UpdateCompanion<Concurso> {
       if (exemplo != null) 'exemplo': exemplo,
       if (ordem != null) 'ordem': ordem,
       if (criadoEm != null) 'criado_em': criadoEm,
+      if (cicloMinutos != null) 'ciclo_minutos': cicloMinutos,
+      if (cicloBlocoMin != null) 'ciclo_bloco_min': cicloBlocoMin,
+      if (cicloPosicao != null) 'ciclo_posicao': cicloPosicao,
+      if (cicloVoltas != null) 'ciclo_voltas': cicloVoltas,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -524,6 +712,10 @@ class ConcursosCompanion extends UpdateCompanion<Concurso> {
     Value<bool>? exemplo,
     Value<int>? ordem,
     Value<DateTime>? criadoEm,
+    Value<int>? cicloMinutos,
+    Value<int>? cicloBlocoMin,
+    Value<int>? cicloPosicao,
+    Value<int>? cicloVoltas,
     Value<int>? rowid,
   }) {
     return ConcursosCompanion(
@@ -537,6 +729,10 @@ class ConcursosCompanion extends UpdateCompanion<Concurso> {
       exemplo: exemplo ?? this.exemplo,
       ordem: ordem ?? this.ordem,
       criadoEm: criadoEm ?? this.criadoEm,
+      cicloMinutos: cicloMinutos ?? this.cicloMinutos,
+      cicloBlocoMin: cicloBlocoMin ?? this.cicloBlocoMin,
+      cicloPosicao: cicloPosicao ?? this.cicloPosicao,
+      cicloVoltas: cicloVoltas ?? this.cicloVoltas,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -574,6 +770,18 @@ class ConcursosCompanion extends UpdateCompanion<Concurso> {
     if (criadoEm.present) {
       map['criado_em'] = Variable<DateTime>(criadoEm.value);
     }
+    if (cicloMinutos.present) {
+      map['ciclo_minutos'] = Variable<int>(cicloMinutos.value);
+    }
+    if (cicloBlocoMin.present) {
+      map['ciclo_bloco_min'] = Variable<int>(cicloBlocoMin.value);
+    }
+    if (cicloPosicao.present) {
+      map['ciclo_posicao'] = Variable<int>(cicloPosicao.value);
+    }
+    if (cicloVoltas.present) {
+      map['ciclo_voltas'] = Variable<int>(cicloVoltas.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -593,6 +801,10 @@ class ConcursosCompanion extends UpdateCompanion<Concurso> {
           ..write('exemplo: $exemplo, ')
           ..write('ordem: $ordem, ')
           ..write('criadoEm: $criadoEm, ')
+          ..write('cicloMinutos: $cicloMinutos, ')
+          ..write('cicloBlocoMin: $cicloBlocoMin, ')
+          ..write('cicloPosicao: $cicloPosicao, ')
+          ..write('cicloVoltas: $cicloVoltas, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1006,12 +1218,52 @@ class $ConcursoMateriasTable extends ConcursoMaterias
     requiredDuringInsert: false,
     clientDefault: DateTime.now,
   );
+  static const VerificationMeta _pesoMeta = const VerificationMeta('peso');
+  @override
+  late final GeneratedColumn<int> peso = GeneratedColumn<int>(
+    'peso',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(3),
+  );
+  static const VerificationMeta _dificuldadeMeta = const VerificationMeta(
+    'dificuldade',
+  );
+  @override
+  late final GeneratedColumn<int> dificuldade = GeneratedColumn<int>(
+    'dificuldade',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(3),
+  );
+  static const VerificationMeta _noCicloMeta = const VerificationMeta(
+    'noCiclo',
+  );
+  @override
+  late final GeneratedColumn<bool> noCiclo = GeneratedColumn<bool>(
+    'no_ciclo',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("no_ciclo" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     concursoId,
     materiaId,
     ordem,
     atualizadoEm,
+    peso,
+    dificuldade,
+    noCiclo,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1056,6 +1308,27 @@ class $ConcursoMateriasTable extends ConcursoMaterias
         ),
       );
     }
+    if (data.containsKey('peso')) {
+      context.handle(
+        _pesoMeta,
+        peso.isAcceptableOrUnknown(data['peso']!, _pesoMeta),
+      );
+    }
+    if (data.containsKey('dificuldade')) {
+      context.handle(
+        _dificuldadeMeta,
+        dificuldade.isAcceptableOrUnknown(
+          data['dificuldade']!,
+          _dificuldadeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('no_ciclo')) {
+      context.handle(
+        _noCicloMeta,
+        noCiclo.isAcceptableOrUnknown(data['no_ciclo']!, _noCicloMeta),
+      );
+    }
     return context;
   }
 
@@ -1081,6 +1354,18 @@ class $ConcursoMateriasTable extends ConcursoMaterias
         DriftSqlType.dateTime,
         data['${effectivePrefix}atualizado_em'],
       )!,
+      peso: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}peso'],
+      )!,
+      dificuldade: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}dificuldade'],
+      )!,
+      noCiclo: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}no_ciclo'],
+      )!,
     );
   }
 
@@ -1095,11 +1380,17 @@ class ConcursoMateria extends DataClass implements Insertable<ConcursoMateria> {
   final String materiaId;
   final int ordem;
   final DateTime atualizadoEm;
+  final int peso;
+  final int dificuldade;
+  final bool noCiclo;
   const ConcursoMateria({
     required this.concursoId,
     required this.materiaId,
     required this.ordem,
     required this.atualizadoEm,
+    required this.peso,
+    required this.dificuldade,
+    required this.noCiclo,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1108,6 +1399,9 @@ class ConcursoMateria extends DataClass implements Insertable<ConcursoMateria> {
     map['materia_id'] = Variable<String>(materiaId);
     map['ordem'] = Variable<int>(ordem);
     map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
+    map['peso'] = Variable<int>(peso);
+    map['dificuldade'] = Variable<int>(dificuldade);
+    map['no_ciclo'] = Variable<bool>(noCiclo);
     return map;
   }
 
@@ -1117,6 +1411,9 @@ class ConcursoMateria extends DataClass implements Insertable<ConcursoMateria> {
       materiaId: Value(materiaId),
       ordem: Value(ordem),
       atualizadoEm: Value(atualizadoEm),
+      peso: Value(peso),
+      dificuldade: Value(dificuldade),
+      noCiclo: Value(noCiclo),
     );
   }
 
@@ -1130,6 +1427,9 @@ class ConcursoMateria extends DataClass implements Insertable<ConcursoMateria> {
       materiaId: serializer.fromJson<String>(json['materiaId']),
       ordem: serializer.fromJson<int>(json['ordem']),
       atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
+      peso: serializer.fromJson<int>(json['peso']),
+      dificuldade: serializer.fromJson<int>(json['dificuldade']),
+      noCiclo: serializer.fromJson<bool>(json['noCiclo']),
     );
   }
   @override
@@ -1140,6 +1440,9 @@ class ConcursoMateria extends DataClass implements Insertable<ConcursoMateria> {
       'materiaId': serializer.toJson<String>(materiaId),
       'ordem': serializer.toJson<int>(ordem),
       'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
+      'peso': serializer.toJson<int>(peso),
+      'dificuldade': serializer.toJson<int>(dificuldade),
+      'noCiclo': serializer.toJson<bool>(noCiclo),
     };
   }
 
@@ -1148,11 +1451,17 @@ class ConcursoMateria extends DataClass implements Insertable<ConcursoMateria> {
     String? materiaId,
     int? ordem,
     DateTime? atualizadoEm,
+    int? peso,
+    int? dificuldade,
+    bool? noCiclo,
   }) => ConcursoMateria(
     concursoId: concursoId ?? this.concursoId,
     materiaId: materiaId ?? this.materiaId,
     ordem: ordem ?? this.ordem,
     atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+    peso: peso ?? this.peso,
+    dificuldade: dificuldade ?? this.dificuldade,
+    noCiclo: noCiclo ?? this.noCiclo,
   );
   ConcursoMateria copyWithCompanion(ConcursoMateriasCompanion data) {
     return ConcursoMateria(
@@ -1164,6 +1473,11 @@ class ConcursoMateria extends DataClass implements Insertable<ConcursoMateria> {
       atualizadoEm: data.atualizadoEm.present
           ? data.atualizadoEm.value
           : this.atualizadoEm,
+      peso: data.peso.present ? data.peso.value : this.peso,
+      dificuldade: data.dificuldade.present
+          ? data.dificuldade.value
+          : this.dificuldade,
+      noCiclo: data.noCiclo.present ? data.noCiclo.value : this.noCiclo,
     );
   }
 
@@ -1173,13 +1487,24 @@ class ConcursoMateria extends DataClass implements Insertable<ConcursoMateria> {
           ..write('concursoId: $concursoId, ')
           ..write('materiaId: $materiaId, ')
           ..write('ordem: $ordem, ')
-          ..write('atualizadoEm: $atualizadoEm')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('peso: $peso, ')
+          ..write('dificuldade: $dificuldade, ')
+          ..write('noCiclo: $noCiclo')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(concursoId, materiaId, ordem, atualizadoEm);
+  int get hashCode => Object.hash(
+    concursoId,
+    materiaId,
+    ordem,
+    atualizadoEm,
+    peso,
+    dificuldade,
+    noCiclo,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1187,7 +1512,10 @@ class ConcursoMateria extends DataClass implements Insertable<ConcursoMateria> {
           other.concursoId == this.concursoId &&
           other.materiaId == this.materiaId &&
           other.ordem == this.ordem &&
-          other.atualizadoEm == this.atualizadoEm);
+          other.atualizadoEm == this.atualizadoEm &&
+          other.peso == this.peso &&
+          other.dificuldade == this.dificuldade &&
+          other.noCiclo == this.noCiclo);
 }
 
 class ConcursoMateriasCompanion extends UpdateCompanion<ConcursoMateria> {
@@ -1195,12 +1523,18 @@ class ConcursoMateriasCompanion extends UpdateCompanion<ConcursoMateria> {
   final Value<String> materiaId;
   final Value<int> ordem;
   final Value<DateTime> atualizadoEm;
+  final Value<int> peso;
+  final Value<int> dificuldade;
+  final Value<bool> noCiclo;
   final Value<int> rowid;
   const ConcursoMateriasCompanion({
     this.concursoId = const Value.absent(),
     this.materiaId = const Value.absent(),
     this.ordem = const Value.absent(),
     this.atualizadoEm = const Value.absent(),
+    this.peso = const Value.absent(),
+    this.dificuldade = const Value.absent(),
+    this.noCiclo = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ConcursoMateriasCompanion.insert({
@@ -1208,6 +1542,9 @@ class ConcursoMateriasCompanion extends UpdateCompanion<ConcursoMateria> {
     required String materiaId,
     this.ordem = const Value.absent(),
     this.atualizadoEm = const Value.absent(),
+    this.peso = const Value.absent(),
+    this.dificuldade = const Value.absent(),
+    this.noCiclo = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : concursoId = Value(concursoId),
        materiaId = Value(materiaId);
@@ -1216,6 +1553,9 @@ class ConcursoMateriasCompanion extends UpdateCompanion<ConcursoMateria> {
     Expression<String>? materiaId,
     Expression<int>? ordem,
     Expression<DateTime>? atualizadoEm,
+    Expression<int>? peso,
+    Expression<int>? dificuldade,
+    Expression<bool>? noCiclo,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1223,6 +1563,9 @@ class ConcursoMateriasCompanion extends UpdateCompanion<ConcursoMateria> {
       if (materiaId != null) 'materia_id': materiaId,
       if (ordem != null) 'ordem': ordem,
       if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
+      if (peso != null) 'peso': peso,
+      if (dificuldade != null) 'dificuldade': dificuldade,
+      if (noCiclo != null) 'no_ciclo': noCiclo,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1232,6 +1575,9 @@ class ConcursoMateriasCompanion extends UpdateCompanion<ConcursoMateria> {
     Value<String>? materiaId,
     Value<int>? ordem,
     Value<DateTime>? atualizadoEm,
+    Value<int>? peso,
+    Value<int>? dificuldade,
+    Value<bool>? noCiclo,
     Value<int>? rowid,
   }) {
     return ConcursoMateriasCompanion(
@@ -1239,6 +1585,9 @@ class ConcursoMateriasCompanion extends UpdateCompanion<ConcursoMateria> {
       materiaId: materiaId ?? this.materiaId,
       ordem: ordem ?? this.ordem,
       atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+      peso: peso ?? this.peso,
+      dificuldade: dificuldade ?? this.dificuldade,
+      noCiclo: noCiclo ?? this.noCiclo,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1258,6 +1607,15 @@ class ConcursoMateriasCompanion extends UpdateCompanion<ConcursoMateria> {
     if (atualizadoEm.present) {
       map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
     }
+    if (peso.present) {
+      map['peso'] = Variable<int>(peso.value);
+    }
+    if (dificuldade.present) {
+      map['dificuldade'] = Variable<int>(dificuldade.value);
+    }
+    if (noCiclo.present) {
+      map['no_ciclo'] = Variable<bool>(noCiclo.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1271,6 +1629,9 @@ class ConcursoMateriasCompanion extends UpdateCompanion<ConcursoMateria> {
           ..write('materiaId: $materiaId, ')
           ..write('ordem: $ordem, ')
           ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('peso: $peso, ')
+          ..write('dificuldade: $dificuldade, ')
+          ..write('noCiclo: $noCiclo, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2714,6 +3075,62 @@ class $SessoesTable extends Sessoes with TableInfo<$SessoesTable, Sessao> {
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _metodoMeta = const VerificationMeta('metodo');
+  @override
+  late final GeneratedColumn<String> metodo = GeneratedColumn<String>(
+    'metodo',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _questoesFeitasMeta = const VerificationMeta(
+    'questoesFeitas',
+  );
+  @override
+  late final GeneratedColumn<int> questoesFeitas = GeneratedColumn<int>(
+    'questoes_feitas',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _questoesAcertosMeta = const VerificationMeta(
+    'questoesAcertos',
+  );
+  @override
+  late final GeneratedColumn<int> questoesAcertos = GeneratedColumn<int>(
+    'questoes_acertos',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _paginasMeta = const VerificationMeta(
+    'paginas',
+  );
+  @override
+  late final GeneratedColumn<int> paginas = GeneratedColumn<int>(
+    'paginas',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _pontoParadaMeta = const VerificationMeta(
+    'pontoParada',
+  );
+  @override
+  late final GeneratedColumn<String> pontoParada = GeneratedColumn<String>(
+    'ponto_parada',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -2723,6 +3140,11 @@ class $SessoesTable extends Sessoes with TableInfo<$SessoesTable, Sessao> {
     dia,
     inicio,
     minutos,
+    metodo,
+    questoesFeitas,
+    questoesAcertos,
+    paginas,
+    pontoParada,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2782,6 +3204,45 @@ class $SessoesTable extends Sessoes with TableInfo<$SessoesTable, Sessao> {
     } else if (isInserting) {
       context.missing(_minutosMeta);
     }
+    if (data.containsKey('metodo')) {
+      context.handle(
+        _metodoMeta,
+        metodo.isAcceptableOrUnknown(data['metodo']!, _metodoMeta),
+      );
+    }
+    if (data.containsKey('questoes_feitas')) {
+      context.handle(
+        _questoesFeitasMeta,
+        questoesFeitas.isAcceptableOrUnknown(
+          data['questoes_feitas']!,
+          _questoesFeitasMeta,
+        ),
+      );
+    }
+    if (data.containsKey('questoes_acertos')) {
+      context.handle(
+        _questoesAcertosMeta,
+        questoesAcertos.isAcceptableOrUnknown(
+          data['questoes_acertos']!,
+          _questoesAcertosMeta,
+        ),
+      );
+    }
+    if (data.containsKey('paginas')) {
+      context.handle(
+        _paginasMeta,
+        paginas.isAcceptableOrUnknown(data['paginas']!, _paginasMeta),
+      );
+    }
+    if (data.containsKey('ponto_parada')) {
+      context.handle(
+        _pontoParadaMeta,
+        pontoParada.isAcceptableOrUnknown(
+          data['ponto_parada']!,
+          _pontoParadaMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -2819,6 +3280,26 @@ class $SessoesTable extends Sessoes with TableInfo<$SessoesTable, Sessao> {
         DriftSqlType.int,
         data['${effectivePrefix}minutos'],
       )!,
+      metodo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}metodo'],
+      ),
+      questoesFeitas: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}questoes_feitas'],
+      )!,
+      questoesAcertos: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}questoes_acertos'],
+      )!,
+      paginas: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}paginas'],
+      )!,
+      pontoParada: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}ponto_parada'],
+      ),
     );
   }
 
@@ -2838,6 +3319,15 @@ class Sessao extends DataClass implements Insertable<Sessao> {
   final DateTime dia;
   final DateTime inicio;
   final int minutos;
+
+  /// videoaula, pdf, questoes, revisao, lei_seca (ver logic/metodo.dart).
+  final String? metodo;
+  final int questoesFeitas;
+  final int questoesAcertos;
+  final int paginas;
+
+  /// Onde parou (texto curto), mostrado na próxima sessão da mesma matéria.
+  final String? pontoParada;
   const Sessao({
     required this.id,
     required this.atualizadoEm,
@@ -2846,6 +3336,11 @@ class Sessao extends DataClass implements Insertable<Sessao> {
     required this.dia,
     required this.inicio,
     required this.minutos,
+    this.metodo,
+    required this.questoesFeitas,
+    required this.questoesAcertos,
+    required this.paginas,
+    this.pontoParada,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2861,6 +3356,15 @@ class Sessao extends DataClass implements Insertable<Sessao> {
     map['dia'] = Variable<DateTime>(dia);
     map['inicio'] = Variable<DateTime>(inicio);
     map['minutos'] = Variable<int>(minutos);
+    if (!nullToAbsent || metodo != null) {
+      map['metodo'] = Variable<String>(metodo);
+    }
+    map['questoes_feitas'] = Variable<int>(questoesFeitas);
+    map['questoes_acertos'] = Variable<int>(questoesAcertos);
+    map['paginas'] = Variable<int>(paginas);
+    if (!nullToAbsent || pontoParada != null) {
+      map['ponto_parada'] = Variable<String>(pontoParada);
+    }
     return map;
   }
 
@@ -2877,6 +3381,15 @@ class Sessao extends DataClass implements Insertable<Sessao> {
       dia: Value(dia),
       inicio: Value(inicio),
       minutos: Value(minutos),
+      metodo: metodo == null && nullToAbsent
+          ? const Value.absent()
+          : Value(metodo),
+      questoesFeitas: Value(questoesFeitas),
+      questoesAcertos: Value(questoesAcertos),
+      paginas: Value(paginas),
+      pontoParada: pontoParada == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pontoParada),
     );
   }
 
@@ -2893,6 +3406,11 @@ class Sessao extends DataClass implements Insertable<Sessao> {
       dia: serializer.fromJson<DateTime>(json['dia']),
       inicio: serializer.fromJson<DateTime>(json['inicio']),
       minutos: serializer.fromJson<int>(json['minutos']),
+      metodo: serializer.fromJson<String?>(json['metodo']),
+      questoesFeitas: serializer.fromJson<int>(json['questoesFeitas']),
+      questoesAcertos: serializer.fromJson<int>(json['questoesAcertos']),
+      paginas: serializer.fromJson<int>(json['paginas']),
+      pontoParada: serializer.fromJson<String?>(json['pontoParada']),
     );
   }
   @override
@@ -2906,6 +3424,11 @@ class Sessao extends DataClass implements Insertable<Sessao> {
       'dia': serializer.toJson<DateTime>(dia),
       'inicio': serializer.toJson<DateTime>(inicio),
       'minutos': serializer.toJson<int>(minutos),
+      'metodo': serializer.toJson<String?>(metodo),
+      'questoesFeitas': serializer.toJson<int>(questoesFeitas),
+      'questoesAcertos': serializer.toJson<int>(questoesAcertos),
+      'paginas': serializer.toJson<int>(paginas),
+      'pontoParada': serializer.toJson<String?>(pontoParada),
     };
   }
 
@@ -2917,6 +3440,11 @@ class Sessao extends DataClass implements Insertable<Sessao> {
     DateTime? dia,
     DateTime? inicio,
     int? minutos,
+    Value<String?> metodo = const Value.absent(),
+    int? questoesFeitas,
+    int? questoesAcertos,
+    int? paginas,
+    Value<String?> pontoParada = const Value.absent(),
   }) => Sessao(
     id: id ?? this.id,
     atualizadoEm: atualizadoEm ?? this.atualizadoEm,
@@ -2925,6 +3453,11 @@ class Sessao extends DataClass implements Insertable<Sessao> {
     dia: dia ?? this.dia,
     inicio: inicio ?? this.inicio,
     minutos: minutos ?? this.minutos,
+    metodo: metodo.present ? metodo.value : this.metodo,
+    questoesFeitas: questoesFeitas ?? this.questoesFeitas,
+    questoesAcertos: questoesAcertos ?? this.questoesAcertos,
+    paginas: paginas ?? this.paginas,
+    pontoParada: pontoParada.present ? pontoParada.value : this.pontoParada,
   );
   Sessao copyWithCompanion(SessoesCompanion data) {
     return Sessao(
@@ -2937,6 +3470,17 @@ class Sessao extends DataClass implements Insertable<Sessao> {
       dia: data.dia.present ? data.dia.value : this.dia,
       inicio: data.inicio.present ? data.inicio.value : this.inicio,
       minutos: data.minutos.present ? data.minutos.value : this.minutos,
+      metodo: data.metodo.present ? data.metodo.value : this.metodo,
+      questoesFeitas: data.questoesFeitas.present
+          ? data.questoesFeitas.value
+          : this.questoesFeitas,
+      questoesAcertos: data.questoesAcertos.present
+          ? data.questoesAcertos.value
+          : this.questoesAcertos,
+      paginas: data.paginas.present ? data.paginas.value : this.paginas,
+      pontoParada: data.pontoParada.present
+          ? data.pontoParada.value
+          : this.pontoParada,
     );
   }
 
@@ -2949,14 +3493,31 @@ class Sessao extends DataClass implements Insertable<Sessao> {
           ..write('topicoId: $topicoId, ')
           ..write('dia: $dia, ')
           ..write('inicio: $inicio, ')
-          ..write('minutos: $minutos')
+          ..write('minutos: $minutos, ')
+          ..write('metodo: $metodo, ')
+          ..write('questoesFeitas: $questoesFeitas, ')
+          ..write('questoesAcertos: $questoesAcertos, ')
+          ..write('paginas: $paginas, ')
+          ..write('pontoParada: $pontoParada')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, atualizadoEm, materiaId, topicoId, dia, inicio, minutos);
+  int get hashCode => Object.hash(
+    id,
+    atualizadoEm,
+    materiaId,
+    topicoId,
+    dia,
+    inicio,
+    minutos,
+    metodo,
+    questoesFeitas,
+    questoesAcertos,
+    paginas,
+    pontoParada,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2967,7 +3528,12 @@ class Sessao extends DataClass implements Insertable<Sessao> {
           other.topicoId == this.topicoId &&
           other.dia == this.dia &&
           other.inicio == this.inicio &&
-          other.minutos == this.minutos);
+          other.minutos == this.minutos &&
+          other.metodo == this.metodo &&
+          other.questoesFeitas == this.questoesFeitas &&
+          other.questoesAcertos == this.questoesAcertos &&
+          other.paginas == this.paginas &&
+          other.pontoParada == this.pontoParada);
 }
 
 class SessoesCompanion extends UpdateCompanion<Sessao> {
@@ -2978,6 +3544,11 @@ class SessoesCompanion extends UpdateCompanion<Sessao> {
   final Value<DateTime> dia;
   final Value<DateTime> inicio;
   final Value<int> minutos;
+  final Value<String?> metodo;
+  final Value<int> questoesFeitas;
+  final Value<int> questoesAcertos;
+  final Value<int> paginas;
+  final Value<String?> pontoParada;
   final Value<int> rowid;
   const SessoesCompanion({
     this.id = const Value.absent(),
@@ -2987,6 +3558,11 @@ class SessoesCompanion extends UpdateCompanion<Sessao> {
     this.dia = const Value.absent(),
     this.inicio = const Value.absent(),
     this.minutos = const Value.absent(),
+    this.metodo = const Value.absent(),
+    this.questoesFeitas = const Value.absent(),
+    this.questoesAcertos = const Value.absent(),
+    this.paginas = const Value.absent(),
+    this.pontoParada = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   SessoesCompanion.insert({
@@ -2997,6 +3573,11 @@ class SessoesCompanion extends UpdateCompanion<Sessao> {
     required DateTime dia,
     this.inicio = const Value.absent(),
     required int minutos,
+    this.metodo = const Value.absent(),
+    this.questoesFeitas = const Value.absent(),
+    this.questoesAcertos = const Value.absent(),
+    this.paginas = const Value.absent(),
+    this.pontoParada = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : dia = Value(dia),
        minutos = Value(minutos);
@@ -3008,6 +3589,11 @@ class SessoesCompanion extends UpdateCompanion<Sessao> {
     Expression<DateTime>? dia,
     Expression<DateTime>? inicio,
     Expression<int>? minutos,
+    Expression<String>? metodo,
+    Expression<int>? questoesFeitas,
+    Expression<int>? questoesAcertos,
+    Expression<int>? paginas,
+    Expression<String>? pontoParada,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -3018,6 +3604,11 @@ class SessoesCompanion extends UpdateCompanion<Sessao> {
       if (dia != null) 'dia': dia,
       if (inicio != null) 'inicio': inicio,
       if (minutos != null) 'minutos': minutos,
+      if (metodo != null) 'metodo': metodo,
+      if (questoesFeitas != null) 'questoes_feitas': questoesFeitas,
+      if (questoesAcertos != null) 'questoes_acertos': questoesAcertos,
+      if (paginas != null) 'paginas': paginas,
+      if (pontoParada != null) 'ponto_parada': pontoParada,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -3030,6 +3621,11 @@ class SessoesCompanion extends UpdateCompanion<Sessao> {
     Value<DateTime>? dia,
     Value<DateTime>? inicio,
     Value<int>? minutos,
+    Value<String?>? metodo,
+    Value<int>? questoesFeitas,
+    Value<int>? questoesAcertos,
+    Value<int>? paginas,
+    Value<String?>? pontoParada,
     Value<int>? rowid,
   }) {
     return SessoesCompanion(
@@ -3040,6 +3636,11 @@ class SessoesCompanion extends UpdateCompanion<Sessao> {
       dia: dia ?? this.dia,
       inicio: inicio ?? this.inicio,
       minutos: minutos ?? this.minutos,
+      metodo: metodo ?? this.metodo,
+      questoesFeitas: questoesFeitas ?? this.questoesFeitas,
+      questoesAcertos: questoesAcertos ?? this.questoesAcertos,
+      paginas: paginas ?? this.paginas,
+      pontoParada: pontoParada ?? this.pontoParada,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -3068,6 +3669,21 @@ class SessoesCompanion extends UpdateCompanion<Sessao> {
     if (minutos.present) {
       map['minutos'] = Variable<int>(minutos.value);
     }
+    if (metodo.present) {
+      map['metodo'] = Variable<String>(metodo.value);
+    }
+    if (questoesFeitas.present) {
+      map['questoes_feitas'] = Variable<int>(questoesFeitas.value);
+    }
+    if (questoesAcertos.present) {
+      map['questoes_acertos'] = Variable<int>(questoesAcertos.value);
+    }
+    if (paginas.present) {
+      map['paginas'] = Variable<int>(paginas.value);
+    }
+    if (pontoParada.present) {
+      map['ponto_parada'] = Variable<String>(pontoParada.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -3084,6 +3700,1168 @@ class SessoesCompanion extends UpdateCompanion<Sessao> {
           ..write('dia: $dia, ')
           ..write('inicio: $inicio, ')
           ..write('minutos: $minutos, ')
+          ..write('metodo: $metodo, ')
+          ..write('questoesFeitas: $questoesFeitas, ')
+          ..write('questoesAcertos: $questoesAcertos, ')
+          ..write('paginas: $paginas, ')
+          ..write('pontoParada: $pontoParada, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $AnexosTable extends Anexos with TableInfo<$AnexosTable, Anexo> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AnexosTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    clientDefault: novoId,
+  );
+  static const VerificationMeta _atualizadoEmMeta = const VerificationMeta(
+    'atualizadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> atualizadoEm = GeneratedColumn<DateTime>(
+    'atualizado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _topicoIdMeta = const VerificationMeta(
+    'topicoId',
+  );
+  @override
+  late final GeneratedColumn<String> topicoId = GeneratedColumn<String>(
+    'topico_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES topicos (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _tipoMeta = const VerificationMeta('tipo');
+  @override
+  late final GeneratedColumn<String> tipo = GeneratedColumn<String>(
+    'tipo',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nomeMeta = const VerificationMeta('nome');
+  @override
+  late final GeneratedColumn<String> nome = GeneratedColumn<String>(
+    'nome',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _arquivoMeta = const VerificationMeta(
+    'arquivo',
+  );
+  @override
+  late final GeneratedColumn<String> arquivo = GeneratedColumn<String>(
+    'arquivo',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _bytesMeta = const VerificationMeta('bytes');
+  @override
+  late final GeneratedColumn<int> bytes = GeneratedColumn<int>(
+    'bytes',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _criadoEmMeta = const VerificationMeta(
+    'criadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> criadoEm = GeneratedColumn<DateTime>(
+    'criado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    atualizadoEm,
+    topicoId,
+    tipo,
+    nome,
+    arquivo,
+    bytes,
+    criadoEm,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'anexos';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Anexo> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('atualizado_em')) {
+      context.handle(
+        _atualizadoEmMeta,
+        atualizadoEm.isAcceptableOrUnknown(
+          data['atualizado_em']!,
+          _atualizadoEmMeta,
+        ),
+      );
+    }
+    if (data.containsKey('topico_id')) {
+      context.handle(
+        _topicoIdMeta,
+        topicoId.isAcceptableOrUnknown(data['topico_id']!, _topicoIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_topicoIdMeta);
+    }
+    if (data.containsKey('tipo')) {
+      context.handle(
+        _tipoMeta,
+        tipo.isAcceptableOrUnknown(data['tipo']!, _tipoMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_tipoMeta);
+    }
+    if (data.containsKey('nome')) {
+      context.handle(
+        _nomeMeta,
+        nome.isAcceptableOrUnknown(data['nome']!, _nomeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nomeMeta);
+    }
+    if (data.containsKey('arquivo')) {
+      context.handle(
+        _arquivoMeta,
+        arquivo.isAcceptableOrUnknown(data['arquivo']!, _arquivoMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_arquivoMeta);
+    }
+    if (data.containsKey('bytes')) {
+      context.handle(
+        _bytesMeta,
+        bytes.isAcceptableOrUnknown(data['bytes']!, _bytesMeta),
+      );
+    }
+    if (data.containsKey('criado_em')) {
+      context.handle(
+        _criadoEmMeta,
+        criadoEm.isAcceptableOrUnknown(data['criado_em']!, _criadoEmMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Anexo map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Anexo(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      atualizadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}atualizado_em'],
+      )!,
+      topicoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}topico_id'],
+      )!,
+      tipo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tipo'],
+      )!,
+      nome: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}nome'],
+      )!,
+      arquivo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}arquivo'],
+      )!,
+      bytes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}bytes'],
+      )!,
+      criadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}criado_em'],
+      )!,
+    );
+  }
+
+  @override
+  $AnexosTable createAlias(String alias) {
+    return $AnexosTable(attachedDatabase, alias);
+  }
+}
+
+class Anexo extends DataClass implements Insertable<Anexo> {
+  final String id;
+  final DateTime atualizadoEm;
+  final String topicoId;
+
+  /// 'imagem' ou 'pdf'.
+  final String tipo;
+  final String nome;
+
+  /// Caminho relativo à pasta de anexos do app (ex.: "a1b2.jpg").
+  final String arquivo;
+  final int bytes;
+  final DateTime criadoEm;
+  const Anexo({
+    required this.id,
+    required this.atualizadoEm,
+    required this.topicoId,
+    required this.tipo,
+    required this.nome,
+    required this.arquivo,
+    required this.bytes,
+    required this.criadoEm,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
+    map['topico_id'] = Variable<String>(topicoId);
+    map['tipo'] = Variable<String>(tipo);
+    map['nome'] = Variable<String>(nome);
+    map['arquivo'] = Variable<String>(arquivo);
+    map['bytes'] = Variable<int>(bytes);
+    map['criado_em'] = Variable<DateTime>(criadoEm);
+    return map;
+  }
+
+  AnexosCompanion toCompanion(bool nullToAbsent) {
+    return AnexosCompanion(
+      id: Value(id),
+      atualizadoEm: Value(atualizadoEm),
+      topicoId: Value(topicoId),
+      tipo: Value(tipo),
+      nome: Value(nome),
+      arquivo: Value(arquivo),
+      bytes: Value(bytes),
+      criadoEm: Value(criadoEm),
+    );
+  }
+
+  factory Anexo.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Anexo(
+      id: serializer.fromJson<String>(json['id']),
+      atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
+      topicoId: serializer.fromJson<String>(json['topicoId']),
+      tipo: serializer.fromJson<String>(json['tipo']),
+      nome: serializer.fromJson<String>(json['nome']),
+      arquivo: serializer.fromJson<String>(json['arquivo']),
+      bytes: serializer.fromJson<int>(json['bytes']),
+      criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
+      'topicoId': serializer.toJson<String>(topicoId),
+      'tipo': serializer.toJson<String>(tipo),
+      'nome': serializer.toJson<String>(nome),
+      'arquivo': serializer.toJson<String>(arquivo),
+      'bytes': serializer.toJson<int>(bytes),
+      'criadoEm': serializer.toJson<DateTime>(criadoEm),
+    };
+  }
+
+  Anexo copyWith({
+    String? id,
+    DateTime? atualizadoEm,
+    String? topicoId,
+    String? tipo,
+    String? nome,
+    String? arquivo,
+    int? bytes,
+    DateTime? criadoEm,
+  }) => Anexo(
+    id: id ?? this.id,
+    atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+    topicoId: topicoId ?? this.topicoId,
+    tipo: tipo ?? this.tipo,
+    nome: nome ?? this.nome,
+    arquivo: arquivo ?? this.arquivo,
+    bytes: bytes ?? this.bytes,
+    criadoEm: criadoEm ?? this.criadoEm,
+  );
+  Anexo copyWithCompanion(AnexosCompanion data) {
+    return Anexo(
+      id: data.id.present ? data.id.value : this.id,
+      atualizadoEm: data.atualizadoEm.present
+          ? data.atualizadoEm.value
+          : this.atualizadoEm,
+      topicoId: data.topicoId.present ? data.topicoId.value : this.topicoId,
+      tipo: data.tipo.present ? data.tipo.value : this.tipo,
+      nome: data.nome.present ? data.nome.value : this.nome,
+      arquivo: data.arquivo.present ? data.arquivo.value : this.arquivo,
+      bytes: data.bytes.present ? data.bytes.value : this.bytes,
+      criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Anexo(')
+          ..write('id: $id, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('topicoId: $topicoId, ')
+          ..write('tipo: $tipo, ')
+          ..write('nome: $nome, ')
+          ..write('arquivo: $arquivo, ')
+          ..write('bytes: $bytes, ')
+          ..write('criadoEm: $criadoEm')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    atualizadoEm,
+    topicoId,
+    tipo,
+    nome,
+    arquivo,
+    bytes,
+    criadoEm,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Anexo &&
+          other.id == this.id &&
+          other.atualizadoEm == this.atualizadoEm &&
+          other.topicoId == this.topicoId &&
+          other.tipo == this.tipo &&
+          other.nome == this.nome &&
+          other.arquivo == this.arquivo &&
+          other.bytes == this.bytes &&
+          other.criadoEm == this.criadoEm);
+}
+
+class AnexosCompanion extends UpdateCompanion<Anexo> {
+  final Value<String> id;
+  final Value<DateTime> atualizadoEm;
+  final Value<String> topicoId;
+  final Value<String> tipo;
+  final Value<String> nome;
+  final Value<String> arquivo;
+  final Value<int> bytes;
+  final Value<DateTime> criadoEm;
+  final Value<int> rowid;
+  const AnexosCompanion({
+    this.id = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.topicoId = const Value.absent(),
+    this.tipo = const Value.absent(),
+    this.nome = const Value.absent(),
+    this.arquivo = const Value.absent(),
+    this.bytes = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AnexosCompanion.insert({
+    this.id = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    required String topicoId,
+    required String tipo,
+    required String nome,
+    required String arquivo,
+    this.bytes = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : topicoId = Value(topicoId),
+       tipo = Value(tipo),
+       nome = Value(nome),
+       arquivo = Value(arquivo);
+  static Insertable<Anexo> custom({
+    Expression<String>? id,
+    Expression<DateTime>? atualizadoEm,
+    Expression<String>? topicoId,
+    Expression<String>? tipo,
+    Expression<String>? nome,
+    Expression<String>? arquivo,
+    Expression<int>? bytes,
+    Expression<DateTime>? criadoEm,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
+      if (topicoId != null) 'topico_id': topicoId,
+      if (tipo != null) 'tipo': tipo,
+      if (nome != null) 'nome': nome,
+      if (arquivo != null) 'arquivo': arquivo,
+      if (bytes != null) 'bytes': bytes,
+      if (criadoEm != null) 'criado_em': criadoEm,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AnexosCompanion copyWith({
+    Value<String>? id,
+    Value<DateTime>? atualizadoEm,
+    Value<String>? topicoId,
+    Value<String>? tipo,
+    Value<String>? nome,
+    Value<String>? arquivo,
+    Value<int>? bytes,
+    Value<DateTime>? criadoEm,
+    Value<int>? rowid,
+  }) {
+    return AnexosCompanion(
+      id: id ?? this.id,
+      atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+      topicoId: topicoId ?? this.topicoId,
+      tipo: tipo ?? this.tipo,
+      nome: nome ?? this.nome,
+      arquivo: arquivo ?? this.arquivo,
+      bytes: bytes ?? this.bytes,
+      criadoEm: criadoEm ?? this.criadoEm,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (atualizadoEm.present) {
+      map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
+    }
+    if (topicoId.present) {
+      map['topico_id'] = Variable<String>(topicoId.value);
+    }
+    if (tipo.present) {
+      map['tipo'] = Variable<String>(tipo.value);
+    }
+    if (nome.present) {
+      map['nome'] = Variable<String>(nome.value);
+    }
+    if (arquivo.present) {
+      map['arquivo'] = Variable<String>(arquivo.value);
+    }
+    if (bytes.present) {
+      map['bytes'] = Variable<int>(bytes.value);
+    }
+    if (criadoEm.present) {
+      map['criado_em'] = Variable<DateTime>(criadoEm.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AnexosCompanion(')
+          ..write('id: $id, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('topicoId: $topicoId, ')
+          ..write('tipo: $tipo, ')
+          ..write('nome: $nome, ')
+          ..write('arquivo: $arquivo, ')
+          ..write('bytes: $bytes, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $FlashcardsTable extends Flashcards
+    with TableInfo<$FlashcardsTable, Flashcard> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FlashcardsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    clientDefault: novoId,
+  );
+  static const VerificationMeta _atualizadoEmMeta = const VerificationMeta(
+    'atualizadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> atualizadoEm = GeneratedColumn<DateTime>(
+    'atualizado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _topicoIdMeta = const VerificationMeta(
+    'topicoId',
+  );
+  @override
+  late final GeneratedColumn<String> topicoId = GeneratedColumn<String>(
+    'topico_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES topicos (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _frenteMeta = const VerificationMeta('frente');
+  @override
+  late final GeneratedColumn<String> frente = GeneratedColumn<String>(
+    'frente',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _versoMeta = const VerificationMeta('verso');
+  @override
+  late final GeneratedColumn<String> verso = GeneratedColumn<String>(
+    'verso',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ordemMeta = const VerificationMeta('ordem');
+  @override
+  late final GeneratedColumn<int> ordem = GeneratedColumn<int>(
+    'ordem',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _caixaMeta = const VerificationMeta('caixa');
+  @override
+  late final GeneratedColumn<int> caixa = GeneratedColumn<int>(
+    'caixa',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _proximaRevisaoMeta = const VerificationMeta(
+    'proximaRevisao',
+  );
+  @override
+  late final GeneratedColumn<DateTime> proximaRevisao =
+      GeneratedColumn<DateTime>(
+        'proxima_revisao',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+        clientDefault: DateTime.now,
+      );
+  static const VerificationMeta _acertosMeta = const VerificationMeta(
+    'acertos',
+  );
+  @override
+  late final GeneratedColumn<int> acertos = GeneratedColumn<int>(
+    'acertos',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _errosMeta = const VerificationMeta('erros');
+  @override
+  late final GeneratedColumn<int> erros = GeneratedColumn<int>(
+    'erros',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _criadoEmMeta = const VerificationMeta(
+    'criadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> criadoEm = GeneratedColumn<DateTime>(
+    'criado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    atualizadoEm,
+    topicoId,
+    frente,
+    verso,
+    ordem,
+    caixa,
+    proximaRevisao,
+    acertos,
+    erros,
+    criadoEm,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'flashcards';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Flashcard> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('atualizado_em')) {
+      context.handle(
+        _atualizadoEmMeta,
+        atualizadoEm.isAcceptableOrUnknown(
+          data['atualizado_em']!,
+          _atualizadoEmMeta,
+        ),
+      );
+    }
+    if (data.containsKey('topico_id')) {
+      context.handle(
+        _topicoIdMeta,
+        topicoId.isAcceptableOrUnknown(data['topico_id']!, _topicoIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_topicoIdMeta);
+    }
+    if (data.containsKey('frente')) {
+      context.handle(
+        _frenteMeta,
+        frente.isAcceptableOrUnknown(data['frente']!, _frenteMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_frenteMeta);
+    }
+    if (data.containsKey('verso')) {
+      context.handle(
+        _versoMeta,
+        verso.isAcceptableOrUnknown(data['verso']!, _versoMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_versoMeta);
+    }
+    if (data.containsKey('ordem')) {
+      context.handle(
+        _ordemMeta,
+        ordem.isAcceptableOrUnknown(data['ordem']!, _ordemMeta),
+      );
+    }
+    if (data.containsKey('caixa')) {
+      context.handle(
+        _caixaMeta,
+        caixa.isAcceptableOrUnknown(data['caixa']!, _caixaMeta),
+      );
+    }
+    if (data.containsKey('proxima_revisao')) {
+      context.handle(
+        _proximaRevisaoMeta,
+        proximaRevisao.isAcceptableOrUnknown(
+          data['proxima_revisao']!,
+          _proximaRevisaoMeta,
+        ),
+      );
+    }
+    if (data.containsKey('acertos')) {
+      context.handle(
+        _acertosMeta,
+        acertos.isAcceptableOrUnknown(data['acertos']!, _acertosMeta),
+      );
+    }
+    if (data.containsKey('erros')) {
+      context.handle(
+        _errosMeta,
+        erros.isAcceptableOrUnknown(data['erros']!, _errosMeta),
+      );
+    }
+    if (data.containsKey('criado_em')) {
+      context.handle(
+        _criadoEmMeta,
+        criadoEm.isAcceptableOrUnknown(data['criado_em']!, _criadoEmMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Flashcard map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Flashcard(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      atualizadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}atualizado_em'],
+      )!,
+      topicoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}topico_id'],
+      )!,
+      frente: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}frente'],
+      )!,
+      verso: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}verso'],
+      )!,
+      ordem: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}ordem'],
+      )!,
+      caixa: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}caixa'],
+      )!,
+      proximaRevisao: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}proxima_revisao'],
+      )!,
+      acertos: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}acertos'],
+      )!,
+      erros: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}erros'],
+      )!,
+      criadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}criado_em'],
+      )!,
+    );
+  }
+
+  @override
+  $FlashcardsTable createAlias(String alias) {
+    return $FlashcardsTable(attachedDatabase, alias);
+  }
+}
+
+class Flashcard extends DataClass implements Insertable<Flashcard> {
+  final String id;
+  final DateTime atualizadoEm;
+  final String topicoId;
+  final String frente;
+  final String verso;
+  final int ordem;
+
+  /// 0 = novo/errado ... 5 = bem sabido.
+  final int caixa;
+
+  /// Dia em que o cartão volta a aparecer.
+  final DateTime proximaRevisao;
+  final int acertos;
+  final int erros;
+  final DateTime criadoEm;
+  const Flashcard({
+    required this.id,
+    required this.atualizadoEm,
+    required this.topicoId,
+    required this.frente,
+    required this.verso,
+    required this.ordem,
+    required this.caixa,
+    required this.proximaRevisao,
+    required this.acertos,
+    required this.erros,
+    required this.criadoEm,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
+    map['topico_id'] = Variable<String>(topicoId);
+    map['frente'] = Variable<String>(frente);
+    map['verso'] = Variable<String>(verso);
+    map['ordem'] = Variable<int>(ordem);
+    map['caixa'] = Variable<int>(caixa);
+    map['proxima_revisao'] = Variable<DateTime>(proximaRevisao);
+    map['acertos'] = Variable<int>(acertos);
+    map['erros'] = Variable<int>(erros);
+    map['criado_em'] = Variable<DateTime>(criadoEm);
+    return map;
+  }
+
+  FlashcardsCompanion toCompanion(bool nullToAbsent) {
+    return FlashcardsCompanion(
+      id: Value(id),
+      atualizadoEm: Value(atualizadoEm),
+      topicoId: Value(topicoId),
+      frente: Value(frente),
+      verso: Value(verso),
+      ordem: Value(ordem),
+      caixa: Value(caixa),
+      proximaRevisao: Value(proximaRevisao),
+      acertos: Value(acertos),
+      erros: Value(erros),
+      criadoEm: Value(criadoEm),
+    );
+  }
+
+  factory Flashcard.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Flashcard(
+      id: serializer.fromJson<String>(json['id']),
+      atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
+      topicoId: serializer.fromJson<String>(json['topicoId']),
+      frente: serializer.fromJson<String>(json['frente']),
+      verso: serializer.fromJson<String>(json['verso']),
+      ordem: serializer.fromJson<int>(json['ordem']),
+      caixa: serializer.fromJson<int>(json['caixa']),
+      proximaRevisao: serializer.fromJson<DateTime>(json['proximaRevisao']),
+      acertos: serializer.fromJson<int>(json['acertos']),
+      erros: serializer.fromJson<int>(json['erros']),
+      criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
+      'topicoId': serializer.toJson<String>(topicoId),
+      'frente': serializer.toJson<String>(frente),
+      'verso': serializer.toJson<String>(verso),
+      'ordem': serializer.toJson<int>(ordem),
+      'caixa': serializer.toJson<int>(caixa),
+      'proximaRevisao': serializer.toJson<DateTime>(proximaRevisao),
+      'acertos': serializer.toJson<int>(acertos),
+      'erros': serializer.toJson<int>(erros),
+      'criadoEm': serializer.toJson<DateTime>(criadoEm),
+    };
+  }
+
+  Flashcard copyWith({
+    String? id,
+    DateTime? atualizadoEm,
+    String? topicoId,
+    String? frente,
+    String? verso,
+    int? ordem,
+    int? caixa,
+    DateTime? proximaRevisao,
+    int? acertos,
+    int? erros,
+    DateTime? criadoEm,
+  }) => Flashcard(
+    id: id ?? this.id,
+    atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+    topicoId: topicoId ?? this.topicoId,
+    frente: frente ?? this.frente,
+    verso: verso ?? this.verso,
+    ordem: ordem ?? this.ordem,
+    caixa: caixa ?? this.caixa,
+    proximaRevisao: proximaRevisao ?? this.proximaRevisao,
+    acertos: acertos ?? this.acertos,
+    erros: erros ?? this.erros,
+    criadoEm: criadoEm ?? this.criadoEm,
+  );
+  Flashcard copyWithCompanion(FlashcardsCompanion data) {
+    return Flashcard(
+      id: data.id.present ? data.id.value : this.id,
+      atualizadoEm: data.atualizadoEm.present
+          ? data.atualizadoEm.value
+          : this.atualizadoEm,
+      topicoId: data.topicoId.present ? data.topicoId.value : this.topicoId,
+      frente: data.frente.present ? data.frente.value : this.frente,
+      verso: data.verso.present ? data.verso.value : this.verso,
+      ordem: data.ordem.present ? data.ordem.value : this.ordem,
+      caixa: data.caixa.present ? data.caixa.value : this.caixa,
+      proximaRevisao: data.proximaRevisao.present
+          ? data.proximaRevisao.value
+          : this.proximaRevisao,
+      acertos: data.acertos.present ? data.acertos.value : this.acertos,
+      erros: data.erros.present ? data.erros.value : this.erros,
+      criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Flashcard(')
+          ..write('id: $id, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('topicoId: $topicoId, ')
+          ..write('frente: $frente, ')
+          ..write('verso: $verso, ')
+          ..write('ordem: $ordem, ')
+          ..write('caixa: $caixa, ')
+          ..write('proximaRevisao: $proximaRevisao, ')
+          ..write('acertos: $acertos, ')
+          ..write('erros: $erros, ')
+          ..write('criadoEm: $criadoEm')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    atualizadoEm,
+    topicoId,
+    frente,
+    verso,
+    ordem,
+    caixa,
+    proximaRevisao,
+    acertos,
+    erros,
+    criadoEm,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Flashcard &&
+          other.id == this.id &&
+          other.atualizadoEm == this.atualizadoEm &&
+          other.topicoId == this.topicoId &&
+          other.frente == this.frente &&
+          other.verso == this.verso &&
+          other.ordem == this.ordem &&
+          other.caixa == this.caixa &&
+          other.proximaRevisao == this.proximaRevisao &&
+          other.acertos == this.acertos &&
+          other.erros == this.erros &&
+          other.criadoEm == this.criadoEm);
+}
+
+class FlashcardsCompanion extends UpdateCompanion<Flashcard> {
+  final Value<String> id;
+  final Value<DateTime> atualizadoEm;
+  final Value<String> topicoId;
+  final Value<String> frente;
+  final Value<String> verso;
+  final Value<int> ordem;
+  final Value<int> caixa;
+  final Value<DateTime> proximaRevisao;
+  final Value<int> acertos;
+  final Value<int> erros;
+  final Value<DateTime> criadoEm;
+  final Value<int> rowid;
+  const FlashcardsCompanion({
+    this.id = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.topicoId = const Value.absent(),
+    this.frente = const Value.absent(),
+    this.verso = const Value.absent(),
+    this.ordem = const Value.absent(),
+    this.caixa = const Value.absent(),
+    this.proximaRevisao = const Value.absent(),
+    this.acertos = const Value.absent(),
+    this.erros = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  FlashcardsCompanion.insert({
+    this.id = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    required String topicoId,
+    required String frente,
+    required String verso,
+    this.ordem = const Value.absent(),
+    this.caixa = const Value.absent(),
+    this.proximaRevisao = const Value.absent(),
+    this.acertos = const Value.absent(),
+    this.erros = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : topicoId = Value(topicoId),
+       frente = Value(frente),
+       verso = Value(verso);
+  static Insertable<Flashcard> custom({
+    Expression<String>? id,
+    Expression<DateTime>? atualizadoEm,
+    Expression<String>? topicoId,
+    Expression<String>? frente,
+    Expression<String>? verso,
+    Expression<int>? ordem,
+    Expression<int>? caixa,
+    Expression<DateTime>? proximaRevisao,
+    Expression<int>? acertos,
+    Expression<int>? erros,
+    Expression<DateTime>? criadoEm,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
+      if (topicoId != null) 'topico_id': topicoId,
+      if (frente != null) 'frente': frente,
+      if (verso != null) 'verso': verso,
+      if (ordem != null) 'ordem': ordem,
+      if (caixa != null) 'caixa': caixa,
+      if (proximaRevisao != null) 'proxima_revisao': proximaRevisao,
+      if (acertos != null) 'acertos': acertos,
+      if (erros != null) 'erros': erros,
+      if (criadoEm != null) 'criado_em': criadoEm,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  FlashcardsCompanion copyWith({
+    Value<String>? id,
+    Value<DateTime>? atualizadoEm,
+    Value<String>? topicoId,
+    Value<String>? frente,
+    Value<String>? verso,
+    Value<int>? ordem,
+    Value<int>? caixa,
+    Value<DateTime>? proximaRevisao,
+    Value<int>? acertos,
+    Value<int>? erros,
+    Value<DateTime>? criadoEm,
+    Value<int>? rowid,
+  }) {
+    return FlashcardsCompanion(
+      id: id ?? this.id,
+      atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+      topicoId: topicoId ?? this.topicoId,
+      frente: frente ?? this.frente,
+      verso: verso ?? this.verso,
+      ordem: ordem ?? this.ordem,
+      caixa: caixa ?? this.caixa,
+      proximaRevisao: proximaRevisao ?? this.proximaRevisao,
+      acertos: acertos ?? this.acertos,
+      erros: erros ?? this.erros,
+      criadoEm: criadoEm ?? this.criadoEm,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (atualizadoEm.present) {
+      map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
+    }
+    if (topicoId.present) {
+      map['topico_id'] = Variable<String>(topicoId.value);
+    }
+    if (frente.present) {
+      map['frente'] = Variable<String>(frente.value);
+    }
+    if (verso.present) {
+      map['verso'] = Variable<String>(verso.value);
+    }
+    if (ordem.present) {
+      map['ordem'] = Variable<int>(ordem.value);
+    }
+    if (caixa.present) {
+      map['caixa'] = Variable<int>(caixa.value);
+    }
+    if (proximaRevisao.present) {
+      map['proxima_revisao'] = Variable<DateTime>(proximaRevisao.value);
+    }
+    if (acertos.present) {
+      map['acertos'] = Variable<int>(acertos.value);
+    }
+    if (erros.present) {
+      map['erros'] = Variable<int>(erros.value);
+    }
+    if (criadoEm.present) {
+      map['criado_em'] = Variable<DateTime>(criadoEm.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FlashcardsCompanion(')
+          ..write('id: $id, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('topicoId: $topicoId, ')
+          ..write('frente: $frente, ')
+          ..write('verso: $verso, ')
+          ..write('ordem: $ordem, ')
+          ..write('caixa: $caixa, ')
+          ..write('proximaRevisao: $proximaRevisao, ')
+          ..write('acertos: $acertos, ')
+          ..write('erros: $erros, ')
+          ..write('criadoEm: $criadoEm, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -3102,6 +4880,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $RevisoesTable revisoes = $RevisoesTable(this);
   late final $QuestoesTable questoes = $QuestoesTable(this);
   late final $SessoesTable sessoes = $SessoesTable(this);
+  late final $AnexosTable anexos = $AnexosTable(this);
+  late final $FlashcardsTable flashcards = $FlashcardsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3114,6 +4894,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     revisoes,
     questoes,
     sessoes,
+    anexos,
+    flashcards,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -3173,6 +4955,20 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       ),
       result: [TableUpdate('sessoes', kind: UpdateKind.update)],
     ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'topicos',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('anexos', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'topicos',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('flashcards', kind: UpdateKind.delete)],
+    ),
   ]);
 }
 
@@ -3187,6 +4983,10 @@ typedef $$ConcursosTableCreateCompanionBuilder = ConcursosCompanion Function({
   Value<bool> exemplo,
   Value<int> ordem,
   Value<DateTime> criadoEm,
+  Value<int> cicloMinutos,
+  Value<int> cicloBlocoMin,
+  Value<int> cicloPosicao,
+  Value<int> cicloVoltas,
   Value<int> rowid,
 });
 typedef $$ConcursosTableUpdateCompanionBuilder = ConcursosCompanion Function({
@@ -3200,6 +5000,10 @@ typedef $$ConcursosTableUpdateCompanionBuilder = ConcursosCompanion Function({
   Value<bool> exemplo,
   Value<int> ordem,
   Value<DateTime> criadoEm,
+  Value<int> cicloMinutos,
+  Value<int> cicloBlocoMin,
+  Value<int> cicloPosicao,
+  Value<int> cicloVoltas,
   Value<int> rowid,
 });
 
@@ -3287,6 +5091,26 @@ class $$ConcursosTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<int> get cicloMinutos => $composableBuilder(
+    column: $table.cicloMinutos,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get cicloBlocoMin => $composableBuilder(
+    column: $table.cicloBlocoMin,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get cicloPosicao => $composableBuilder(
+    column: $table.cicloPosicao,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get cicloVoltas => $composableBuilder(
+    column: $table.cicloVoltas,
+    builder: (column) => ColumnFilters(column),
+  );
+
   Expression<bool> concursoMateriasRefs(
     Expression<bool> Function($$ConcursoMateriasTableFilterComposer f) f,
   ) {
@@ -3371,6 +5195,26 @@ class $$ConcursosTableOrderingComposer
     column: $table.criadoEm,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get cicloMinutos => $composableBuilder(
+    column: $table.cicloMinutos,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get cicloBlocoMin => $composableBuilder(
+    column: $table.cicloBlocoMin,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get cicloPosicao => $composableBuilder(
+    column: $table.cicloPosicao,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get cicloVoltas => $composableBuilder(
+    column: $table.cicloVoltas,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$ConcursosTableAnnotationComposer
@@ -3413,6 +5257,26 @@ class $$ConcursosTableAnnotationComposer
 
   GeneratedColumn<DateTime> get criadoEm =>
       $composableBuilder(column: $table.criadoEm, builder: (column) => column);
+
+  GeneratedColumn<int> get cicloMinutos => $composableBuilder(
+    column: $table.cicloMinutos,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get cicloBlocoMin => $composableBuilder(
+    column: $table.cicloBlocoMin,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get cicloPosicao => $composableBuilder(
+    column: $table.cicloPosicao,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get cicloVoltas => $composableBuilder(
+    column: $table.cicloVoltas,
+    builder: (column) => column,
+  );
 
   Expression<T> concursoMateriasRefs<T extends Object>(
     Expression<T> Function($$ConcursoMateriasTableAnnotationComposer a) f,
@@ -3478,6 +5342,10 @@ class $$ConcursosTableTableManager
                 Value<bool> exemplo = const Value.absent(),
                 Value<int> ordem = const Value.absent(),
                 Value<DateTime> criadoEm = const Value.absent(),
+                Value<int> cicloMinutos = const Value.absent(),
+                Value<int> cicloBlocoMin = const Value.absent(),
+                Value<int> cicloPosicao = const Value.absent(),
+                Value<int> cicloVoltas = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ConcursosCompanion(
                 id: id,
@@ -3490,6 +5358,10 @@ class $$ConcursosTableTableManager
                 exemplo: exemplo,
                 ordem: ordem,
                 criadoEm: criadoEm,
+                cicloMinutos: cicloMinutos,
+                cicloBlocoMin: cicloBlocoMin,
+                cicloPosicao: cicloPosicao,
+                cicloVoltas: cicloVoltas,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -3504,6 +5376,10 @@ class $$ConcursosTableTableManager
                 Value<bool> exemplo = const Value.absent(),
                 Value<int> ordem = const Value.absent(),
                 Value<DateTime> criadoEm = const Value.absent(),
+                Value<int> cicloMinutos = const Value.absent(),
+                Value<int> cicloBlocoMin = const Value.absent(),
+                Value<int> cicloPosicao = const Value.absent(),
+                Value<int> cicloVoltas = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ConcursosCompanion.insert(
                 id: id,
@@ -3516,6 +5392,10 @@ class $$ConcursosTableTableManager
                 exemplo: exemplo,
                 ordem: ordem,
                 criadoEm: criadoEm,
+                cicloMinutos: cicloMinutos,
+                cicloBlocoMin: cicloBlocoMin,
+                cicloPosicao: cicloPosicao,
+                cicloVoltas: cicloVoltas,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -4177,6 +6057,9 @@ typedef $$ConcursoMateriasTableCreateCompanionBuilder =
       required String materiaId,
       Value<int> ordem,
       Value<DateTime> atualizadoEm,
+      Value<int> peso,
+      Value<int> dificuldade,
+      Value<bool> noCiclo,
       Value<int> rowid,
     });
 typedef $$ConcursoMateriasTableUpdateCompanionBuilder =
@@ -4185,6 +6068,9 @@ typedef $$ConcursoMateriasTableUpdateCompanionBuilder =
       Value<String> materiaId,
       Value<int> ordem,
       Value<DateTime> atualizadoEm,
+      Value<int> peso,
+      Value<int> dificuldade,
+      Value<bool> noCiclo,
       Value<int> rowid,
     });
 
@@ -4248,6 +6134,21 @@ class $$ConcursoMateriasTableFilterComposer
 
   ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
     column: $table.atualizadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get peso => $composableBuilder(
+    column: $table.peso,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get dificuldade => $composableBuilder(
+    column: $table.dificuldade,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get noCiclo => $composableBuilder(
+    column: $table.noCiclo,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4317,6 +6218,21 @@ class $$ConcursoMateriasTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get peso => $composableBuilder(
+    column: $table.peso,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get dificuldade => $composableBuilder(
+    column: $table.dificuldade,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get noCiclo => $composableBuilder(
+    column: $table.noCiclo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$ConcursosTableOrderingComposer get concursoId {
     final $$ConcursosTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -4380,6 +6296,17 @@ class $$ConcursoMateriasTableAnnotationComposer
     column: $table.atualizadoEm,
     builder: (column) => column,
   );
+
+  GeneratedColumn<int> get peso =>
+      $composableBuilder(column: $table.peso, builder: (column) => column);
+
+  GeneratedColumn<int> get dificuldade => $composableBuilder(
+    column: $table.dificuldade,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get noCiclo =>
+      $composableBuilder(column: $table.noCiclo, builder: (column) => column);
 
   $$ConcursosTableAnnotationComposer get concursoId {
     final $$ConcursosTableAnnotationComposer composer = $composerBuilder(
@@ -4462,12 +6389,18 @@ class $$ConcursoMateriasTableTableManager
                 Value<String> materiaId = const Value.absent(),
                 Value<int> ordem = const Value.absent(),
                 Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<int> peso = const Value.absent(),
+                Value<int> dificuldade = const Value.absent(),
+                Value<bool> noCiclo = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ConcursoMateriasCompanion(
                 concursoId: concursoId,
                 materiaId: materiaId,
                 ordem: ordem,
                 atualizadoEm: atualizadoEm,
+                peso: peso,
+                dificuldade: dificuldade,
+                noCiclo: noCiclo,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -4476,12 +6409,18 @@ class $$ConcursoMateriasTableTableManager
                 required String materiaId,
                 Value<int> ordem = const Value.absent(),
                 Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<int> peso = const Value.absent(),
+                Value<int> dificuldade = const Value.absent(),
+                Value<bool> noCiclo = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ConcursoMateriasCompanion.insert(
                 concursoId: concursoId,
                 materiaId: materiaId,
                 ordem: ordem,
                 atualizadoEm: atualizadoEm,
+                peso: peso,
+                dificuldade: dificuldade,
+                noCiclo: noCiclo,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -4658,6 +6597,43 @@ final class $$TopicosTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$AnexosTable, List<Anexo>> _anexosRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.anexos,
+    aliasName: 'topicos__id__anexos__topico_id',
+  );
+
+  $$AnexosTableProcessedTableManager get anexosRefs {
+    final manager = $$AnexosTableTableManager(
+      $_db,
+      $_db.anexos,
+    ).filter((f) => f.topicoId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_anexosRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$FlashcardsTable, List<Flashcard>>
+  _flashcardsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.flashcards,
+    aliasName: 'topicos__id__flashcards__topico_id',
+  );
+
+  $$FlashcardsTableProcessedTableManager get flashcardsRefs {
+    final manager = $$FlashcardsTableTableManager(
+      $_db,
+      $_db.flashcards,
+    ).filter((f) => f.topicoId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_flashcardsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$TopicosTableFilterComposer
@@ -4786,6 +6762,56 @@ class $$TopicosTableFilterComposer
           }) => $$SessoesTableFilterComposer(
             $db: $db,
             $table: $db.sessoes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> anexosRefs(
+    Expression<bool> Function($$AnexosTableFilterComposer f) f,
+  ) {
+    final $$AnexosTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.anexos,
+      getReferencedColumn: (t) => t.topicoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AnexosTableFilterComposer(
+            $db: $db,
+            $table: $db.anexos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> flashcardsRefs(
+    Expression<bool> Function($$FlashcardsTableFilterComposer f) f,
+  ) {
+    final $$FlashcardsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.flashcards,
+      getReferencedColumn: (t) => t.topicoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FlashcardsTableFilterComposer(
+            $db: $db,
+            $table: $db.flashcards,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -5006,6 +7032,56 @@ class $$TopicosTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> anexosRefs<T extends Object>(
+    Expression<T> Function($$AnexosTableAnnotationComposer a) f,
+  ) {
+    final $$AnexosTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.anexos,
+      getReferencedColumn: (t) => t.topicoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AnexosTableAnnotationComposer(
+            $db: $db,
+            $table: $db.anexos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> flashcardsRefs<T extends Object>(
+    Expression<T> Function($$FlashcardsTableAnnotationComposer a) f,
+  ) {
+    final $$FlashcardsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.flashcards,
+      getReferencedColumn: (t) => t.topicoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FlashcardsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.flashcards,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$TopicosTableTableManager
@@ -5026,6 +7102,8 @@ class $$TopicosTableTableManager
             bool paiId,
             bool revisoesRefs,
             bool sessoesRefs,
+            bool anexosRefs,
+            bool flashcardsRefs,
           })
         > {
   $$TopicosTableTableManager(_$AppDatabase db, $TopicosTable table)
@@ -5097,12 +7175,16 @@ class $$TopicosTableTableManager
                 paiId = false,
                 revisoesRefs = false,
                 sessoesRefs = false,
+                anexosRefs = false,
+                flashcardsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
                     if (revisoesRefs) db.revisoes,
                     if (sessoesRefs) db.sessoes,
+                    if (anexosRefs) db.anexos,
+                    if (flashcardsRefs) db.flashcards,
                   ],
                   addJoins:
                       <
@@ -5189,6 +7271,44 @@ class $$TopicosTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (anexosRefs)
+                        await $_getPrefetchedData<Topico, $TopicosTable, Anexo>(
+                          currentTable: table,
+                          referencedTable: $$TopicosTableReferences
+                              ._anexosRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$TopicosTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).anexosRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.topicoId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (flashcardsRefs)
+                        await $_getPrefetchedData<
+                          Topico,
+                          $TopicosTable,
+                          Flashcard
+                        >(
+                          currentTable: table,
+                          referencedTable: $$TopicosTableReferences
+                              ._flashcardsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$TopicosTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).flashcardsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.topicoId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -5214,6 +7334,8 @@ typedef $$TopicosTableProcessedTableManager =
         bool paiId,
         bool revisoesRefs,
         bool sessoesRefs,
+        bool anexosRefs,
+        bool flashcardsRefs,
       })
     >;
 typedef $$RevisoesTableCreateCompanionBuilder = RevisoesCompanion Function({
@@ -5896,6 +8018,11 @@ typedef $$SessoesTableCreateCompanionBuilder = SessoesCompanion Function({
   required DateTime dia,
   Value<DateTime> inicio,
   required int minutos,
+  Value<String?> metodo,
+  Value<int> questoesFeitas,
+  Value<int> questoesAcertos,
+  Value<int> paginas,
+  Value<String?> pontoParada,
   Value<int> rowid,
 });
 typedef $$SessoesTableUpdateCompanionBuilder = SessoesCompanion Function({
@@ -5906,6 +8033,11 @@ typedef $$SessoesTableUpdateCompanionBuilder = SessoesCompanion Function({
   Value<DateTime> dia,
   Value<DateTime> inicio,
   Value<int> minutos,
+  Value<String?> metodo,
+  Value<int> questoesFeitas,
+  Value<int> questoesAcertos,
+  Value<int> paginas,
+  Value<String?> pontoParada,
   Value<int> rowid,
 });
 
@@ -5979,6 +8111,31 @@ class $$SessoesTableFilterComposer
 
   ColumnFilters<int> get minutos => $composableBuilder(
     column: $table.minutos,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get metodo => $composableBuilder(
+    column: $table.metodo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get questoesFeitas => $composableBuilder(
+    column: $table.questoesFeitas,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get questoesAcertos => $composableBuilder(
+    column: $table.questoesAcertos,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get paginas => $composableBuilder(
+    column: $table.paginas,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get pontoParada => $composableBuilder(
+    column: $table.pontoParada,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6063,6 +8220,31 @@ class $$SessoesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get metodo => $composableBuilder(
+    column: $table.metodo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get questoesFeitas => $composableBuilder(
+    column: $table.questoesFeitas,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get questoesAcertos => $composableBuilder(
+    column: $table.questoesAcertos,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get paginas => $composableBuilder(
+    column: $table.paginas,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get pontoParada => $composableBuilder(
+    column: $table.pontoParada,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$MateriasTableOrderingComposer get materiaId {
     final $$MateriasTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -6135,6 +8317,27 @@ class $$SessoesTableAnnotationComposer
 
   GeneratedColumn<int> get minutos =>
       $composableBuilder(column: $table.minutos, builder: (column) => column);
+
+  GeneratedColumn<String> get metodo =>
+      $composableBuilder(column: $table.metodo, builder: (column) => column);
+
+  GeneratedColumn<int> get questoesFeitas => $composableBuilder(
+    column: $table.questoesFeitas,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get questoesAcertos => $composableBuilder(
+    column: $table.questoesAcertos,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get paginas =>
+      $composableBuilder(column: $table.paginas, builder: (column) => column);
+
+  GeneratedColumn<String> get pontoParada => $composableBuilder(
+    column: $table.pontoParada,
+    builder: (column) => column,
+  );
 
   $$MateriasTableAnnotationComposer get materiaId {
     final $$MateriasTableAnnotationComposer composer = $composerBuilder(
@@ -6218,6 +8421,11 @@ class $$SessoesTableTableManager
                 Value<DateTime> dia = const Value.absent(),
                 Value<DateTime> inicio = const Value.absent(),
                 Value<int> minutos = const Value.absent(),
+                Value<String?> metodo = const Value.absent(),
+                Value<int> questoesFeitas = const Value.absent(),
+                Value<int> questoesAcertos = const Value.absent(),
+                Value<int> paginas = const Value.absent(),
+                Value<String?> pontoParada = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SessoesCompanion(
                 id: id,
@@ -6227,6 +8435,11 @@ class $$SessoesTableTableManager
                 dia: dia,
                 inicio: inicio,
                 minutos: minutos,
+                metodo: metodo,
+                questoesFeitas: questoesFeitas,
+                questoesAcertos: questoesAcertos,
+                paginas: paginas,
+                pontoParada: pontoParada,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -6238,6 +8451,11 @@ class $$SessoesTableTableManager
                 required DateTime dia,
                 Value<DateTime> inicio = const Value.absent(),
                 required int minutos,
+                Value<String?> metodo = const Value.absent(),
+                Value<int> questoesFeitas = const Value.absent(),
+                Value<int> questoesAcertos = const Value.absent(),
+                Value<int> paginas = const Value.absent(),
+                Value<String?> pontoParada = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SessoesCompanion.insert(
                 id: id,
@@ -6247,6 +8465,11 @@ class $$SessoesTableTableManager
                 dia: dia,
                 inicio: inicio,
                 minutos: minutos,
+                metodo: metodo,
+                questoesFeitas: questoesFeitas,
+                questoesAcertos: questoesAcertos,
+                paginas: paginas,
+                pontoParada: pontoParada,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -6325,6 +8548,810 @@ typedef $$SessoesTableProcessedTableManager =
       Sessao,
       PrefetchHooks Function({bool materiaId, bool topicoId})
     >;
+typedef $$AnexosTableCreateCompanionBuilder = AnexosCompanion Function({
+  Value<String> id,
+  Value<DateTime> atualizadoEm,
+  required String topicoId,
+  required String tipo,
+  required String nome,
+  required String arquivo,
+  Value<int> bytes,
+  Value<DateTime> criadoEm,
+  Value<int> rowid,
+});
+typedef $$AnexosTableUpdateCompanionBuilder = AnexosCompanion Function({
+  Value<String> id,
+  Value<DateTime> atualizadoEm,
+  Value<String> topicoId,
+  Value<String> tipo,
+  Value<String> nome,
+  Value<String> arquivo,
+  Value<int> bytes,
+  Value<DateTime> criadoEm,
+  Value<int> rowid,
+});
+
+final class $$AnexosTableReferences
+    extends BaseReferences<_$AppDatabase, $AnexosTable, Anexo> {
+  $$AnexosTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $TopicosTable _topicoIdTable(_$AppDatabase db) =>
+      db.topicos.createAlias('anexos__topico_id__topicos__id');
+
+  $$TopicosTableProcessedTableManager get topicoId {
+    final $_column = $_itemColumn<String>('topico_id')!;
+
+    final manager = $$TopicosTableTableManager(
+      $_db,
+      $_db.topicos,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_topicoIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$AnexosTableFilterComposer
+    extends Composer<_$AppDatabase, $AnexosTable> {
+  $$AnexosTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get tipo => $composableBuilder(
+    column: $table.tipo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nome => $composableBuilder(
+    column: $table.nome,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get arquivo => $composableBuilder(
+    column: $table.arquivo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get bytes => $composableBuilder(
+    column: $table.bytes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$TopicosTableFilterComposer get topicoId {
+    final $$TopicosTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.topicoId,
+      referencedTable: $db.topicos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TopicosTableFilterComposer(
+            $db: $db,
+            $table: $db.topicos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AnexosTableOrderingComposer
+    extends Composer<_$AppDatabase, $AnexosTable> {
+  $$AnexosTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get tipo => $composableBuilder(
+    column: $table.tipo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nome => $composableBuilder(
+    column: $table.nome,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get arquivo => $composableBuilder(
+    column: $table.arquivo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get bytes => $composableBuilder(
+    column: $table.bytes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$TopicosTableOrderingComposer get topicoId {
+    final $$TopicosTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.topicoId,
+      referencedTable: $db.topicos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TopicosTableOrderingComposer(
+            $db: $db,
+            $table: $db.topicos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AnexosTableAnnotationComposer
+    extends Composer<_$AppDatabase, $AnexosTable> {
+  $$AnexosTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get tipo =>
+      $composableBuilder(column: $table.tipo, builder: (column) => column);
+
+  GeneratedColumn<String> get nome =>
+      $composableBuilder(column: $table.nome, builder: (column) => column);
+
+  GeneratedColumn<String> get arquivo =>
+      $composableBuilder(column: $table.arquivo, builder: (column) => column);
+
+  GeneratedColumn<int> get bytes =>
+      $composableBuilder(column: $table.bytes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get criadoEm =>
+      $composableBuilder(column: $table.criadoEm, builder: (column) => column);
+
+  $$TopicosTableAnnotationComposer get topicoId {
+    final $$TopicosTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.topicoId,
+      referencedTable: $db.topicos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TopicosTableAnnotationComposer(
+            $db: $db,
+            $table: $db.topicos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AnexosTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $AnexosTable,
+          Anexo,
+          $$AnexosTableFilterComposer,
+          $$AnexosTableOrderingComposer,
+          $$AnexosTableAnnotationComposer,
+          $$AnexosTableCreateCompanionBuilder,
+          $$AnexosTableUpdateCompanionBuilder,
+          (Anexo, $$AnexosTableReferences),
+          Anexo,
+          PrefetchHooks Function({bool topicoId})
+        > {
+  $$AnexosTableTableManager(_$AppDatabase db, $AnexosTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AnexosTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AnexosTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AnexosTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<String> topicoId = const Value.absent(),
+                Value<String> tipo = const Value.absent(),
+                Value<String> nome = const Value.absent(),
+                Value<String> arquivo = const Value.absent(),
+                Value<int> bytes = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AnexosCompanion(
+                id: id,
+                atualizadoEm: atualizadoEm,
+                topicoId: topicoId,
+                tipo: tipo,
+                nome: nome,
+                arquivo: arquivo,
+                bytes: bytes,
+                criadoEm: criadoEm,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                required String topicoId,
+                required String tipo,
+                required String nome,
+                required String arquivo,
+                Value<int> bytes = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AnexosCompanion.insert(
+                id: id,
+                atualizadoEm: atualizadoEm,
+                topicoId: topicoId,
+                tipo: tipo,
+                nome: nome,
+                arquivo: arquivo,
+                bytes: bytes,
+                criadoEm: criadoEm,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$AnexosTable, Anexo>(table),
+                  $$AnexosTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({topicoId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (topicoId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.topicoId,
+                        referencedTable: $$AnexosTableReferences._topicoIdTable(
+                          db,
+                        ),
+                        referencedColumn: $$AnexosTableReferences
+                            ._topicoIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$AnexosTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $AnexosTable,
+      Anexo,
+      $$AnexosTableFilterComposer,
+      $$AnexosTableOrderingComposer,
+      $$AnexosTableAnnotationComposer,
+      $$AnexosTableCreateCompanionBuilder,
+      $$AnexosTableUpdateCompanionBuilder,
+      (Anexo, $$AnexosTableReferences),
+      Anexo,
+      PrefetchHooks Function({bool topicoId})
+    >;
+typedef $$FlashcardsTableCreateCompanionBuilder = FlashcardsCompanion Function({
+  Value<String> id,
+  Value<DateTime> atualizadoEm,
+  required String topicoId,
+  required String frente,
+  required String verso,
+  Value<int> ordem,
+  Value<int> caixa,
+  Value<DateTime> proximaRevisao,
+  Value<int> acertos,
+  Value<int> erros,
+  Value<DateTime> criadoEm,
+  Value<int> rowid,
+});
+typedef $$FlashcardsTableUpdateCompanionBuilder = FlashcardsCompanion Function({
+  Value<String> id,
+  Value<DateTime> atualizadoEm,
+  Value<String> topicoId,
+  Value<String> frente,
+  Value<String> verso,
+  Value<int> ordem,
+  Value<int> caixa,
+  Value<DateTime> proximaRevisao,
+  Value<int> acertos,
+  Value<int> erros,
+  Value<DateTime> criadoEm,
+  Value<int> rowid,
+});
+
+final class $$FlashcardsTableReferences
+    extends BaseReferences<_$AppDatabase, $FlashcardsTable, Flashcard> {
+  $$FlashcardsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $TopicosTable _topicoIdTable(_$AppDatabase db) =>
+      db.topicos.createAlias('flashcards__topico_id__topicos__id');
+
+  $$TopicosTableProcessedTableManager get topicoId {
+    final $_column = $_itemColumn<String>('topico_id')!;
+
+    final manager = $$TopicosTableTableManager(
+      $_db,
+      $_db.topicos,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_topicoIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$FlashcardsTableFilterComposer
+    extends Composer<_$AppDatabase, $FlashcardsTable> {
+  $$FlashcardsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get frente => $composableBuilder(
+    column: $table.frente,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get verso => $composableBuilder(
+    column: $table.verso,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get ordem => $composableBuilder(
+    column: $table.ordem,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get caixa => $composableBuilder(
+    column: $table.caixa,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get proximaRevisao => $composableBuilder(
+    column: $table.proximaRevisao,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get acertos => $composableBuilder(
+    column: $table.acertos,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get erros => $composableBuilder(
+    column: $table.erros,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$TopicosTableFilterComposer get topicoId {
+    final $$TopicosTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.topicoId,
+      referencedTable: $db.topicos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TopicosTableFilterComposer(
+            $db: $db,
+            $table: $db.topicos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$FlashcardsTableOrderingComposer
+    extends Composer<_$AppDatabase, $FlashcardsTable> {
+  $$FlashcardsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get frente => $composableBuilder(
+    column: $table.frente,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get verso => $composableBuilder(
+    column: $table.verso,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get ordem => $composableBuilder(
+    column: $table.ordem,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get caixa => $composableBuilder(
+    column: $table.caixa,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get proximaRevisao => $composableBuilder(
+    column: $table.proximaRevisao,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get acertos => $composableBuilder(
+    column: $table.acertos,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get erros => $composableBuilder(
+    column: $table.erros,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$TopicosTableOrderingComposer get topicoId {
+    final $$TopicosTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.topicoId,
+      referencedTable: $db.topicos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TopicosTableOrderingComposer(
+            $db: $db,
+            $table: $db.topicos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$FlashcardsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $FlashcardsTable> {
+  $$FlashcardsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get frente =>
+      $composableBuilder(column: $table.frente, builder: (column) => column);
+
+  GeneratedColumn<String> get verso =>
+      $composableBuilder(column: $table.verso, builder: (column) => column);
+
+  GeneratedColumn<int> get ordem =>
+      $composableBuilder(column: $table.ordem, builder: (column) => column);
+
+  GeneratedColumn<int> get caixa =>
+      $composableBuilder(column: $table.caixa, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get proximaRevisao => $composableBuilder(
+    column: $table.proximaRevisao,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get acertos =>
+      $composableBuilder(column: $table.acertos, builder: (column) => column);
+
+  GeneratedColumn<int> get erros =>
+      $composableBuilder(column: $table.erros, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get criadoEm =>
+      $composableBuilder(column: $table.criadoEm, builder: (column) => column);
+
+  $$TopicosTableAnnotationComposer get topicoId {
+    final $$TopicosTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.topicoId,
+      referencedTable: $db.topicos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TopicosTableAnnotationComposer(
+            $db: $db,
+            $table: $db.topicos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$FlashcardsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $FlashcardsTable,
+          Flashcard,
+          $$FlashcardsTableFilterComposer,
+          $$FlashcardsTableOrderingComposer,
+          $$FlashcardsTableAnnotationComposer,
+          $$FlashcardsTableCreateCompanionBuilder,
+          $$FlashcardsTableUpdateCompanionBuilder,
+          (Flashcard, $$FlashcardsTableReferences),
+          Flashcard,
+          PrefetchHooks Function({bool topicoId})
+        > {
+  $$FlashcardsTableTableManager(_$AppDatabase db, $FlashcardsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FlashcardsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FlashcardsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FlashcardsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<String> topicoId = const Value.absent(),
+                Value<String> frente = const Value.absent(),
+                Value<String> verso = const Value.absent(),
+                Value<int> ordem = const Value.absent(),
+                Value<int> caixa = const Value.absent(),
+                Value<DateTime> proximaRevisao = const Value.absent(),
+                Value<int> acertos = const Value.absent(),
+                Value<int> erros = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => FlashcardsCompanion(
+                id: id,
+                atualizadoEm: atualizadoEm,
+                topicoId: topicoId,
+                frente: frente,
+                verso: verso,
+                ordem: ordem,
+                caixa: caixa,
+                proximaRevisao: proximaRevisao,
+                acertos: acertos,
+                erros: erros,
+                criadoEm: criadoEm,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                required String topicoId,
+                required String frente,
+                required String verso,
+                Value<int> ordem = const Value.absent(),
+                Value<int> caixa = const Value.absent(),
+                Value<DateTime> proximaRevisao = const Value.absent(),
+                Value<int> acertos = const Value.absent(),
+                Value<int> erros = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => FlashcardsCompanion.insert(
+                id: id,
+                atualizadoEm: atualizadoEm,
+                topicoId: topicoId,
+                frente: frente,
+                verso: verso,
+                ordem: ordem,
+                caixa: caixa,
+                proximaRevisao: proximaRevisao,
+                acertos: acertos,
+                erros: erros,
+                criadoEm: criadoEm,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$FlashcardsTable, Flashcard>(table),
+                  $$FlashcardsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({topicoId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (topicoId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.topicoId,
+                        referencedTable: $$FlashcardsTableReferences
+                            ._topicoIdTable(db),
+                        referencedColumn: $$FlashcardsTableReferences
+                            ._topicoIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$FlashcardsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $FlashcardsTable,
+      Flashcard,
+      $$FlashcardsTableFilterComposer,
+      $$FlashcardsTableOrderingComposer,
+      $$FlashcardsTableAnnotationComposer,
+      $$FlashcardsTableCreateCompanionBuilder,
+      $$FlashcardsTableUpdateCompanionBuilder,
+      (Flashcard, $$FlashcardsTableReferences),
+      Flashcard,
+      PrefetchHooks Function({bool topicoId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -6343,4 +9370,8 @@ class $AppDatabaseManager {
       $$QuestoesTableTableManager(_db, _db.questoes);
   $$SessoesTableTableManager get sessoes =>
       $$SessoesTableTableManager(_db, _db.sessoes);
+  $$AnexosTableTableManager get anexos =>
+      $$AnexosTableTableManager(_db, _db.anexos);
+  $$FlashcardsTableTableManager get flashcards =>
+      $$FlashcardsTableTableManager(_db, _db.flashcards);
 }

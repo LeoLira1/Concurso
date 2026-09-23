@@ -10,6 +10,8 @@ import '../util/texto.dart';
 import 'assistir.dart';
 import 'comuns.dart';
 import 'dia_sheet.dart';
+import 'botao_revisoes.dart';
+import 'proxima_ciclo.dart';
 
 /// Grade do mês (referência: pocket cal). Dias estudados ficam preenchidos
 /// com borda escura; dias sem estudo ficam vazios.
@@ -71,7 +73,17 @@ class GradeMes extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _BarraTopo(compacta: compacta),
+              _BarraTopo(compacta: compacta, concursoId: painel.foco.id),
+              if (compacta) ...[
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(child: ProximaDoCiclo(concursoId: painel.foco.id)),
+                    const SizedBox(width: 8),
+                    const BotaoRevisoes(compacto: true),
+                  ],
+                ),
+              ],
               SizedBox(height: compacta ? 8 : 12),
               _Titulo(
                 mes: mes,
@@ -157,8 +169,9 @@ class GradeMes extends StatelessWidget {
 }
 
 class _BarraTopo extends StatelessWidget {
-  const _BarraTopo({required this.compacta});
+  const _BarraTopo({required this.compacta, required this.concursoId});
   final bool compacta;
+  final String concursoId;
 
   @override
   Widget build(BuildContext context) {
@@ -173,8 +186,16 @@ class _BarraTopo extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           const Marca(tamanho: 26),
-        ],
-        const Spacer(),
+        ] else
+          Flexible(
+            flex: 3,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 460),
+              child: ProximaDoCiclo(concursoId: concursoId),
+            ),
+          ),
+        if (!compacta) ...[const SizedBox(width: 12), const BotaoRevisoes()],
+        const Spacer(flex: 1),
         Pilula(rotulo: 'Hoje', aoTocar: estado.irParaHoje),
         const SizedBox(width: 8),
         Pilula(

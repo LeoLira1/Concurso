@@ -25,6 +25,19 @@ class Concursos extends Table with Sincronizavel {
   BoolColumn get exemplo => boolean().withDefault(const Constant(false))();
   IntColumn get ordem => integer().withDefault(const Constant(0))();
   DateTimeColumn get criadoEm => dateTime().clientDefault(DateTime.now)();
+
+  // Ciclo de estudos (v2).
+  /// Duração de uma volta completa do ciclo, em minutos.
+  IntColumn get cicloMinutos => integer().withDefault(const Constant(1200))();
+
+  /// Tamanho de referência de cada sessão do ciclo, em minutos.
+  IntColumn get cicloBlocoMin => integer().withDefault(const Constant(60))();
+
+  /// Índice da próxima etapa na fila do ciclo.
+  IntColumn get cicloPosicao => integer().withDefault(const Constant(0))();
+
+  /// Quantas voltas completas já foram feitas.
+  IntColumn get cicloVoltas => integer().withDefault(const Constant(0))();
 }
 
 /// Matéria global. O nome normalizado (`chave`) é único: "Português" em dois
@@ -43,6 +56,11 @@ class ConcursoMaterias extends Table {
       text().references(Materias, #id, onDelete: KeyAction.cascade)();
   IntColumn get ordem => integer().withDefault(const Constant(0))();
   DateTimeColumn get atualizadoEm => dateTime().clientDefault(DateTime.now)();
+
+  // Ciclo de estudos (v2): cada concurso tem seu peso/dificuldade por matéria.
+  IntColumn get peso => integer().withDefault(const Constant(3))();
+  IntColumn get dificuldade => integer().withDefault(const Constant(3))();
+  BoolColumn get noCiclo => boolean().withDefault(const Constant(true))();
 
   @override
   Set<Column> get primaryKey => {concursoId, materiaId};
@@ -94,4 +112,48 @@ class Sessoes extends Table with Sincronizavel {
   DateTimeColumn get dia => dateTime()();
   DateTimeColumn get inicio => dateTime().clientDefault(DateTime.now)();
   IntColumn get minutos => integer()();
+
+  // Registro ao finalizar (v3).
+  /// videoaula, pdf, questoes, revisao, lei_seca (ver logic/metodo.dart).
+  TextColumn get metodo => text().nullable()();
+  IntColumn get questoesFeitas => integer().withDefault(const Constant(0))();
+  IntColumn get questoesAcertos => integer().withDefault(const Constant(0))();
+  IntColumn get paginas => integer().withDefault(const Constant(0))();
+
+  /// Onde parou (texto curto), mostrado na próxima sessão da mesma matéria.
+  TextColumn get pontoParada => text().nullable()();
+}
+
+/// Resumo ou mapa mental anexado a um tópico (v4). O arquivo fica na pasta
+/// do app; aqui só o caminho relativo a ela.
+class Anexos extends Table with Sincronizavel {
+  TextColumn get topicoId =>
+      text().references(Topicos, #id, onDelete: KeyAction.cascade)();
+
+  /// 'imagem' ou 'pdf'.
+  TextColumn get tipo => text()();
+  TextColumn get nome => text()();
+
+  /// Caminho relativo à pasta de anexos do app (ex.: "a1b2.jpg").
+  TextColumn get arquivo => text()();
+  IntColumn get bytes => integer().withDefault(const Constant(0))();
+  DateTimeColumn get criadoEm => dateTime().clientDefault(DateTime.now)();
+}
+
+/// Flashcard de um tópico, com repetição espaçada simples (caixas de Leitner).
+class Flashcards extends Table with Sincronizavel {
+  TextColumn get topicoId =>
+      text().references(Topicos, #id, onDelete: KeyAction.cascade)();
+  TextColumn get frente => text()();
+  TextColumn get verso => text()();
+  IntColumn get ordem => integer().withDefault(const Constant(0))();
+
+  /// 0 = novo/errado ... 5 = bem sabido.
+  IntColumn get caixa => integer().withDefault(const Constant(0))();
+
+  /// Dia em que o cartão volta a aparecer.
+  DateTimeColumn get proximaRevisao => dateTime().clientDefault(DateTime.now)();
+  IntColumn get acertos => integer().withDefault(const Constant(0))();
+  IntColumn get erros => integer().withDefault(const Constant(0))();
+  DateTimeColumn get criadoEm => dateTime().clientDefault(DateTime.now)();
 }

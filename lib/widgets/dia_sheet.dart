@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../data/database.dart';
+import '../logic/metodo.dart';
 import '../screens/home_screen.dart';
 import '../theme.dart';
 import '../util/texto.dart';
 import 'comuns.dart';
+import 'registro_sessao.dart';
 
-/// Folha do dia: sessões registradas e registro manual rápido.
-/// (O timer pomodoro, na próxima etapa, vai registrar sessões sozinho.)
+/// Folha do dia: sessões registradas (com método, questões, páginas e
+/// ponto de parada) e registro manual de uma sessão.
 Future<void> abrirDia(BuildContext context, DateTime dia, Painel painel) {
   return showModalBottomSheet(
     context: context,
@@ -32,18 +34,32 @@ class _DiaSheet extends StatefulWidget {
 }
 
 class _DiaSheetState extends State<_DiaSheet> {
-  late String? _materia =
-      widget.painel.filtro ??
-      (widget.painel.materias.isEmpty
-          ? null
-          : widget.painel.materias.first.materia.id);
-  int _minutos = 25;
   late final Stream<List<Sessao>> _sessoes = context
       .read<AppDatabase>()
       .watchSessoes(widget.dia, widget.dia);
   late final Stream<List<Materia>> _materias = context
       .read<AppDatabase>()
       .watchTodasMaterias();
+  late final Stream<List<Topico>> _topicos = context
+      .read<AppDatabase>()
+      .watchTodosTopicos();
+
+  Future<void> _registrar() async {
+    final db = context.read<AppDatabase>();
+    final p = widget.painel;
+    final r = await abrirRegistro(
+      context,
+      titulo: 'Registrar estudo',
+      materias: p.materias,
+      inicial: RegistroSessao(
+        materiaId:
+            p.filtro ??
+            (p.materias.isEmpty ? null : p.materias.first.materia.id),
+        minutos: 50,
+      ),
+    );
+    if (r != null && !r.descartar) await r.salvar(db, widget.dia);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,154 +73,175 @@ class _DiaSheetState extends State<_DiaSheet> {
         children: [
           Text(dataLonga(widget.dia), style: t.headlineMedium),
           const SizedBox(height: 16),
-          StreamBuilder<List<Materia>>(
-            stream: _materias,
-            builder: (context, mSnap) {
-              final nomes = {
-                for (final m in mSnap.data ?? const <Materia>[]) m.id: m,
+          StreamBuilder<List<Topico>>(
+            stream: _topicos,
+            builder: (context, tSnap) {
+              final topicos = {
+                for (final x in tSnap.data ?? const <Topico>[]) x.id: x,
               };
-              return StreamBuilder<List<Sessao>>(
-                stream: _sessoes,
-                builder: (context, snap) {
-                  final l = snap.data ?? const <Sessao>[];
-                  if (l.isEmpty) {
-                    return const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8),
-                      child: Text(
-                        'Nenhum estudo registrado neste dia.',
-                        style: TextStyle(fontSize: 16, color: Cores.tintaSuave),
-                      ),
-                    );
-                  }
-                  final total = l.fold<int>(0, (a, s) => a + s.minutos);
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        'Total: ${minutosFmt(total)}',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      for (final s in l)
-                        Container(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          padding: const EdgeInsets.fromLTRB(16, 4, 4, 4),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Cores.linha, width: 1.5),
-                            borderRadius: BorderRadius.circular(16),
+              return StreamBuilder<List<Materia>>(
+                stream: _materias,
+                builder: (context, mSnap) {
+                  final nomes = {
+                    for (final m in mSnap.data ?? const <Materia>[]) m.id: m,
+                  };
+                  return StreamBuilder<List<Sessao>>(
+                    stream: _sessoes,
+                    builder: (context, snap) {
+                      final l = snap.data ?? const <Sessao>[];
+                      if (l.isEmpty) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8),
+                          child: Text(
+                            'Nenhum estudo registrado neste dia.',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Cores.tintaSuave,
+                            ),
                           ),
-                          child: Row(
-                            children: [
-                              Bolinha(
-                                nomes[s.materiaId] == null
-                                    ? Cores.tintaFraca
-                                    : Color(nomes[s.materiaId]!.cor),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  nomes[s.materiaId]?.nome ?? 'Estudo livre',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                              Text(
-                                minutosFmt(s.minutos),
-                                style: const TextStyle(color: Cores.tintaSuave),
-                              ),
-                              IconButton(
-                                tooltip: 'Apagar',
-                                onPressed: () => db.excluirSessao(s.id),
-                                icon: const Icon(Icons.delete_outline_rounded),
-                              ),
-                            ],
+                        );
+                      }
+                      final total = l.fold<int>(0, (a, s) => a + s.minutos);
+                      final feitas = l.fold<int>(
+                        0,
+                        (a, s) => a + s.questoesFeitas,
+                      );
+                      final acertos = l.fold<int>(
+                        0,
+                        (a, s) => a + s.questoesAcertos,
+                      );
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            [
+                              'Total: ${minutosFmt(total)}',
+                              if (feitas > 0)
+                                '$feitas questões · ${(acertos * 100 / feitas).round()}% de acerto',
+                            ].join('  ·  '),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
-                        ),
-                    ],
+                          const SizedBox(height: 8),
+                          for (final s in l)
+                            _LinhaSessao(
+                              s: s,
+                              materia: nomes[s.materiaId],
+                              topico: topicos[s.topicoId],
+                              aoApagar: () => db.excluirSessao(s.id),
+                            ),
+                        ],
+                      );
+                    },
                   );
                 },
               );
             },
           ),
           if (!futuro) ...[
-            const SizedBox(height: 24),
-            Text('Registrar estudo', style: t.titleLarge),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final m in widget.painel.materias)
-                  ChoiceChip(
-                    avatar: Bolinha(Color(m.materia.cor)),
-                    label: Text(m.materia.nome),
-                    selected: _materia == m.materia.id,
-                    showCheckmark: false,
-                    labelStyle: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 8,
-                    ),
-                    onSelected: (_) => setState(() => _materia = m.materia.id),
-                  ),
-                ChoiceChip(
-                  label: const Text('Estudo livre'),
-                  selected: _materia == null,
-                  showCheckmark: false,
-                  labelStyle: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 8,
-                  ),
-                  onSelected: (_) => setState(() => _materia = null),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 8,
-              children: [
-                for (final m in const [25, 50, 90, 120])
-                  ChoiceChip(
-                    label: Text(minutosFmt(m)),
-                    selected: _minutos == m,
-                    showCheckmark: false,
-                    labelStyle: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 8,
-                    ),
-                    onSelected: (_) => setState(() => _minutos = m),
-                  ),
-              ],
-            ),
             const SizedBox(height: 20),
-            FilledButton.icon(
-              onPressed: () async {
-                await db.registrarSessao(
-                  dia: widget.dia,
-                  minutos: _minutos,
-                  materiaId: _materia,
-                );
-              },
-              icon: const Icon(Icons.check_rounded),
-              label: const Text('Marcar dia como estudado'),
+            OutlinedButton.icon(
+              onPressed: _registrar,
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('Registrar estudo'),
             ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+class _LinhaSessao extends StatelessWidget {
+  const _LinhaSessao({
+    required this.s,
+    required this.materia,
+    required this.topico,
+    required this.aoApagar,
+  });
+
+  final Sessao s;
+  final Materia? materia;
+  final Topico? topico;
+  final VoidCallback aoApagar;
+
+  @override
+  Widget build(BuildContext context) {
+    final metodo = Metodo.deChave(s.metodo);
+    final detalhes = [
+      minutosFmt(s.minutos),
+      if (metodo != null) metodo.rotulo,
+      if (s.questoesFeitas > 0)
+        '${s.questoesAcertos}/${s.questoesFeitas} questões (${(s.questoesAcertos * 100 / s.questoesFeitas).round()}%)',
+      if (s.paginas > 0) '${s.paginas} pág.',
+    ].join(' · ');
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.fromLTRB(16, 12, 4, 12),
+      decoration: BoxDecoration(
+        border: Border.all(color: Cores.linha, width: 1.5),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 5),
+            child: Bolinha(
+              materia == null ? Cores.tintaFraca : Color(materia!.cor),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  materia?.nome ?? 'Estudo livre',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                if (topico != null)
+                  Text(topico!.nome, style: const TextStyle(fontSize: 14)),
+                const SizedBox(height: 2),
+                Text(
+                  detalhes,
+                  style: const TextStyle(fontSize: 14, color: Cores.tintaSuave),
+                ),
+                if (s.pontoParada != null) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.bookmark_rounded,
+                        size: 16,
+                        color: Color(0xFFB8892F),
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          s.pontoParada!,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+          IconButton(
+            tooltip: 'Apagar',
+            onPressed: aoApagar,
+            icon: const Icon(Icons.delete_outline_rounded),
+          ),
         ],
       ),
     );

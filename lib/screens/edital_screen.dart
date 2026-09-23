@@ -267,8 +267,9 @@ class _CardMateria extends StatelessWidget {
                         mensagem: 'A matéria sai deste edital. Se nenhum outro concurso usar, os tópicos e o progresso dela serão apagados.',
                         acao: 'Remover',
                       );
-                      if (ok)
+                      if (ok) {
                         await db.removerMateriaDoConcurso(concurso.id, m.id);
+                      }
                   }
                 },
                 itemBuilder: (_) => const [

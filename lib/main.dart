@@ -6,6 +6,10 @@ import 'package:provider/provider.dart';
 import 'data/database.dart';
 import 'screens/home_screen.dart';
 import 'state/app_state.dart';
+import 'state/arquivos.dart';
+import 'state/notificacoes.dart';
+import 'state/sessao_ativa.dart';
+import 'widgets/ouvinte_notificacoes.dart';
 import 'theme.dart';
 
 void main() {
@@ -32,10 +36,21 @@ class EditalApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         Provider<AppDatabase>(
-          create: (_) => database ?? AppDatabase(),
+          create: (_) {
+            final db = database ?? AppDatabase();
+            if (database == null) ArquivosAnexos.limparOrfaos(db);
+            return db;
+          },
           dispose: (_, db) => db.close(),
         ),
         ChangeNotifierProvider(create: (_) => AppState()),
+        ChangeNotifierProvider(
+          create: (ctx) => Notificacoes(db: ctx.read<AppDatabase>())..iniciar(),
+        ),
+        ChangeNotifierProvider(
+          create: (ctx) =>
+              SessaoAtiva(notificacoes: ctx.read<Notificacoes>())..restaurar(),
+        ),
       ],
       child: MaterialApp(
         title: 'Edital',
@@ -48,7 +63,7 @@ class EditalApp extends StatelessWidget {
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
-        home: const HomeScreen(),
+        home: const OuvinteNotificacoes(child: HomeScreen()),
       ),
     );
   }

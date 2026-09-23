@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../data/database.dart';
+import '../screens/ciclo_screen.dart';
 import '../screens/concursos_screen.dart';
+import '../screens/estatisticas_screen.dart';
+import '../screens/lembretes_screen.dart';
+import '../screens/revisoes_screen.dart';
+import '../screens/topico_screen.dart';
 import '../screens/edital_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/materia_screen.dart';
@@ -41,9 +46,28 @@ class _SidebarState extends State<Sidebar> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(28, 28, 28, 20),
-            child: Marca(tamanho: 34),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(28, 20, 12, 12),
+            child: Row(
+              children: [
+                const Marca(tamanho: 34),
+                const Spacer(),
+                IconButton(
+                  tooltip: 'Lembretes',
+                  iconSize: 26,
+                  onPressed: () {
+                    _fecharDrawer();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const LembretesScreen(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.notifications_none_rounded),
+                ),
+              ],
+            ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -70,8 +94,9 @@ class _SidebarState extends State<Sidebar> {
                 );
                 final raizPorMateria = <String, List<Topico>>{};
                 for (final t in topicos ?? const <Topico>[]) {
-                  if (t.paiId == null)
+                  if (t.paiId == null) {
                     (raizPorMateria[t.materiaId] ??= []).add(t);
+                  }
                 }
                 return ListView(
                   padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
@@ -145,7 +170,7 @@ class _SidebarState extends State<Sidebar> {
           ),
           const Divider(),
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+            padding: const EdgeInsets.fromLTRB(12, 6, 12, 8),
             child: Column(
               children: [
                 if (!estado.verTudo)
@@ -162,6 +187,43 @@ class _SidebarState extends State<Sidebar> {
                       );
                     },
                   ),
+                _Linha(
+                  icone: Icons.autorenew_rounded,
+                  rotulo: 'Ciclo de estudos',
+                  aoTocar: () {
+                    _fecharDrawer();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => CicloScreen(concursoId: p.foco.id),
+                      ),
+                    );
+                  },
+                ),
+                _Linha(
+                  icone: Icons.replay_rounded,
+                  rotulo: 'Revisões',
+                  aoTocar: () {
+                    _fecharDrawer();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const RevisoesScreen()),
+                    );
+                  },
+                ),
+                _Linha(
+                  icone: Icons.insights_rounded,
+                  rotulo: 'Estatísticas',
+                  aoTocar: () {
+                    _fecharDrawer();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const EstatisticasScreen(),
+                      ),
+                    );
+                  },
+                ),
                 _Linha(
                   icone: Icons.folder_open_rounded,
                   rotulo: 'Meus concursos',
@@ -402,7 +464,7 @@ class _Linha extends StatelessWidget {
           onTap: aoTocar,
           onLongPress: aoSegurar,
           child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 50),
+            constraints: const BoxConstraints(minHeight: 46),
             child: Row(
               children: [
                 const SizedBox(width: 14),
@@ -499,43 +561,54 @@ class _TopicoMini extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 7),
-      child: Row(
-        children: [
-          Container(
-            width: 9,
-            height: 9,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: t.visto ? cor : Colors.transparent,
-              border: Border.all(
-                color: t.visto ? cor : cor.withValues(alpha: 0.6),
-                width: 1.5,
+    return InkWell(
+      borderRadius: BorderRadius.circular(10),
+      onTap: () {
+        final s = Scaffold.maybeOf(context);
+        if (s != null && s.isDrawerOpen) Navigator.pop(context);
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => TopicoScreen(topicoId: t.id)),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 7),
+        child: Row(
+          children: [
+            Container(
+              width: 9,
+              height: 9,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: t.visto ? cor : Colors.transparent,
+                border: Border.all(
+                  color: t.visto ? cor : cor.withValues(alpha: 0.6),
+                  width: 1.5,
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              t.nome,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 14,
-                color: t.visto ? Cores.tintaSuave : Cores.tinta,
-              ),
-            ),
-          ),
-          if (nFilhos > 0)
-            Padding(
-              padding: const EdgeInsets.only(left: 8, right: 14),
+            const SizedBox(width: 10),
+            Expanded(
               child: Text(
-                '$nFilhos',
-                style: const TextStyle(fontSize: 13, color: Cores.tintaSuave),
+                t.nome,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: t.visto ? Cores.tintaSuave : Cores.tinta,
+                ),
               ),
             ),
-        ],
+            if (nFilhos > 0)
+              Padding(
+                padding: const EdgeInsets.only(left: 8, right: 14),
+                child: Text(
+                  '$nFilhos',
+                  style: const TextStyle(fontSize: 13, color: Cores.tintaSuave),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
