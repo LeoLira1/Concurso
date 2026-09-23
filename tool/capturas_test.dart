@@ -16,15 +16,19 @@ import 'package:edital/screens/home_screen.dart';
 import 'package:edital/screens/materia_screen.dart';
 import 'package:edital/state/app_state.dart';
 import 'package:edital/state/sessao_ativa.dart';
+import 'package:edital/state/sincronizacao.dart';
+import 'package:edital/screens/sincronizacao_screen.dart';
 import 'package:edital/state/notificacoes.dart';
 import 'package:edital/screens/revisoes_screen.dart';
 import 'package:edital/screens/lembretes_screen.dart';
 import 'package:edital/screens/estatisticas_screen.dart';
 import 'package:edital/screens/flashcards_screen.dart';
 import 'package:edital/screens/topico_screen.dart';
+import 'package:edital/screens/importar_screen.dart';
 import 'package:edital/state/arquivos.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:edital/theme.dart';
+import 'package:edital/widgets/sidebar.dart';
 import 'package:edital/util/texto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -67,7 +71,7 @@ Future<AppDatabase> popular() async {
     cor: 0xFFE5407A,
   );
   await db.adicionarMateria(pm, 'Língua Portuguesa', 0);
-  final mat = await db.adicionarMateria(pm, 'Matemática', 0xFFF5A524);
+  final mat = await db.adicionarMateria(pm, 'Matemática', 0xFFE08A00);
   await db.adicionarTopicosEmLote(mat, 'Frações\nPorcentagem\nGeometria plana');
 
   final gm = (await db.watchConcursos().first).firstWhere((c) => c.exemplo);
@@ -259,6 +263,7 @@ Widget app(
   Widget home, {
   AppState? estado,
   SessaoAtiva? sessao,
+  Sincronizacao? sinc,
 }) => MultiProvider(
   providers: [
     Provider<AppDatabase>.value(value: db),
@@ -269,6 +274,7 @@ Widget app(
         ..permitido = true,
     ),
     ChangeNotifierProvider(create: (_) => sessao ?? SessaoAtiva()),
+    ChangeNotifierProvider(create: (_) => sinc ?? Sincronizacao(db: db)),
   ],
   child: MaterialApp(
     debugShowCheckedModeBanner: false,
@@ -717,6 +723,137 @@ void main() {
       '18b_flashcard_verso_retrato',
       retrato,
       (db) => estudo(db, verso: true),
+    ),
+  );
+
+  // --- Importar conteúdo programático ---
+  const textoEdital = '''CONHECIMENTOS BÁSICOS
+LÍNGUA PORTUGUESA: 1 Compreensão e interpretação de textos de gêneros variados. 2 Reconhecimento de tipos e gêneros textuais. 3 Domínio da ortografia oficial. 4 Domínio dos mecanismos de coesão textual. 4.1 Emprego de elementos de referenciação, substituição e repetição, de conectores e de outros elementos de sequenciação textual. 4.2 Emprego de tempos e modos verbais. 5 Domínio da estrutura morfossintática do período. 5.1 Emprego das classes de palavras. 5.2 Relações de coordenação entre orações. 5.3 Emprego do sinal indicativo de crase. 6 Reescrita de frases e parágrafos do texto.
+RACIOCÍNIO LÓGICO: 1 Estruturas lógicas. 2 Lógica de argumentação: analogias, inferências, deduções e conclusões. 3 Lógica sentencial (ou proposicional). 3.1 Proposições simples e compostas. 3.2 Tabelas-verdade. 3.3 Equivalências.
+NOÇÕES DE INFORMÁTICA: 1 Noções de sistema operacional (ambiente Windows). 2 Edição de textos, planilhas e apresentações. 3 Redes de computadores. 4 Segurança da informação.
+CONHECIMENTOS ESPECÍFICOS
+LEGISLAÇÃO APLICADA AO MPU: 1 Lei Complementar nº 75/1993. 2 Lei nº 8.112/1990 e alterações: regime disciplinar.
+NOÇÕES DE DIREITO ADMINISTRATIVO: 1 Noções de organização administrativa. 1.1 Centralização, descentralização, concentração e desconcentração. 2 Ato administrativo. 2.1 Conceito, requisitos, atributos, classificação e espécies. 3 Agentes públicos.''';
+
+  Widget importar(AppDatabase db) => comFoco(
+    db,
+    (id) => ImportarScreen(concursoId: id, textoInicial: textoEdital),
+  );
+
+  Future<void> abrirPrimeira(WidgetTester t) async {
+    await t.tap(find.text('Língua Portuguesa').last);
+    await t.pumpAndSettle();
+  }
+
+  testWidgets(
+    'importar paisagem',
+    (t) => captura(
+      t,
+      '19_importar_paisagem',
+      paisagem,
+      importar,
+      antes: abrirPrimeira,
+    ),
+  );
+  testWidgets(
+    'importar retrato texto',
+    (t) => captura(t, '19b_importar_retrato_texto', retrato, importar),
+  );
+  testWidgets(
+    'importar retrato previa',
+    (t) => captura(
+      t,
+      '19c_importar_retrato_previa',
+      retrato,
+      importar,
+      antes: (t) async {
+        await t.tap(find.textContaining('Prévia'));
+        await t.pumpAndSettle();
+        await abrirPrimeira(t);
+      },
+    ),
+  );
+
+  // --- Sincronização ---
+  testWidgets(
+    'sincronizacao configurar',
+    (t) => captura(
+      t,
+      '20_sincronizacao_configurar',
+      retrato,
+      (db) => app(db, const SincronizacaoScreen()),
+    ),
+  );
+  testWidgets(
+    'sincronizacao ativa',
+    (t) => captura(
+      t,
+      '20b_sincronizacao_ativa',
+      paisagem,
+      (db) => app(
+        db,
+        const SincronizacaoScreen(),
+        sinc: Sincronizacao(db: db)
+          ..url = 'libsql://edital-leolira.turso.io'
+          ..token = 'x'
+          ..ultima = DateTime.now().subtract(const Duration(minutes: 3)),
+      ),
+    ),
+  );
+
+  // --- Janela rápida do tópico (sidebar) ---
+  testWidgets(
+    'topico rapido paisagem',
+    (t) => captura(
+      t,
+      '21_topico_rapido_paisagem',
+      paisagem,
+      home,
+      antes: (t) async {
+        await t.tap(find.byIcon(Icons.chevron_right_rounded).first);
+        await t.pumpAndSettle();
+        final lista = find
+            .descendant(
+              of: find.byType(Sidebar),
+              matching: find.byType(Scrollable),
+            )
+            .first;
+        await t.scrollUntilVisible(
+          find.text('Crase').first,
+          120,
+          scrollable: lista,
+        );
+        await t.pumpAndSettle();
+        await t.tap(find.text('Crase').first);
+        await t.pumpAndSettle();
+      },
+    ),
+  );
+  testWidgets(
+    'topico rapido retrato',
+    (t) => captura(
+      t,
+      '21b_topico_rapido_retrato',
+      retrato,
+      home,
+      antes: (t) async {
+        await t.tap(find.byTooltip('Matérias'));
+        await t.pumpAndSettle();
+        final gaveta = find.byType(Drawer);
+        await t.tap(
+          find
+              .descendant(
+                of: gaveta,
+                matching: find.byIcon(Icons.chevron_right_rounded),
+              )
+              .first,
+        );
+        await t.pumpAndSettle();
+        await t.tap(
+          find.descendant(of: gaveta, matching: find.text('Crase')).first,
+        );
+        await t.pumpAndSettle();
+      },
     ),
   );
 }

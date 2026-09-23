@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../data/database.dart';
 import '../screens/concursos_screen.dart';
 import '../screens/home_screen.dart';
+import '../screens/materia_screen.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import '../util/texto.dart';
@@ -54,12 +55,12 @@ class GradeMes extends StatelessWidget {
           (a, e) => a + e.value.fold<int>(0, (b, s) => b + s.minutos),
         );
 
-        // Contagem de sessões do mês por matéria (chips no modo compacto).
-        final porMateria = <String, int>{};
+        // Minutos do mês por matéria (cards do modo retrato).
+        final minutosPorMateria = <String, int>{};
         for (final s in sessoes ?? const <Sessao>[]) {
           if (s.dia.month != mes.month || s.materiaId == null) continue;
-          if (!mapaMaterias.containsKey(s.materiaId)) continue;
-          porMateria[s.materiaId!] = (porMateria[s.materiaId!] ?? 0) + 1;
+          minutosPorMateria[s.materiaId!] =
+              (minutosPorMateria[s.materiaId!] ?? 0) + s.minutos;
         }
 
         final pad = compacta ? 16.0 : 36.0;
@@ -113,53 +114,93 @@ class GradeMes extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               Expanded(
-                child: GestureDetector(
-                  onHorizontalDragEnd: (d) {
-                    final v = d.primaryVelocity ?? 0;
-                    if (v.abs() < 300) return;
-                    estado.mudarMes(v < 0 ? 1 : -1);
-                  },
-                  child: Column(
-                    children: [
-                      for (var w = 0; w < semanas; w++)
-                        Expanded(
-                          child: Row(
-                            children: [
-                              for (var d = 0; d < 7; d++)
-                                Expanded(
-                                  child: Padding(
-                                    padding: EdgeInsets.all(compacta ? 2.5 : 5),
-                                    child: Builder(
-                                      builder: (context) {
-                                        final dia = DateTime(
-                                          inicio.year,
-                                          inicio.month,
-                                          inicio.day + w * 7 + d,
-                                        );
-                                        return _Celula(
-                                          dia: dia,
-                                          doMes: dia.month == mes.month,
-                                          sessoes: porDia[dia] ?? const [],
-                                          materias: mapaMaterias,
-                                          compacta: compacta,
-                                          aoTocar: () =>
-                                              abrirDia(context, dia, painel),
-                                        );
-                                      },
+                child: LayoutBuilder(
+                  builder: (context, box) {
+                    Widget grade(double? lado) => GestureDetector(
+                      onHorizontalDragEnd: (d) {
+                        final v = d.primaryVelocity ?? 0;
+                        if (v.abs() < 300) return;
+                        estado.mudarMes(v < 0 ? 1 : -1);
+                      },
+                      child: Column(
+                        mainAxisSize: lado == null
+                            ? MainAxisSize.max
+                            : MainAxisSize.min,
+                        children: [
+                          for (var w = 0; w < semanas; w++)
+                            _linha(
+                              lado,
+                              Row(
+                                children: [
+                                  for (var d = 0; d < 7; d++)
+                                    Expanded(
+                                      child: Padding(
+                                        padding: EdgeInsets.all(
+                                          compacta ? 2.5 : 5,
+                                        ),
+                                        child: () {
+                                          final dia = DateTime(
+                                            inicio.year,
+                                            inicio.month,
+                                            inicio.day + w * 7 + d,
+                                          );
+                                          return _Celula(
+                                            key: ValueKey(
+                                              'dia-${dia.year}-${dia.month}-${dia.day}',
+                                            ),
+                                            dia: dia,
+                                            doMes: dia.month == mes.month,
+                                            sessoes: porDia[dia] ?? const [],
+                                            materias: mapaMaterias,
+                                            compacta: compacta,
+                                            aoTocar: () =>
+                                                abrirDia(context, dia, painel),
+                                          );
+                                        }(),
+                                      ),
                                     ),
-                                  ),
-                                ),
-                            ],
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
+                    );
+
+                    if (!compacta) return grade(null);
+                    // Retrato/celular: células quadradas (sem esticar) e,
+                    // logo abaixo, os cards das matérias.
+                    final temCards = painel.materias.isNotEmpty;
+                    final alturaCards = temCards
+                        ? _CardsMaterias.altura + 14
+                        : 0.0;
+                    final lado = [
+                      box.maxWidth / 7,
+                      (box.maxHeight - alturaCards) / semanas,
+                    ].reduce((a, b) => a < b ? a : b);
+                    return SingleChildScrollView(
+                      physics: const ClampingScrollPhysics(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Center(
+                            child: SizedBox(
+                              width: lado * 7,
+                              child: grade(lado),
+                            ),
                           ),
-                        ),
-                    ],
-                  ),
+                          if (temCards) ...[
+                            const SizedBox(height: 14),
+                            _CardsMaterias(
+                              painel: painel,
+                              minutos: minutosPorMateria,
+                            ),
+                          ],
+                        ],
+                      ),
+                    );
+                  },
                 ),
               ),
-              if (compacta && painel.materias.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                _Chips(painel: painel, porMateria: porMateria),
-              ],
             ],
           ),
         );
@@ -167,6 +208,10 @@ class GradeMes extends StatelessWidget {
     );
   }
 }
+
+Widget _linha(double? lado, Widget filho) => lado == null
+    ? Expanded(child: filho)
+    : SizedBox(height: lado, child: filho);
 
 class _BarraTopo extends StatelessWidget {
   const _BarraTopo({required this.compacta, required this.concursoId});
@@ -299,6 +344,7 @@ class _Titulo extends StatelessWidget {
 
 class _Celula extends StatelessWidget {
   const _Celula({
+    super.key,
     required this.dia,
     required this.doMes,
     required this.sessoes,
@@ -330,217 +376,307 @@ class _Celula extends StatelessWidget {
         : const BorderSide(color: Cores.linha, width: 1.2);
 
     // Matérias distintas do dia, na ordem em que foram estudadas.
-    final nomes = <String, Color>{};
+    final itens = <String, (String, Color)>{};
     for (final s in sessoes) {
       final m = materias[s.materiaId];
-      nomes[m?.nome ?? 'Estudo livre'] = m == null
-          ? Cores.tintaSuave
-          : Color(m.cor);
+      final chave = m?.id ?? '-';
+      itens[chave] = (
+        m?.nome ?? 'Estudo livre',
+        m == null ? Cores.tintaSuave : Color(m.cor),
+      );
     }
+    final lista = itens.values.toList();
 
     return Opacity(
       opacity: doMes ? 1 : 0.4,
       child: Material(
-        color: estudado ? Cores.celulaCheia : Cores.fundo,
+        color: Cores.fundo,
         shape: RoundedRectangleBorder(borderRadius: raio, side: borda),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: aoTocar,
-          child: Padding(
-            padding: EdgeInsets.all(compacta ? 6 : 10),
-            child: LayoutBuilder(
-              builder: (context, c) {
-                final tamNum = compacta ? 15.0 : 20.0;
-                final altLinha = compacta ? 13.0 : 17.0;
-                final cabem = ((c.maxHeight - tamNum - 6) / altLinha)
-                    .floor()
-                    .clamp(0, 8);
-                final lista = nomes.entries.toList();
-                final mostrar = lista.length > cabem
-                    ? (cabem - 1).clamp(0, 8)
-                    : lista.length;
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // Fundo suave na cor da matéria; uma faixa por matéria.
+              if (estudado)
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          '${dia.day}',
-                          style: TextStyle(
-                            fontSize: tamNum,
-                            height: 1,
-                            fontWeight: FontWeight.w800,
-                            color: hoje
-                                ? Cores.acento
-                                : doMes
-                                ? Cores.tinta
-                                : Cores.tintaFraca,
-                          ),
-                        ),
-                        if (hoje) ...[
-                          const SizedBox(width: 4),
-                          const Bolinha(Cores.acento, tamanho: 6),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    // Célula estreita (celular): só barrinhas coloridas.
-                    if (c.maxWidth < 72)
-                      Wrap(
-                        spacing: 3,
-                        runSpacing: 3,
-                        children: [
-                          for (final cor in nomes.values)
-                            Container(
-                              width: 14,
-                              height: 5,
-                              decoration: BoxDecoration(
-                                color: cor,
-                                borderRadius: BorderRadius.circular(3),
-                              ),
-                            ),
-                        ],
-                      )
-                    else ...[
-                      for (final e in lista.take(mostrar))
-                        SizedBox(
-                          height: altLinha,
-                          child: Row(
-                            children: [
-                              Container(
-                                width: compacta ? 3 : 4,
-                                height: compacta ? 9 : 11,
-                                decoration: BoxDecoration(
-                                  color: e.value,
-                                  borderRadius: BorderRadius.circular(2),
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              Expanded(
-                                child: Text(
-                                  e.key,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: compacta ? 9.5 : 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: Cores.tinta,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      if (mostrar < lista.length && cabem > 0)
-                        Text(
-                          '+${lista.length - mostrar}',
-                          style: TextStyle(
-                            fontSize: compacta ? 9.5 : 12,
-                            fontWeight: FontWeight.w700,
-                            color: Cores.tintaSuave,
-                          ),
-                        ),
-                    ],
+                    for (final (_, cor) in lista)
+                      Expanded(
+                        child: ColoredBox(color: cor.withValues(alpha: 0.2)),
+                      ),
                   ],
-                );
-              },
-            ),
+                ),
+              Padding(
+                padding: EdgeInsets.all(compacta ? 6 : 10),
+                child: LayoutBuilder(
+                  builder: (context, c) => _conteudo(c, hoje, lista),
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
+
+  Widget _conteudo(BoxConstraints c, bool hoje, List<(String, Color)> lista) {
+    final tamNum = compacta ? 15.0 : 20.0;
+    final fonte = compacta ? 9.5 : 12.0;
+    final altLinha = compacta ? 13.0 : 17.0;
+    final larguraBarra = compacta ? 3.0 : 4.0;
+    final cabem = ((c.maxHeight - tamNum - 6) / altLinha).floor().clamp(0, 8);
+    final mostrar = lista.length > cabem
+        ? (cabem - 1).clamp(0, 8)
+        : lista.length;
+    final estilo = TextStyle(
+      fontFamily: 'Roboto',
+      fontSize: fonte,
+      fontWeight: FontWeight.w700,
+      color: Cores.tinta,
+    );
+    final larguraTexto = c.maxWidth - larguraBarra - 4;
+
+    // Nome inteiro se couber; senão a sigla da matéria.
+    String rotulo(String nome) {
+      final tp = TextPainter(
+        text: TextSpan(text: nome, style: estilo),
+        maxLines: 1,
+        textDirection: TextDirection.ltr,
+      )..layout();
+      return tp.width <= larguraTexto ? nome : siglaMateria(nome);
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              '${dia.day}',
+              style: TextStyle(
+                fontSize: tamNum,
+                height: 1,
+                fontWeight: FontWeight.w800,
+                color: hoje
+                    ? Cores.acento
+                    : doMes
+                    ? Cores.tinta
+                    : Cores.tintaFraca,
+              ),
+            ),
+            if (hoje) ...[
+              const SizedBox(width: 4),
+              const Bolinha(Cores.acento, tamanho: 6),
+            ],
+          ],
+        ),
+        const SizedBox(height: 6),
+        // Só cabe uma linha e há várias matérias: uma bolinha por matéria.
+        if (cabem == 1 && lista.length > 1)
+          Wrap(
+            spacing: 3,
+            runSpacing: 3,
+            children: [
+              for (final (_, cor) in lista)
+                Bolinha(cor, tamanho: compacta ? 8 : 10),
+            ],
+          )
+        else ...[
+          for (final (nome, cor) in lista.take(mostrar))
+            SizedBox(
+              height: altLinha,
+              child: Row(
+                children: [
+                  Container(
+                    width: larguraBarra,
+                    height: compacta ? 9 : 11,
+                    decoration: BoxDecoration(
+                      color: cor,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      rotulo(nome),
+                      maxLines: 1,
+                      overflow: TextOverflow.clip,
+                      softWrap: false,
+                      style: estilo,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          if (mostrar < lista.length && cabem > 0)
+            Text(
+              '+${lista.length - mostrar}',
+              style: TextStyle(
+                fontSize: fonte,
+                fontWeight: FontWeight.w700,
+                color: Cores.tintaSuave,
+              ),
+            ),
+        ],
+      ],
+    );
+  }
 }
 
-/// Filtros em pílulas (modo compacto), como no rodapé do pocket cal.
-class _Chips extends StatelessWidget {
-  const _Chips({required this.painel, required this.porMateria});
+/// Cards das matérias no retrato (referência: biblioteca): fundo suave na
+/// cor da matéria, anel de progresso e tópicos vistos/total. Tocar filtra a
+/// grade; segurar abre a matéria.
+class _CardsMaterias extends StatelessWidget {
+  const _CardsMaterias({required this.painel, required this.minutos});
   final Painel painel;
-  final Map<String, int> porMateria;
+  final Map<String, int> minutos;
+
+  static const altura = 146.0;
 
   @override
   Widget build(BuildContext context) {
     final estado = context.read<AppState>();
-    final total = porMateria.values.fold<int>(0, (a, b) => a + b);
-    Widget chip(
-      String rotulo,
-      int n,
-      bool ativo,
-      VoidCallback aoTocar, [
-      Color? cor,
-    ]) {
-      return Padding(
-        padding: const EdgeInsets.only(right: 8),
-        child: Material(
-          color: ativo ? const Color(0xFFEDEDED) : Cores.fundo,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(22),
-            side: BorderSide(
-              color: ativo ? Cores.tinta : Cores.linha,
-              width: 1.5,
-            ),
+    final total = painel.materias.fold<int>(0, (a, m) => a + m.total);
+    final vistos = painel.materias.fold<int>(0, (a, m) => a + m.vistos);
+    return SizedBox(
+      height: altura,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+          _CardMateria(
+            titulo: 'Todas as matérias',
+            detalhe: '${painel.materias.length} matérias',
+            vistos: vistos,
+            total: total,
+            cor: Cores.tinta,
+            fundo: Cores.fundoLateral,
+            selecionado: painel.filtro == null,
+            aoTocar: estado.limparFiltro,
           ),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(22),
-            onTap: aoTocar,
-            child: Container(
-              height: 44,
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
+          for (final m in painel.materias)
+            _CardMateria(
+              titulo: m.materia.nome,
+              detalhe: (minutos[m.materia.id] ?? 0) == 0
+                  ? 'sem estudo no mês'
+                  : '${minutosFmt(minutos[m.materia.id]!)} no mês',
+              vistos: m.vistos,
+              total: m.total,
+              cor: Color(m.materia.cor),
+              fundo: Color(m.materia.cor).withValues(alpha: 0.14),
+              selecionado: painel.filtro == m.materia.id,
+              aoTocar: () => estado.alternarFiltro(m.materia.id),
+              aoSegurar: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => MateriaScreen(
+                    materiaId: m.materia.id,
+                    concursoId: painel.foco.id,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CardMateria extends StatelessWidget {
+  const _CardMateria({
+    required this.titulo,
+    required this.detalhe,
+    required this.vistos,
+    required this.total,
+    required this.cor,
+    required this.fundo,
+    required this.selecionado,
+    required this.aoTocar,
+    this.aoSegurar,
+  });
+
+  final String titulo;
+  final String detalhe;
+  final int vistos;
+  final int total;
+  final Color cor;
+  final Color fundo;
+  final bool selecionado;
+  final VoidCallback aoTocar;
+  final VoidCallback? aoSegurar;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 10),
+      child: Material(
+        color: fundo,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+            color: selecionado ? Cores.tinta : cor.withValues(alpha: 0.25),
+            width: selecionado ? 2.5 : 1.2,
+          ),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: aoTocar,
+          onLongPress: aoSegurar,
+          child: SizedBox(
+            width: 184,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 14, 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (cor != null) ...[
-                    Bolinha(cor, tamanho: 9),
-                    const SizedBox(width: 8),
-                  ],
                   Text(
-                    rotulo,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: ativo ? FontWeight.w800 : FontWeight.w600,
+                    titulo,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      height: 1.2,
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 7,
-                      vertical: 2,
+                  const SizedBox(height: 2),
+                  Text(
+                    detalhe,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      color: Cores.tintaSuave,
                     ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE4E4E4),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      '$n',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
+                  ),
+                  const Spacer(),
+                  Row(
+                    children: [
+                      AnelProgresso(
+                        valor: total == 0 ? 0 : vistos / total,
+                        cor: cor,
+                        tamanho: 40,
+                        espessura: 5,
                       ),
-                    ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          '$vistos/$total tópicos',
+                          style: const TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
           ),
         ),
-      );
-    }
-
-    return SizedBox(
-      height: 44,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: [
-          chip('Todas', total, painel.filtro == null, estado.limparFiltro),
-          for (final m in painel.materias)
-            chip(
-              m.materia.nome,
-              porMateria[m.materia.id] ?? 0,
-              painel.filtro == m.materia.id,
-              () => estado.alternarFiltro(m.materia.id),
-              Color(m.materia.cor),
-            ),
-        ],
       ),
     );
   }

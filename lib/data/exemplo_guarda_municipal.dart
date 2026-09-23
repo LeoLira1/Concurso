@@ -37,7 +37,7 @@ Regência nominal e verbal
 Crase
 Pontuação
 '''),
-    ExemploMateria('Matemática e Raciocínio Lógico', 0xFFF5A524, '''
+    ExemploMateria('Matemática e Raciocínio Lógico', 0xFFE08A00, '''
 Operações com números reais
 Razão e proporção
 Regra de três simples e composta

@@ -87,4 +87,17 @@ void main() {
     final e = Estatisticas([s(0, 60), s(10, 240), s(40, 999)], hoje: hoje);
     expect(e.mediaDiaria30, 10); // 300 min / 30 dias
   });
+
+  test('colunas guardam os minutos por matéria', () {
+    final e = Estatisticas([
+      s(0, 30, m: 'port'),
+      s(0, 20, m: 'dir'),
+      s(0, 10),
+      s(1, 15, m: 'port'),
+    ], hoje: hoje);
+    final hojeBarra = e.barras(Periodo.dias).last;
+    expect(hojeBarra.porMateria, {'port': 30, 'dir': 20, null: 10});
+    final semana = e.barras(Periodo.semanas).last;
+    expect(semana.porMateria['port'], 45);
+  });
 }

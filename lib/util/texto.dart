@@ -1,3 +1,5 @@
+import 'package:flutter/widgets.dart' show StringCharacters;
+
 const _acentos = {
   'á': 'a',
   'à': 'a',
@@ -75,4 +77,57 @@ String minutosFmt(int m) {
   if (m < 60) return '${m}min';
   final h = m ~/ 60, r = m % 60;
   return r == 0 ? '${h}h' : '${h}h${r.toString().padLeft(2, '0')}';
+}
+
+const _conectivosSigla = {
+  'de',
+  'da',
+  'do',
+  'das',
+  'dos',
+  'e',
+  'em',
+  'a',
+  'o',
+  'as',
+  'os',
+  'ao',
+  'aos',
+  'à',
+  'às',
+  'na',
+  'no',
+  'nas',
+  'nos',
+  'para',
+  'com',
+  'por',
+  'noções',
+  'nocoes',
+};
+
+/// Sigla curta para caber na célula da grade:
+/// "Língua Portuguesa" -> "LP", "Noções de Direito Constitucional" -> "DC",
+/// "Noções de Informática" -> "INFO", "Legislação Aplicada ao MPU" -> "LAM".
+String siglaMateria(String nome) {
+  final palavras = nome
+      .split(RegExp(r'[\s\-–/]+'))
+      .where((p) => p.isNotEmpty && !_conectivosSigla.contains(p.toLowerCase()))
+      .toList();
+  if (palavras.isEmpty) {
+    return nome.length <= 4
+        ? nome.toUpperCase()
+        : nome.substring(0, 4).toUpperCase();
+  }
+  if (palavras.length == 1) {
+    final p = palavras.first;
+    final ehSigla = p.length <= 5 && p == p.toUpperCase();
+    if (ehSigla) return p;
+    return (p.length <= 4 ? p : p.substring(0, 4)).toUpperCase();
+  }
+  final iniciais = palavras
+      .take(4)
+      .map((p) => p.characters.first.toUpperCase())
+      .join();
+  return chaveMateria(iniciais).toUpperCase();
 }

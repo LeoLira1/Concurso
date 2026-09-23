@@ -13,19 +13,22 @@ abstract final class Cores {
   static const acento = Color(0xFFE5322D);
 
   /// Cores por matéria/concurso (ideia de categoria do calendário do iPad).
+  /// Ordem validada (scripts do guia de visualização): as 8 primeiras
+  /// passam nos testes de separação para daltonismo e visão normal quando
+  /// vizinhas. As matérias novas recebem as cores nesta ordem.
   static const paleta = <int>[
     0xFF2F7CF6, // azul
-    0xFFE5407A, // rosa
-    0xFFF5A524, // laranja
-    0xFF34C759, // verde
+    0xFFE08A00, // laranja
     0xFF8E5CF7, // roxo
+    0xFF34C759, // verde
+    0xFFE5407A, // rosa
     0xFF14B8C4, // ciano
-    0xFFEF5B3B, // vermelho-coral
+    0xFFEF5B3B, // coral
+    0xFF3D4DB7, // índigo
     0xFFB8892F, // mostarda
-    0xFF5E7C8C, // ardósia
     0xFFD04CC9, // magenta
     0xFF7DBB2D, // lima
-    0xFF3D4DB7, // índigo
+    0xFF5E7C8C, // ardósia
   ];
 
   static int proximaCor(Iterable<int> usadas) {

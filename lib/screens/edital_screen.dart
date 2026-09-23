@@ -6,6 +6,7 @@ import '../theme.dart';
 import '../util/texto.dart';
 import '../widgets/comuns.dart';
 import 'concurso_form.dart';
+import 'importar_screen.dart';
 import 'materia_screen.dart';
 
 /// Edital verticalizado de um concurso: matérias com anel de progresso.
@@ -36,6 +37,16 @@ class EditalScreen extends StatelessWidget {
                     aoTocar: () => db.definirFoco(c.id),
                   ),
                 ),
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: Pilula(
+                  icone: Icons.content_paste_rounded,
+                  rotulo: 'Colar edital',
+                  tooltip:
+                      'Colar o conteúdo programático e separar em matérias',
+                  aoTocar: () => _abrirImportar(context, c.id),
+                ),
+              ),
               Padding(
                 padding: const EdgeInsets.only(right: 20),
                 child: Pilula(
@@ -70,6 +81,9 @@ class EditalScreen extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(28, 0, 28, 120),
                     buildDefaultDragHandles: false,
                     header: _Cabecalho(c, mats),
+                    footer: mats.isEmpty && mSnap.hasData
+                        ? _EditalVazio(concursoId: c.id)
+                        : null,
                     itemCount: mats.length,
                     onReorderItem: (de, para) {
                       final ids = mats.map((m) => m.materia.id).toList();
@@ -399,6 +413,54 @@ class _NovaMateriaDialogState extends State<_NovaMateriaDialog> {
         ),
         FilledButton(onPressed: _ok, child: const Text('Adicionar')),
       ],
+    );
+  }
+}
+
+void _abrirImportar(BuildContext context, String concursoId) => Navigator.push(
+  context,
+  MaterialPageRoute(builder: (_) => ImportarScreen(concursoId: concursoId)),
+);
+
+class _EditalVazio extends StatelessWidget {
+  const _EditalVazio({required this.concursoId});
+  final String concursoId;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(
+        color: Cores.fundoLateral,
+        borderRadius: BorderRadius.circular(28),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.content_paste_rounded, size: 36),
+          const SizedBox(height: 12),
+          Text(
+            'Monte o edital em segundos',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'Copie o conteúdo programático do PDF do edital e cole aqui: o app separa '
+            'em matérias e tópicos, e você confere antes de importar.',
+            style: TextStyle(
+              fontSize: 16,
+              color: Cores.tintaSuave,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 20),
+          FilledButton.icon(
+            onPressed: () => _abrirImportar(context, concursoId),
+            icon: const Icon(Icons.content_paste_rounded),
+            label: const Text('Colar conteúdo programático'),
+          ),
+        ],
+      ),
     );
   }
 }
