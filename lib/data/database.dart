@@ -8,9 +8,8 @@ import '../theme.dart' show Cores;
 import '../util/texto.dart';
 import 'exemplo_guarda_municipal.dart';
 import 'streams.dart';
+import 'sync/infra.dart';
 import 'tables.dart';
-
-// Sincronização futura: ver sync/sincronizacao.dart.
 
 export 'tables.dart';
 
@@ -94,6 +93,9 @@ class AppDatabase extends _$AppDatabase {
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
+      for (final c in comandosInfraSync()) {
+        await customStatement(c);
+      }
     },
   );
 

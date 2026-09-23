@@ -7,6 +7,8 @@ import '../screens/concursos_screen.dart';
 import '../screens/estatisticas_screen.dart';
 import '../screens/lembretes_screen.dart';
 import '../screens/revisoes_screen.dart';
+import '../screens/sincronizacao_screen.dart';
+import '../state/sincronizacao.dart';
 import '../screens/topico_screen.dart';
 import '../screens/edital_screen.dart';
 import '../screens/home_screen.dart';
@@ -47,11 +49,18 @@ class _SidebarState extends State<Sidebar> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(28, 20, 12, 12),
+            padding: const EdgeInsets.fromLTRB(28, 20, 4, 12),
             child: Row(
               children: [
-                const Marca(tamanho: 34),
+                const Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Marca(tamanho: 34),
+                  ),
+                ),
                 const Spacer(),
+                const _BotaoNuvem(),
                 IconButton(
                   tooltip: 'Lembretes',
                   iconSize: 26,
@@ -610,6 +619,40 @@ class _TopicoMini extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Ícone de nuvem com o estado da sincronização; abre a configuração.
+class _BotaoNuvem extends StatelessWidget {
+  const _BotaoNuvem();
+
+  @override
+  Widget build(BuildContext context) {
+    final s = context.watch<Sincronizacao>();
+    final (icone, cor, dica) = !s.configurado
+        ? (
+            Icons.cloud_off_outlined,
+            Cores.tintaFraca,
+            'Sincronização desligada',
+          )
+        : s.sincronizando
+        ? (Icons.cloud_sync_outlined, Cores.tinta, 'Sincronizando…')
+        : s.erro != null
+        ? (Icons.cloud_off_outlined, Cores.acento, 'Erro na sincronização')
+        : (Icons.cloud_done_outlined, Cores.tinta, 'Sincronizado');
+    return IconButton(
+      tooltip: dica,
+      iconSize: 26,
+      onPressed: () {
+        final sc = Scaffold.maybeOf(context);
+        if (sc != null && sc.isDrawerOpen) Navigator.pop(context);
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const SincronizacaoScreen()),
+        );
+      },
+      icon: Icon(icone, color: cor),
     );
   }
 }

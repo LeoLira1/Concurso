@@ -16,6 +16,8 @@ import 'package:edital/screens/home_screen.dart';
 import 'package:edital/screens/materia_screen.dart';
 import 'package:edital/state/app_state.dart';
 import 'package:edital/state/sessao_ativa.dart';
+import 'package:edital/state/sincronizacao.dart';
+import 'package:edital/screens/sincronizacao_screen.dart';
 import 'package:edital/state/notificacoes.dart';
 import 'package:edital/screens/revisoes_screen.dart';
 import 'package:edital/screens/lembretes_screen.dart';
@@ -260,6 +262,7 @@ Widget app(
   Widget home, {
   AppState? estado,
   SessaoAtiva? sessao,
+  Sincronizacao? sinc,
 }) => MultiProvider(
   providers: [
     Provider<AppDatabase>.value(value: db),
@@ -270,6 +273,7 @@ Widget app(
         ..permitido = true,
     ),
     ChangeNotifierProvider(create: (_) => sessao ?? SessaoAtiva()),
+    ChangeNotifierProvider(create: (_) => sinc ?? Sincronizacao(db: db)),
   ],
   child: MaterialApp(
     debugShowCheckedModeBanner: false,
@@ -766,6 +770,33 @@ NOÇÕES DE DIREITO ADMINISTRATIVO: 1 Noções de organização administrativa. 
         await t.pumpAndSettle();
         await abrirPrimeira(t);
       },
+    ),
+  );
+
+  // --- Sincronização ---
+  testWidgets(
+    'sincronizacao configurar',
+    (t) => captura(
+      t,
+      '20_sincronizacao_configurar',
+      retrato,
+      (db) => app(db, const SincronizacaoScreen()),
+    ),
+  );
+  testWidgets(
+    'sincronizacao ativa',
+    (t) => captura(
+      t,
+      '20b_sincronizacao_ativa',
+      paisagem,
+      (db) => app(
+        db,
+        const SincronizacaoScreen(),
+        sinc: Sincronizacao(db: db)
+          ..url = 'libsql://edital-leolira.turso.io'
+          ..token = 'x'
+          ..ultima = DateTime.now().subtract(const Duration(minutes: 3)),
+      ),
     ),
   );
 }

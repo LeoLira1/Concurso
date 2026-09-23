@@ -9,6 +9,7 @@ import 'state/app_state.dart';
 import 'state/arquivos.dart';
 import 'state/notificacoes.dart';
 import 'state/sessao_ativa.dart';
+import 'state/sincronizacao.dart';
 import 'widgets/ouvinte_notificacoes.dart';
 import 'theme.dart';
 
@@ -50,6 +51,10 @@ class EditalApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (ctx) =>
               SessaoAtiva(notificacoes: ctx.read<Notificacoes>())..restaurar(),
+        ),
+        ChangeNotifierProvider(
+          create: (ctx) =>
+              Sincronizacao(db: ctx.read<AppDatabase>())..iniciar(),
         ),
       ],
       child: MaterialApp(

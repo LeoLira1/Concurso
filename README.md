@@ -113,26 +113,20 @@ No edital do concurso, toque em **"Colar edital"**. Com o edital vazio, também 
 - Na prévia dá para **renomear** e **desmarcar** matérias antes de importar.
 - Matérias que já existem são reaproveitadas, com a mesma cor e o mesmo progresso. Tópicos com o mesmo nome não são duplicados, então dá para colar de novo sem problema.
 
-## Próximas etapas
+## Sincronização (Turso)
 
-1. Sincronização celular + tablet via Turso (o banco já está preparado: ids UUID + `atualizado_em`; veja `lib/data/sync/`).
+Toque no ícone de **nuvem** ao lado do logo e siga os passos. Você só configura uma vez em cada aparelho:
 
-## Estrutura
+1. Crie uma conta grátis em turso.tech.
+2. Crie um banco de dados, por exemplo `edital`.
+3. Copie a URL, algo como `libsql://edital-seunome.turso.io`.
+4. Gere um token com leitura e escrita, sem expiração.
+5. Cole a URL e o token no app. No outro aparelho, use os mesmos.
 
-```
-lib/
-  data/        banco local drift (SQLite), tabelas, exemplo, ponto de sync
-  screens/     home (mês + sidebar), meus concursos, edital, matéria
-  widgets/     grade do mês, sidebar, folha do dia, componentes
-  state/       estado da tela (filtro, mês, foco/tudo)
-referencias/   imagens de referência visual
-tool/          gerador de capturas de tela (flutter test tool/capturas_test.dart --update-goldens)
-```
+- **Automática**: sincroniza ao abrir o app, ao voltar para ele, alguns segundos depois de cada alteração e a cada 5 minutos. Offline, as alterações ficam guardadas e vão depois.
+- **Primeira conexão**: se a nuvem e o aparelho já têm dados, você escolhe **Juntar** ou **Usar só os da nuvem**. A segunda opção apaga os dados do aparelho; é boa para o segundo aparelho, se ele só tiver o exemplo.
+- **Conflitos**: vale a alteração mais recente. Matérias com o mesmo nome criadas nos dois aparelhos viram uma só, com os tópicos e sessões dos dois.
+- **O que sincroniza**: concursos, edital, progresso, ciclo, sessões, revisões e flashcards.
+- **O que não sincroniza**: fotos e PDFs anexados ficam no aparelho onde foram adicionados. Lembretes e pomodoro são configurados em cada aparelho.
 
-## Desenvolvimento
-
-```
-flutter pub get
-dart run build_runner build   # gera lib/data/database.g.dart
-flutter test
-```
+Como funciona: gatilhos do SQLite anotam cada mudança local, inclusive exclusões, em `sync_pendentes`. O app envia essas linhas para uma tabela genérica `registros` no Turso, pela API HTTP (Hrana, `/v2/pipeline`). Cada gravação recebe uma `versao` crescente, e cada aparelho baixa só o que veio depois da última versão que já viu. Veja `lib/data/sync/`.
