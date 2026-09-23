@@ -82,11 +82,25 @@ Menu lateral → "Estatísticas". A tela segue o mesmo escopo da tela inicial: c
 - **Horas por matéria** (com % do total) e **% de acerto por matéria** (acertos/feitas).
 - **Contagem regressiva** para a prova mais próxima e os dias até as demais.
 
+## Etapa 6: resumos, mapas mentais e flashcards
+
+- **Tela do tópico**: toque no nome de um tópico (na matéria ou na sidebar) para abrir. O checkbox continua marcando como visto. A tela também tem "Estudar este tópico", que abre o cronômetro já no tópico.
+- **Resumos e mapas mentais**:
+  - Tire uma **foto** do caderno, escolha imagens da **galeria** ou anexe um **PDF**.
+  - As imagens abrem em tela cheia com zoom de pinça. Os PDFs abrem no leitor instalado no tablet.
+  - Segure uma miniatura para renomear ou excluir.
+  - Os arquivos ficam na pasta do app, neste aparelho.
+- **Flashcards por tópico**:
+  - Pergunta e resposta, com "Salvar e criar outro" para cadastrar rápido.
+  - O estudo é em cartão grande: toque para ver a resposta, depois **Errei** ou **Acertei**.
+  - Repetição espaçada (caixas de Leitner): acertou, o cartão volta em 1, 3, 7, 14 e 30 dias; errou, volta para o fim da fila da sessão.
+  - Atalhos: "Flashcards · N para revisar" na matéria e o card de flashcards do dia na tela de Revisões.
+- Na lista de tópicos, ícones mostram quantos anexos e cartões cada tópico tem.
+
 ## Próximas etapas
 
-1. Anexos (foto/PDF) e flashcards por tópico.
-2. Colar o conteúdo programático do edital e separar automaticamente em matérias e tópicos.
-3. Sincronização celular + tablet via Turso (o banco já está preparado: ids UUID + `atualizado_em`; veja `lib/data/sync/`).
+1. Colar o conteúdo programático do edital e separar automaticamente em matérias e tópicos.
+2. Sincronização celular + tablet via Turso (o banco já está preparado: ids UUID + `atualizado_em`; veja `lib/data/sync/`).
 
 ## Estrutura
 

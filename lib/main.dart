@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'data/database.dart';
 import 'screens/home_screen.dart';
 import 'state/app_state.dart';
+import 'state/arquivos.dart';
 import 'state/notificacoes.dart';
 import 'state/sessao_ativa.dart';
 import 'widgets/ouvinte_notificacoes.dart';
@@ -35,7 +36,11 @@ class EditalApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         Provider<AppDatabase>(
-          create: (_) => database ?? AppDatabase(),
+          create: (_) {
+            final db = database ?? AppDatabase();
+            if (database == null) ArquivosAnexos.limparOrfaos(db);
+            return db;
+          },
           dispose: (_, db) => db.close(),
         ),
         ChangeNotifierProvider(create: (_) => AppState()),

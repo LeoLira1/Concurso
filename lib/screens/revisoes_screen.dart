@@ -8,6 +8,7 @@ import '../util/texto.dart';
 import '../widgets/assistir.dart';
 import '../widgets/comuns.dart';
 import 'cronometro_screen.dart';
+import 'flashcards_screen.dart';
 
 /// Revisões espaçadas: atrasadas, de hoje e dos próximos 7 dias.
 class RevisoesScreen extends StatelessWidget {
@@ -79,6 +80,7 @@ class RevisoesScreen extends StatelessWidget {
                         ),
                       ),
                     ),
+                  const _Flashcards(),
                   if (atrasadas.isNotEmpty)
                     _Secao('Atrasadas', atrasadas, destaque: Cores.acento),
                   if (deHoje.isNotEmpty) _Secao('Hoje', deHoje),
@@ -211,6 +213,82 @@ class _LinhaRevisao extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Cartões de flashcard que vencem hoje (todas as matérias).
+class _Flashcards extends StatelessWidget {
+  const _Flashcards();
+
+  @override
+  Widget build(BuildContext context) {
+    final db = context.read<AppDatabase>();
+    return Assistir<List<CartaoInfo>>(
+      chave: 'cartoes',
+      stream: db.watchCartoesParaRevisar,
+      builder: (context, l) {
+        final n = l?.length ?? 0;
+        if (n == 0) return const SizedBox.shrink();
+        final materias = {for (final c in l!) c.materia.id: c.materia}.values
+            .toList();
+        return Container(
+          margin: const EdgeInsets.only(top: 24),
+          padding: const EdgeInsets.fromLTRB(22, 18, 18, 18),
+          decoration: BoxDecoration(
+            color: Cores.fundoLateral,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.style_outlined, size: 30),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '$n flashcard${n == 1 ? '' : 's'} para revisar',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 4),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 4,
+                      children: [
+                        for (final m in materias.take(4))
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Bolinha(Color(m.cor), tamanho: 9),
+                              const SizedBox(width: 5),
+                              Text(
+                                m.nome,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Cores.tintaSuave,
+                                ),
+                              ),
+                            ],
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              FilledButton.icon(
+                onPressed: () => abrirEstudoFlashcards(
+                  context,
+                  titulo: 'Flashcards de hoje',
+                ),
+                icon: const Icon(Icons.play_arrow_rounded),
+                label: const Text('Estudar'),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

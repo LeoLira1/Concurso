@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 /// Quem instalou a versão 1 do app precisa abrir a versão 2 sem perder dados.
 void main() {
-  test('migra banco v1 -> v3 mantendo os dados', () async {
+  test('migra banco v1 -> v4 mantendo os dados', () async {
     final dir = await Directory.systemTemp.createTemp('edital');
     final arquivo = File('${dir.path}/edital.sqlite');
 
@@ -36,6 +36,8 @@ void main() {
         'ALTER TABLE concurso_materias DROP COLUMN $col',
       );
     }
+    await db.customStatement('DROP TABLE anexos');
+    await db.customStatement('DROP TABLE flashcards');
     await db.customStatement('PRAGMA user_version = 1');
     await db.close();
 
@@ -55,6 +57,9 @@ void main() {
       (await db.watchUltimaParada(mats.single.materia.id).first)?.pontoParada,
       'pág. 10',
     );
+    final t = await db.adicionarTopico(mats.single.materia.id, 'Crase');
+    await db.salvarFlashcard(topicoId: t, frente: 'P', verso: 'R');
+    expect(await db.watchCartoesParaRevisar().first, hasLength(1));
     final ciclo = await db.watchCiclo(c).first;
     expect(ciclo.fila, isNotEmpty);
     await db.close();

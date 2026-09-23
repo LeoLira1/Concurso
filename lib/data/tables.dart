@@ -123,3 +123,37 @@ class Sessoes extends Table with Sincronizavel {
   /// Onde parou (texto curto), mostrado na próxima sessão da mesma matéria.
   TextColumn get pontoParada => text().nullable()();
 }
+
+/// Resumo ou mapa mental anexado a um tópico (v4). O arquivo fica na pasta
+/// do app; aqui só o caminho relativo a ela.
+class Anexos extends Table with Sincronizavel {
+  TextColumn get topicoId =>
+      text().references(Topicos, #id, onDelete: KeyAction.cascade)();
+
+  /// 'imagem' ou 'pdf'.
+  TextColumn get tipo => text()();
+  TextColumn get nome => text()();
+
+  /// Caminho relativo à pasta de anexos do app (ex.: "a1b2.jpg").
+  TextColumn get arquivo => text()();
+  IntColumn get bytes => integer().withDefault(const Constant(0))();
+  DateTimeColumn get criadoEm => dateTime().clientDefault(DateTime.now)();
+}
+
+/// Flashcard de um tópico, com repetição espaçada simples (caixas de Leitner).
+class Flashcards extends Table with Sincronizavel {
+  TextColumn get topicoId =>
+      text().references(Topicos, #id, onDelete: KeyAction.cascade)();
+  TextColumn get frente => text()();
+  TextColumn get verso => text()();
+  IntColumn get ordem => integer().withDefault(const Constant(0))();
+
+  /// 0 = novo/errado ... 5 = bem sabido.
+  IntColumn get caixa => integer().withDefault(const Constant(0))();
+
+  /// Dia em que o cartão volta a aparecer.
+  DateTimeColumn get proximaRevisao => dateTime().clientDefault(DateTime.now)();
+  IntColumn get acertos => integer().withDefault(const Constant(0))();
+  IntColumn get erros => integer().withDefault(const Constant(0))();
+  DateTimeColumn get criadoEm => dateTime().clientDefault(DateTime.now)();
+}

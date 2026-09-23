@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 
 import '../logic/ciclo.dart';
+import '../logic/flashcards.dart';
 import '../util/texto.dart';
 import 'exemplo_guarda_municipal.dart';
 import 'streams.dart';
@@ -54,6 +55,8 @@ class ProgressoConcurso {
     Revisoes,
     Questoes,
     Sessoes,
+    Anexos,
+    Flashcards,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -61,7 +64,7 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? driftDatabase(name: 'edital'));
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -81,6 +84,10 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(sessoes, sessoes.questoesAcertos);
         await m.addColumn(sessoes, sessoes.paginas);
         await m.addColumn(sessoes, sessoes.pontoParada);
+      }
+      if (de < 4) {
+        await m.createTable(anexos);
+        await m.createTable(flashcards);
       }
     },
     beforeOpen: (details) async {
@@ -668,6 +675,164 @@ class AppDatabase extends _$AppDatabase {
   ).watch().map((_) {});
 
   // ---------------------------------------------------------------------------
+  // Anexos
+  // ---------------------------------------------------------------------------
+
+  Stream<List<Anexo>> watchAnexos(String topicoId) =>
+      (select(anexos)
+            ..where((a) => a.topicoId.equals(topicoId))
+            ..orderBy([(a) => OrderingTerm.desc(a.criadoEm)]))
+          .watch();
+
+  Future<void> adicionarAnexo({
+    required String topicoId,
+    required String tipo,
+    required String nome,
+    required String arquivo,
+    int bytes = 0,
+  }) => into(anexos).insert(
+    AnexosCompanion.insert(
+      topicoId: topicoId,
+      tipo: tipo,
+      nome: nome,
+      arquivo: arquivo,
+      bytes: Value(bytes),
+    ),
+  );
+
+  Future<void> renomearAnexo(String id, String nome) =>
+      (update(anexos)..where((a) => a.id.equals(id))).write(
+        AnexosCompanion(
+          nome: Value(nome.trim()),
+          atualizadoEm: Value(DateTime.now()),
+        ),
+      );
+
+  Future<void> excluirAnexo(String id) =>
+      (delete(anexos)..where((a) => a.id.equals(id))).go();
+
+  /// Nomes de arquivo ainda referenciados (para limpar órfãos no disco).
+  Future<Set<String>> arquivosDeAnexos() async => {
+    for (final a in await select(anexos).get()) a.arquivo,
+  };
+
+  // ---------------------------------------------------------------------------
+  // Flashcards
+  // ---------------------------------------------------------------------------
+
+  Stream<List<Flashcard>> watchFlashcards(String topicoId) =>
+      (select(flashcards)
+            ..where((f) => f.topicoId.equals(topicoId))
+            ..orderBy([
+              (f) => OrderingTerm.asc(f.ordem),
+              (f) => OrderingTerm.asc(f.criadoEm),
+            ]))
+          .watch();
+
+  Future<void> salvarFlashcard({
+    String? id,
+    required String topicoId,
+    required String frente,
+    required String verso,
+  }) async {
+    if (id != null) {
+      await (update(flashcards)..where((f) => f.id.equals(id))).write(
+        FlashcardsCompanion(
+          frente: Value(frente.trim()),
+          verso: Value(verso.trim()),
+          atualizadoEm: Value(DateTime.now()),
+        ),
+      );
+      return;
+    }
+    final r = await customSelect(
+      'SELECT COALESCE(MAX(ordem), -1) AS m FROM flashcards WHERE topico_id = ?',
+      variables: [Variable.withString(topicoId)],
+    ).getSingle();
+    await into(flashcards).insert(
+      FlashcardsCompanion.insert(
+        topicoId: topicoId,
+        frente: frente.trim(),
+        verso: verso.trim(),
+        ordem: Value(r.read<int>('m') + 1),
+        proximaRevisao: Value(soDia(DateTime.now())),
+      ),
+    );
+  }
+
+  Future<void> excluirFlashcard(String id) =>
+      (delete(flashcards)..where((f) => f.id.equals(id))).go();
+
+  Future<void> responderFlashcard(Flashcard f, {required bool acertou}) {
+    final r = responderCartao(
+      caixaAtual: f.caixa,
+      acertou: acertou,
+      hoje: DateTime.now(),
+    );
+    return (update(flashcards)..where((x) => x.id.equals(f.id))).write(
+      FlashcardsCompanion(
+        caixa: Value(r.caixa),
+        proximaRevisao: Value(r.proxima),
+        acertos: Value(f.acertos + (acertou ? 1 : 0)),
+        erros: Value(f.erros + (acertou ? 0 : 1)),
+        atualizadoEm: Value(DateTime.now()),
+      ),
+    );
+  }
+
+  /// Cartões para revisar até [ate] (hoje, por padrão), com tópico e matéria.
+  /// Filtra por tópico ou matéria quando informados.
+  Stream<List<CartaoInfo>> watchCartoesParaRevisar({
+    String? topicoId,
+    String? materiaId,
+    DateTime? ate,
+  }) {
+    final limite = soDia(ate ?? DateTime.now());
+    final q =
+        select(flashcards).join([
+            innerJoin(topicos, topicos.id.equalsExp(flashcards.topicoId)),
+            innerJoin(materias, materias.id.equalsExp(topicos.materiaId)),
+          ])
+          ..where(flashcards.proximaRevisao.isSmallerOrEqualValue(limite))
+          ..orderBy([
+            OrderingTerm.asc(flashcards.proximaRevisao),
+            OrderingTerm.asc(flashcards.caixa),
+            OrderingTerm.asc(flashcards.ordem),
+          ]);
+    if (topicoId != null) q.where(flashcards.topicoId.equals(topicoId));
+    if (materiaId != null) q.where(topicos.materiaId.equals(materiaId));
+    return q.watch().map(
+      (rows) => [
+        for (final r in rows)
+          CartaoInfo(
+            r.readTable(flashcards),
+            r.readTable(topicos),
+            r.readTable(materias),
+          ),
+      ],
+    );
+  }
+
+  /// Quantidade de anexos e cartões por tópico (para os ícones da lista).
+  Stream<Map<String, (int, int)>> watchContagemExtras(String materiaId) {
+    return customSelect(
+      '''
+      SELECT t.id AS id,
+        (SELECT COUNT(*) FROM anexos a WHERE a.topico_id = t.id) AS anexos,
+        (SELECT COUNT(*) FROM flashcards f WHERE f.topico_id = t.id) AS cartoes
+      FROM topicos t WHERE t.materia_id = ?
+      ''',
+      variables: [Variable.withString(materiaId)],
+      readsFrom: {topicos, anexos, flashcards},
+    ).watch().map(
+      (rows) => {
+        for (final r in rows)
+          r.read<String>('id'): (r.read<int>('anexos'), r.read<int>('cartoes')),
+      },
+    );
+  }
+
+  // ---------------------------------------------------------------------------
   // Sessões
   // ---------------------------------------------------------------------------
 
@@ -808,6 +973,13 @@ class EstadoCiclo {
 class RevisaoInfo {
   const RevisaoInfo(this.revisao, this.topico, this.materia);
   final Revisao revisao;
+  final Topico topico;
+  final Materia materia;
+}
+
+class CartaoInfo {
+  const CartaoInfo(this.cartao, this.topico, this.materia);
+  final Flashcard cartao;
   final Topico topico;
   final Materia materia;
 }

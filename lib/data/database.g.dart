@@ -3711,6 +3711,1163 @@ class SessoesCompanion extends UpdateCompanion<Sessao> {
   }
 }
 
+class $AnexosTable extends Anexos with TableInfo<$AnexosTable, Anexo> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AnexosTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    clientDefault: novoId,
+  );
+  static const VerificationMeta _atualizadoEmMeta = const VerificationMeta(
+    'atualizadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> atualizadoEm = GeneratedColumn<DateTime>(
+    'atualizado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _topicoIdMeta = const VerificationMeta(
+    'topicoId',
+  );
+  @override
+  late final GeneratedColumn<String> topicoId = GeneratedColumn<String>(
+    'topico_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES topicos (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _tipoMeta = const VerificationMeta('tipo');
+  @override
+  late final GeneratedColumn<String> tipo = GeneratedColumn<String>(
+    'tipo',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nomeMeta = const VerificationMeta('nome');
+  @override
+  late final GeneratedColumn<String> nome = GeneratedColumn<String>(
+    'nome',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _arquivoMeta = const VerificationMeta(
+    'arquivo',
+  );
+  @override
+  late final GeneratedColumn<String> arquivo = GeneratedColumn<String>(
+    'arquivo',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _bytesMeta = const VerificationMeta('bytes');
+  @override
+  late final GeneratedColumn<int> bytes = GeneratedColumn<int>(
+    'bytes',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _criadoEmMeta = const VerificationMeta(
+    'criadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> criadoEm = GeneratedColumn<DateTime>(
+    'criado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    atualizadoEm,
+    topicoId,
+    tipo,
+    nome,
+    arquivo,
+    bytes,
+    criadoEm,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'anexos';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Anexo> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('atualizado_em')) {
+      context.handle(
+        _atualizadoEmMeta,
+        atualizadoEm.isAcceptableOrUnknown(
+          data['atualizado_em']!,
+          _atualizadoEmMeta,
+        ),
+      );
+    }
+    if (data.containsKey('topico_id')) {
+      context.handle(
+        _topicoIdMeta,
+        topicoId.isAcceptableOrUnknown(data['topico_id']!, _topicoIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_topicoIdMeta);
+    }
+    if (data.containsKey('tipo')) {
+      context.handle(
+        _tipoMeta,
+        tipo.isAcceptableOrUnknown(data['tipo']!, _tipoMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_tipoMeta);
+    }
+    if (data.containsKey('nome')) {
+      context.handle(
+        _nomeMeta,
+        nome.isAcceptableOrUnknown(data['nome']!, _nomeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nomeMeta);
+    }
+    if (data.containsKey('arquivo')) {
+      context.handle(
+        _arquivoMeta,
+        arquivo.isAcceptableOrUnknown(data['arquivo']!, _arquivoMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_arquivoMeta);
+    }
+    if (data.containsKey('bytes')) {
+      context.handle(
+        _bytesMeta,
+        bytes.isAcceptableOrUnknown(data['bytes']!, _bytesMeta),
+      );
+    }
+    if (data.containsKey('criado_em')) {
+      context.handle(
+        _criadoEmMeta,
+        criadoEm.isAcceptableOrUnknown(data['criado_em']!, _criadoEmMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Anexo map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Anexo(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      atualizadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}atualizado_em'],
+      )!,
+      topicoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}topico_id'],
+      )!,
+      tipo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tipo'],
+      )!,
+      nome: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}nome'],
+      )!,
+      arquivo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}arquivo'],
+      )!,
+      bytes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}bytes'],
+      )!,
+      criadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}criado_em'],
+      )!,
+    );
+  }
+
+  @override
+  $AnexosTable createAlias(String alias) {
+    return $AnexosTable(attachedDatabase, alias);
+  }
+}
+
+class Anexo extends DataClass implements Insertable<Anexo> {
+  final String id;
+  final DateTime atualizadoEm;
+  final String topicoId;
+
+  /// 'imagem' ou 'pdf'.
+  final String tipo;
+  final String nome;
+
+  /// Caminho relativo à pasta de anexos do app (ex.: "a1b2.jpg").
+  final String arquivo;
+  final int bytes;
+  final DateTime criadoEm;
+  const Anexo({
+    required this.id,
+    required this.atualizadoEm,
+    required this.topicoId,
+    required this.tipo,
+    required this.nome,
+    required this.arquivo,
+    required this.bytes,
+    required this.criadoEm,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
+    map['topico_id'] = Variable<String>(topicoId);
+    map['tipo'] = Variable<String>(tipo);
+    map['nome'] = Variable<String>(nome);
+    map['arquivo'] = Variable<String>(arquivo);
+    map['bytes'] = Variable<int>(bytes);
+    map['criado_em'] = Variable<DateTime>(criadoEm);
+    return map;
+  }
+
+  AnexosCompanion toCompanion(bool nullToAbsent) {
+    return AnexosCompanion(
+      id: Value(id),
+      atualizadoEm: Value(atualizadoEm),
+      topicoId: Value(topicoId),
+      tipo: Value(tipo),
+      nome: Value(nome),
+      arquivo: Value(arquivo),
+      bytes: Value(bytes),
+      criadoEm: Value(criadoEm),
+    );
+  }
+
+  factory Anexo.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Anexo(
+      id: serializer.fromJson<String>(json['id']),
+      atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
+      topicoId: serializer.fromJson<String>(json['topicoId']),
+      tipo: serializer.fromJson<String>(json['tipo']),
+      nome: serializer.fromJson<String>(json['nome']),
+      arquivo: serializer.fromJson<String>(json['arquivo']),
+      bytes: serializer.fromJson<int>(json['bytes']),
+      criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
+      'topicoId': serializer.toJson<String>(topicoId),
+      'tipo': serializer.toJson<String>(tipo),
+      'nome': serializer.toJson<String>(nome),
+      'arquivo': serializer.toJson<String>(arquivo),
+      'bytes': serializer.toJson<int>(bytes),
+      'criadoEm': serializer.toJson<DateTime>(criadoEm),
+    };
+  }
+
+  Anexo copyWith({
+    String? id,
+    DateTime? atualizadoEm,
+    String? topicoId,
+    String? tipo,
+    String? nome,
+    String? arquivo,
+    int? bytes,
+    DateTime? criadoEm,
+  }) => Anexo(
+    id: id ?? this.id,
+    atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+    topicoId: topicoId ?? this.topicoId,
+    tipo: tipo ?? this.tipo,
+    nome: nome ?? this.nome,
+    arquivo: arquivo ?? this.arquivo,
+    bytes: bytes ?? this.bytes,
+    criadoEm: criadoEm ?? this.criadoEm,
+  );
+  Anexo copyWithCompanion(AnexosCompanion data) {
+    return Anexo(
+      id: data.id.present ? data.id.value : this.id,
+      atualizadoEm: data.atualizadoEm.present
+          ? data.atualizadoEm.value
+          : this.atualizadoEm,
+      topicoId: data.topicoId.present ? data.topicoId.value : this.topicoId,
+      tipo: data.tipo.present ? data.tipo.value : this.tipo,
+      nome: data.nome.present ? data.nome.value : this.nome,
+      arquivo: data.arquivo.present ? data.arquivo.value : this.arquivo,
+      bytes: data.bytes.present ? data.bytes.value : this.bytes,
+      criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Anexo(')
+          ..write('id: $id, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('topicoId: $topicoId, ')
+          ..write('tipo: $tipo, ')
+          ..write('nome: $nome, ')
+          ..write('arquivo: $arquivo, ')
+          ..write('bytes: $bytes, ')
+          ..write('criadoEm: $criadoEm')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    atualizadoEm,
+    topicoId,
+    tipo,
+    nome,
+    arquivo,
+    bytes,
+    criadoEm,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Anexo &&
+          other.id == this.id &&
+          other.atualizadoEm == this.atualizadoEm &&
+          other.topicoId == this.topicoId &&
+          other.tipo == this.tipo &&
+          other.nome == this.nome &&
+          other.arquivo == this.arquivo &&
+          other.bytes == this.bytes &&
+          other.criadoEm == this.criadoEm);
+}
+
+class AnexosCompanion extends UpdateCompanion<Anexo> {
+  final Value<String> id;
+  final Value<DateTime> atualizadoEm;
+  final Value<String> topicoId;
+  final Value<String> tipo;
+  final Value<String> nome;
+  final Value<String> arquivo;
+  final Value<int> bytes;
+  final Value<DateTime> criadoEm;
+  final Value<int> rowid;
+  const AnexosCompanion({
+    this.id = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.topicoId = const Value.absent(),
+    this.tipo = const Value.absent(),
+    this.nome = const Value.absent(),
+    this.arquivo = const Value.absent(),
+    this.bytes = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AnexosCompanion.insert({
+    this.id = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    required String topicoId,
+    required String tipo,
+    required String nome,
+    required String arquivo,
+    this.bytes = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : topicoId = Value(topicoId),
+       tipo = Value(tipo),
+       nome = Value(nome),
+       arquivo = Value(arquivo);
+  static Insertable<Anexo> custom({
+    Expression<String>? id,
+    Expression<DateTime>? atualizadoEm,
+    Expression<String>? topicoId,
+    Expression<String>? tipo,
+    Expression<String>? nome,
+    Expression<String>? arquivo,
+    Expression<int>? bytes,
+    Expression<DateTime>? criadoEm,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
+      if (topicoId != null) 'topico_id': topicoId,
+      if (tipo != null) 'tipo': tipo,
+      if (nome != null) 'nome': nome,
+      if (arquivo != null) 'arquivo': arquivo,
+      if (bytes != null) 'bytes': bytes,
+      if (criadoEm != null) 'criado_em': criadoEm,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AnexosCompanion copyWith({
+    Value<String>? id,
+    Value<DateTime>? atualizadoEm,
+    Value<String>? topicoId,
+    Value<String>? tipo,
+    Value<String>? nome,
+    Value<String>? arquivo,
+    Value<int>? bytes,
+    Value<DateTime>? criadoEm,
+    Value<int>? rowid,
+  }) {
+    return AnexosCompanion(
+      id: id ?? this.id,
+      atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+      topicoId: topicoId ?? this.topicoId,
+      tipo: tipo ?? this.tipo,
+      nome: nome ?? this.nome,
+      arquivo: arquivo ?? this.arquivo,
+      bytes: bytes ?? this.bytes,
+      criadoEm: criadoEm ?? this.criadoEm,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (atualizadoEm.present) {
+      map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
+    }
+    if (topicoId.present) {
+      map['topico_id'] = Variable<String>(topicoId.value);
+    }
+    if (tipo.present) {
+      map['tipo'] = Variable<String>(tipo.value);
+    }
+    if (nome.present) {
+      map['nome'] = Variable<String>(nome.value);
+    }
+    if (arquivo.present) {
+      map['arquivo'] = Variable<String>(arquivo.value);
+    }
+    if (bytes.present) {
+      map['bytes'] = Variable<int>(bytes.value);
+    }
+    if (criadoEm.present) {
+      map['criado_em'] = Variable<DateTime>(criadoEm.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AnexosCompanion(')
+          ..write('id: $id, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('topicoId: $topicoId, ')
+          ..write('tipo: $tipo, ')
+          ..write('nome: $nome, ')
+          ..write('arquivo: $arquivo, ')
+          ..write('bytes: $bytes, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $FlashcardsTable extends Flashcards
+    with TableInfo<$FlashcardsTable, Flashcard> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FlashcardsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    clientDefault: novoId,
+  );
+  static const VerificationMeta _atualizadoEmMeta = const VerificationMeta(
+    'atualizadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> atualizadoEm = GeneratedColumn<DateTime>(
+    'atualizado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _topicoIdMeta = const VerificationMeta(
+    'topicoId',
+  );
+  @override
+  late final GeneratedColumn<String> topicoId = GeneratedColumn<String>(
+    'topico_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES topicos (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _frenteMeta = const VerificationMeta('frente');
+  @override
+  late final GeneratedColumn<String> frente = GeneratedColumn<String>(
+    'frente',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _versoMeta = const VerificationMeta('verso');
+  @override
+  late final GeneratedColumn<String> verso = GeneratedColumn<String>(
+    'verso',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ordemMeta = const VerificationMeta('ordem');
+  @override
+  late final GeneratedColumn<int> ordem = GeneratedColumn<int>(
+    'ordem',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _caixaMeta = const VerificationMeta('caixa');
+  @override
+  late final GeneratedColumn<int> caixa = GeneratedColumn<int>(
+    'caixa',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _proximaRevisaoMeta = const VerificationMeta(
+    'proximaRevisao',
+  );
+  @override
+  late final GeneratedColumn<DateTime> proximaRevisao =
+      GeneratedColumn<DateTime>(
+        'proxima_revisao',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+        clientDefault: DateTime.now,
+      );
+  static const VerificationMeta _acertosMeta = const VerificationMeta(
+    'acertos',
+  );
+  @override
+  late final GeneratedColumn<int> acertos = GeneratedColumn<int>(
+    'acertos',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _errosMeta = const VerificationMeta('erros');
+  @override
+  late final GeneratedColumn<int> erros = GeneratedColumn<int>(
+    'erros',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _criadoEmMeta = const VerificationMeta(
+    'criadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> criadoEm = GeneratedColumn<DateTime>(
+    'criado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    atualizadoEm,
+    topicoId,
+    frente,
+    verso,
+    ordem,
+    caixa,
+    proximaRevisao,
+    acertos,
+    erros,
+    criadoEm,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'flashcards';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Flashcard> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('atualizado_em')) {
+      context.handle(
+        _atualizadoEmMeta,
+        atualizadoEm.isAcceptableOrUnknown(
+          data['atualizado_em']!,
+          _atualizadoEmMeta,
+        ),
+      );
+    }
+    if (data.containsKey('topico_id')) {
+      context.handle(
+        _topicoIdMeta,
+        topicoId.isAcceptableOrUnknown(data['topico_id']!, _topicoIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_topicoIdMeta);
+    }
+    if (data.containsKey('frente')) {
+      context.handle(
+        _frenteMeta,
+        frente.isAcceptableOrUnknown(data['frente']!, _frenteMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_frenteMeta);
+    }
+    if (data.containsKey('verso')) {
+      context.handle(
+        _versoMeta,
+        verso.isAcceptableOrUnknown(data['verso']!, _versoMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_versoMeta);
+    }
+    if (data.containsKey('ordem')) {
+      context.handle(
+        _ordemMeta,
+        ordem.isAcceptableOrUnknown(data['ordem']!, _ordemMeta),
+      );
+    }
+    if (data.containsKey('caixa')) {
+      context.handle(
+        _caixaMeta,
+        caixa.isAcceptableOrUnknown(data['caixa']!, _caixaMeta),
+      );
+    }
+    if (data.containsKey('proxima_revisao')) {
+      context.handle(
+        _proximaRevisaoMeta,
+        proximaRevisao.isAcceptableOrUnknown(
+          data['proxima_revisao']!,
+          _proximaRevisaoMeta,
+        ),
+      );
+    }
+    if (data.containsKey('acertos')) {
+      context.handle(
+        _acertosMeta,
+        acertos.isAcceptableOrUnknown(data['acertos']!, _acertosMeta),
+      );
+    }
+    if (data.containsKey('erros')) {
+      context.handle(
+        _errosMeta,
+        erros.isAcceptableOrUnknown(data['erros']!, _errosMeta),
+      );
+    }
+    if (data.containsKey('criado_em')) {
+      context.handle(
+        _criadoEmMeta,
+        criadoEm.isAcceptableOrUnknown(data['criado_em']!, _criadoEmMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Flashcard map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Flashcard(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      atualizadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}atualizado_em'],
+      )!,
+      topicoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}topico_id'],
+      )!,
+      frente: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}frente'],
+      )!,
+      verso: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}verso'],
+      )!,
+      ordem: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}ordem'],
+      )!,
+      caixa: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}caixa'],
+      )!,
+      proximaRevisao: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}proxima_revisao'],
+      )!,
+      acertos: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}acertos'],
+      )!,
+      erros: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}erros'],
+      )!,
+      criadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}criado_em'],
+      )!,
+    );
+  }
+
+  @override
+  $FlashcardsTable createAlias(String alias) {
+    return $FlashcardsTable(attachedDatabase, alias);
+  }
+}
+
+class Flashcard extends DataClass implements Insertable<Flashcard> {
+  final String id;
+  final DateTime atualizadoEm;
+  final String topicoId;
+  final String frente;
+  final String verso;
+  final int ordem;
+
+  /// 0 = novo/errado ... 5 = bem sabido.
+  final int caixa;
+
+  /// Dia em que o cartão volta a aparecer.
+  final DateTime proximaRevisao;
+  final int acertos;
+  final int erros;
+  final DateTime criadoEm;
+  const Flashcard({
+    required this.id,
+    required this.atualizadoEm,
+    required this.topicoId,
+    required this.frente,
+    required this.verso,
+    required this.ordem,
+    required this.caixa,
+    required this.proximaRevisao,
+    required this.acertos,
+    required this.erros,
+    required this.criadoEm,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
+    map['topico_id'] = Variable<String>(topicoId);
+    map['frente'] = Variable<String>(frente);
+    map['verso'] = Variable<String>(verso);
+    map['ordem'] = Variable<int>(ordem);
+    map['caixa'] = Variable<int>(caixa);
+    map['proxima_revisao'] = Variable<DateTime>(proximaRevisao);
+    map['acertos'] = Variable<int>(acertos);
+    map['erros'] = Variable<int>(erros);
+    map['criado_em'] = Variable<DateTime>(criadoEm);
+    return map;
+  }
+
+  FlashcardsCompanion toCompanion(bool nullToAbsent) {
+    return FlashcardsCompanion(
+      id: Value(id),
+      atualizadoEm: Value(atualizadoEm),
+      topicoId: Value(topicoId),
+      frente: Value(frente),
+      verso: Value(verso),
+      ordem: Value(ordem),
+      caixa: Value(caixa),
+      proximaRevisao: Value(proximaRevisao),
+      acertos: Value(acertos),
+      erros: Value(erros),
+      criadoEm: Value(criadoEm),
+    );
+  }
+
+  factory Flashcard.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Flashcard(
+      id: serializer.fromJson<String>(json['id']),
+      atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
+      topicoId: serializer.fromJson<String>(json['topicoId']),
+      frente: serializer.fromJson<String>(json['frente']),
+      verso: serializer.fromJson<String>(json['verso']),
+      ordem: serializer.fromJson<int>(json['ordem']),
+      caixa: serializer.fromJson<int>(json['caixa']),
+      proximaRevisao: serializer.fromJson<DateTime>(json['proximaRevisao']),
+      acertos: serializer.fromJson<int>(json['acertos']),
+      erros: serializer.fromJson<int>(json['erros']),
+      criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
+      'topicoId': serializer.toJson<String>(topicoId),
+      'frente': serializer.toJson<String>(frente),
+      'verso': serializer.toJson<String>(verso),
+      'ordem': serializer.toJson<int>(ordem),
+      'caixa': serializer.toJson<int>(caixa),
+      'proximaRevisao': serializer.toJson<DateTime>(proximaRevisao),
+      'acertos': serializer.toJson<int>(acertos),
+      'erros': serializer.toJson<int>(erros),
+      'criadoEm': serializer.toJson<DateTime>(criadoEm),
+    };
+  }
+
+  Flashcard copyWith({
+    String? id,
+    DateTime? atualizadoEm,
+    String? topicoId,
+    String? frente,
+    String? verso,
+    int? ordem,
+    int? caixa,
+    DateTime? proximaRevisao,
+    int? acertos,
+    int? erros,
+    DateTime? criadoEm,
+  }) => Flashcard(
+    id: id ?? this.id,
+    atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+    topicoId: topicoId ?? this.topicoId,
+    frente: frente ?? this.frente,
+    verso: verso ?? this.verso,
+    ordem: ordem ?? this.ordem,
+    caixa: caixa ?? this.caixa,
+    proximaRevisao: proximaRevisao ?? this.proximaRevisao,
+    acertos: acertos ?? this.acertos,
+    erros: erros ?? this.erros,
+    criadoEm: criadoEm ?? this.criadoEm,
+  );
+  Flashcard copyWithCompanion(FlashcardsCompanion data) {
+    return Flashcard(
+      id: data.id.present ? data.id.value : this.id,
+      atualizadoEm: data.atualizadoEm.present
+          ? data.atualizadoEm.value
+          : this.atualizadoEm,
+      topicoId: data.topicoId.present ? data.topicoId.value : this.topicoId,
+      frente: data.frente.present ? data.frente.value : this.frente,
+      verso: data.verso.present ? data.verso.value : this.verso,
+      ordem: data.ordem.present ? data.ordem.value : this.ordem,
+      caixa: data.caixa.present ? data.caixa.value : this.caixa,
+      proximaRevisao: data.proximaRevisao.present
+          ? data.proximaRevisao.value
+          : this.proximaRevisao,
+      acertos: data.acertos.present ? data.acertos.value : this.acertos,
+      erros: data.erros.present ? data.erros.value : this.erros,
+      criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Flashcard(')
+          ..write('id: $id, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('topicoId: $topicoId, ')
+          ..write('frente: $frente, ')
+          ..write('verso: $verso, ')
+          ..write('ordem: $ordem, ')
+          ..write('caixa: $caixa, ')
+          ..write('proximaRevisao: $proximaRevisao, ')
+          ..write('acertos: $acertos, ')
+          ..write('erros: $erros, ')
+          ..write('criadoEm: $criadoEm')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    atualizadoEm,
+    topicoId,
+    frente,
+    verso,
+    ordem,
+    caixa,
+    proximaRevisao,
+    acertos,
+    erros,
+    criadoEm,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Flashcard &&
+          other.id == this.id &&
+          other.atualizadoEm == this.atualizadoEm &&
+          other.topicoId == this.topicoId &&
+          other.frente == this.frente &&
+          other.verso == this.verso &&
+          other.ordem == this.ordem &&
+          other.caixa == this.caixa &&
+          other.proximaRevisao == this.proximaRevisao &&
+          other.acertos == this.acertos &&
+          other.erros == this.erros &&
+          other.criadoEm == this.criadoEm);
+}
+
+class FlashcardsCompanion extends UpdateCompanion<Flashcard> {
+  final Value<String> id;
+  final Value<DateTime> atualizadoEm;
+  final Value<String> topicoId;
+  final Value<String> frente;
+  final Value<String> verso;
+  final Value<int> ordem;
+  final Value<int> caixa;
+  final Value<DateTime> proximaRevisao;
+  final Value<int> acertos;
+  final Value<int> erros;
+  final Value<DateTime> criadoEm;
+  final Value<int> rowid;
+  const FlashcardsCompanion({
+    this.id = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.topicoId = const Value.absent(),
+    this.frente = const Value.absent(),
+    this.verso = const Value.absent(),
+    this.ordem = const Value.absent(),
+    this.caixa = const Value.absent(),
+    this.proximaRevisao = const Value.absent(),
+    this.acertos = const Value.absent(),
+    this.erros = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  FlashcardsCompanion.insert({
+    this.id = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    required String topicoId,
+    required String frente,
+    required String verso,
+    this.ordem = const Value.absent(),
+    this.caixa = const Value.absent(),
+    this.proximaRevisao = const Value.absent(),
+    this.acertos = const Value.absent(),
+    this.erros = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : topicoId = Value(topicoId),
+       frente = Value(frente),
+       verso = Value(verso);
+  static Insertable<Flashcard> custom({
+    Expression<String>? id,
+    Expression<DateTime>? atualizadoEm,
+    Expression<String>? topicoId,
+    Expression<String>? frente,
+    Expression<String>? verso,
+    Expression<int>? ordem,
+    Expression<int>? caixa,
+    Expression<DateTime>? proximaRevisao,
+    Expression<int>? acertos,
+    Expression<int>? erros,
+    Expression<DateTime>? criadoEm,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
+      if (topicoId != null) 'topico_id': topicoId,
+      if (frente != null) 'frente': frente,
+      if (verso != null) 'verso': verso,
+      if (ordem != null) 'ordem': ordem,
+      if (caixa != null) 'caixa': caixa,
+      if (proximaRevisao != null) 'proxima_revisao': proximaRevisao,
+      if (acertos != null) 'acertos': acertos,
+      if (erros != null) 'erros': erros,
+      if (criadoEm != null) 'criado_em': criadoEm,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  FlashcardsCompanion copyWith({
+    Value<String>? id,
+    Value<DateTime>? atualizadoEm,
+    Value<String>? topicoId,
+    Value<String>? frente,
+    Value<String>? verso,
+    Value<int>? ordem,
+    Value<int>? caixa,
+    Value<DateTime>? proximaRevisao,
+    Value<int>? acertos,
+    Value<int>? erros,
+    Value<DateTime>? criadoEm,
+    Value<int>? rowid,
+  }) {
+    return FlashcardsCompanion(
+      id: id ?? this.id,
+      atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+      topicoId: topicoId ?? this.topicoId,
+      frente: frente ?? this.frente,
+      verso: verso ?? this.verso,
+      ordem: ordem ?? this.ordem,
+      caixa: caixa ?? this.caixa,
+      proximaRevisao: proximaRevisao ?? this.proximaRevisao,
+      acertos: acertos ?? this.acertos,
+      erros: erros ?? this.erros,
+      criadoEm: criadoEm ?? this.criadoEm,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (atualizadoEm.present) {
+      map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
+    }
+    if (topicoId.present) {
+      map['topico_id'] = Variable<String>(topicoId.value);
+    }
+    if (frente.present) {
+      map['frente'] = Variable<String>(frente.value);
+    }
+    if (verso.present) {
+      map['verso'] = Variable<String>(verso.value);
+    }
+    if (ordem.present) {
+      map['ordem'] = Variable<int>(ordem.value);
+    }
+    if (caixa.present) {
+      map['caixa'] = Variable<int>(caixa.value);
+    }
+    if (proximaRevisao.present) {
+      map['proxima_revisao'] = Variable<DateTime>(proximaRevisao.value);
+    }
+    if (acertos.present) {
+      map['acertos'] = Variable<int>(acertos.value);
+    }
+    if (erros.present) {
+      map['erros'] = Variable<int>(erros.value);
+    }
+    if (criadoEm.present) {
+      map['criado_em'] = Variable<DateTime>(criadoEm.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FlashcardsCompanion(')
+          ..write('id: $id, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('topicoId: $topicoId, ')
+          ..write('frente: $frente, ')
+          ..write('verso: $verso, ')
+          ..write('ordem: $ordem, ')
+          ..write('caixa: $caixa, ')
+          ..write('proximaRevisao: $proximaRevisao, ')
+          ..write('acertos: $acertos, ')
+          ..write('erros: $erros, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3723,6 +4880,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $RevisoesTable revisoes = $RevisoesTable(this);
   late final $QuestoesTable questoes = $QuestoesTable(this);
   late final $SessoesTable sessoes = $SessoesTable(this);
+  late final $AnexosTable anexos = $AnexosTable(this);
+  late final $FlashcardsTable flashcards = $FlashcardsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3735,6 +4894,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     revisoes,
     questoes,
     sessoes,
+    anexos,
+    flashcards,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -3793,6 +4954,20 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('sessoes', kind: UpdateKind.update)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'topicos',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('anexos', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'topicos',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('flashcards', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -5422,6 +6597,43 @@ final class $$TopicosTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$AnexosTable, List<Anexo>> _anexosRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.anexos,
+    aliasName: 'topicos__id__anexos__topico_id',
+  );
+
+  $$AnexosTableProcessedTableManager get anexosRefs {
+    final manager = $$AnexosTableTableManager(
+      $_db,
+      $_db.anexos,
+    ).filter((f) => f.topicoId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_anexosRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$FlashcardsTable, List<Flashcard>>
+  _flashcardsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.flashcards,
+    aliasName: 'topicos__id__flashcards__topico_id',
+  );
+
+  $$FlashcardsTableProcessedTableManager get flashcardsRefs {
+    final manager = $$FlashcardsTableTableManager(
+      $_db,
+      $_db.flashcards,
+    ).filter((f) => f.topicoId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_flashcardsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$TopicosTableFilterComposer
@@ -5550,6 +6762,56 @@ class $$TopicosTableFilterComposer
           }) => $$SessoesTableFilterComposer(
             $db: $db,
             $table: $db.sessoes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> anexosRefs(
+    Expression<bool> Function($$AnexosTableFilterComposer f) f,
+  ) {
+    final $$AnexosTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.anexos,
+      getReferencedColumn: (t) => t.topicoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AnexosTableFilterComposer(
+            $db: $db,
+            $table: $db.anexos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> flashcardsRefs(
+    Expression<bool> Function($$FlashcardsTableFilterComposer f) f,
+  ) {
+    final $$FlashcardsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.flashcards,
+      getReferencedColumn: (t) => t.topicoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FlashcardsTableFilterComposer(
+            $db: $db,
+            $table: $db.flashcards,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -5770,6 +7032,56 @@ class $$TopicosTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> anexosRefs<T extends Object>(
+    Expression<T> Function($$AnexosTableAnnotationComposer a) f,
+  ) {
+    final $$AnexosTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.anexos,
+      getReferencedColumn: (t) => t.topicoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AnexosTableAnnotationComposer(
+            $db: $db,
+            $table: $db.anexos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> flashcardsRefs<T extends Object>(
+    Expression<T> Function($$FlashcardsTableAnnotationComposer a) f,
+  ) {
+    final $$FlashcardsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.flashcards,
+      getReferencedColumn: (t) => t.topicoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$FlashcardsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.flashcards,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$TopicosTableTableManager
@@ -5790,6 +7102,8 @@ class $$TopicosTableTableManager
             bool paiId,
             bool revisoesRefs,
             bool sessoesRefs,
+            bool anexosRefs,
+            bool flashcardsRefs,
           })
         > {
   $$TopicosTableTableManager(_$AppDatabase db, $TopicosTable table)
@@ -5861,12 +7175,16 @@ class $$TopicosTableTableManager
                 paiId = false,
                 revisoesRefs = false,
                 sessoesRefs = false,
+                anexosRefs = false,
+                flashcardsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
                     if (revisoesRefs) db.revisoes,
                     if (sessoesRefs) db.sessoes,
+                    if (anexosRefs) db.anexos,
+                    if (flashcardsRefs) db.flashcards,
                   ],
                   addJoins:
                       <
@@ -5953,6 +7271,44 @@ class $$TopicosTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (anexosRefs)
+                        await $_getPrefetchedData<Topico, $TopicosTable, Anexo>(
+                          currentTable: table,
+                          referencedTable: $$TopicosTableReferences
+                              ._anexosRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$TopicosTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).anexosRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.topicoId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (flashcardsRefs)
+                        await $_getPrefetchedData<
+                          Topico,
+                          $TopicosTable,
+                          Flashcard
+                        >(
+                          currentTable: table,
+                          referencedTable: $$TopicosTableReferences
+                              ._flashcardsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$TopicosTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).flashcardsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.topicoId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -5978,6 +7334,8 @@ typedef $$TopicosTableProcessedTableManager =
         bool paiId,
         bool revisoesRefs,
         bool sessoesRefs,
+        bool anexosRefs,
+        bool flashcardsRefs,
       })
     >;
 typedef $$RevisoesTableCreateCompanionBuilder = RevisoesCompanion Function({
@@ -7190,6 +8548,810 @@ typedef $$SessoesTableProcessedTableManager =
       Sessao,
       PrefetchHooks Function({bool materiaId, bool topicoId})
     >;
+typedef $$AnexosTableCreateCompanionBuilder = AnexosCompanion Function({
+  Value<String> id,
+  Value<DateTime> atualizadoEm,
+  required String topicoId,
+  required String tipo,
+  required String nome,
+  required String arquivo,
+  Value<int> bytes,
+  Value<DateTime> criadoEm,
+  Value<int> rowid,
+});
+typedef $$AnexosTableUpdateCompanionBuilder = AnexosCompanion Function({
+  Value<String> id,
+  Value<DateTime> atualizadoEm,
+  Value<String> topicoId,
+  Value<String> tipo,
+  Value<String> nome,
+  Value<String> arquivo,
+  Value<int> bytes,
+  Value<DateTime> criadoEm,
+  Value<int> rowid,
+});
+
+final class $$AnexosTableReferences
+    extends BaseReferences<_$AppDatabase, $AnexosTable, Anexo> {
+  $$AnexosTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $TopicosTable _topicoIdTable(_$AppDatabase db) =>
+      db.topicos.createAlias('anexos__topico_id__topicos__id');
+
+  $$TopicosTableProcessedTableManager get topicoId {
+    final $_column = $_itemColumn<String>('topico_id')!;
+
+    final manager = $$TopicosTableTableManager(
+      $_db,
+      $_db.topicos,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_topicoIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$AnexosTableFilterComposer
+    extends Composer<_$AppDatabase, $AnexosTable> {
+  $$AnexosTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get tipo => $composableBuilder(
+    column: $table.tipo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nome => $composableBuilder(
+    column: $table.nome,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get arquivo => $composableBuilder(
+    column: $table.arquivo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get bytes => $composableBuilder(
+    column: $table.bytes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$TopicosTableFilterComposer get topicoId {
+    final $$TopicosTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.topicoId,
+      referencedTable: $db.topicos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TopicosTableFilterComposer(
+            $db: $db,
+            $table: $db.topicos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AnexosTableOrderingComposer
+    extends Composer<_$AppDatabase, $AnexosTable> {
+  $$AnexosTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get tipo => $composableBuilder(
+    column: $table.tipo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nome => $composableBuilder(
+    column: $table.nome,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get arquivo => $composableBuilder(
+    column: $table.arquivo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get bytes => $composableBuilder(
+    column: $table.bytes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$TopicosTableOrderingComposer get topicoId {
+    final $$TopicosTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.topicoId,
+      referencedTable: $db.topicos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TopicosTableOrderingComposer(
+            $db: $db,
+            $table: $db.topicos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AnexosTableAnnotationComposer
+    extends Composer<_$AppDatabase, $AnexosTable> {
+  $$AnexosTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get tipo =>
+      $composableBuilder(column: $table.tipo, builder: (column) => column);
+
+  GeneratedColumn<String> get nome =>
+      $composableBuilder(column: $table.nome, builder: (column) => column);
+
+  GeneratedColumn<String> get arquivo =>
+      $composableBuilder(column: $table.arquivo, builder: (column) => column);
+
+  GeneratedColumn<int> get bytes =>
+      $composableBuilder(column: $table.bytes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get criadoEm =>
+      $composableBuilder(column: $table.criadoEm, builder: (column) => column);
+
+  $$TopicosTableAnnotationComposer get topicoId {
+    final $$TopicosTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.topicoId,
+      referencedTable: $db.topicos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TopicosTableAnnotationComposer(
+            $db: $db,
+            $table: $db.topicos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AnexosTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $AnexosTable,
+          Anexo,
+          $$AnexosTableFilterComposer,
+          $$AnexosTableOrderingComposer,
+          $$AnexosTableAnnotationComposer,
+          $$AnexosTableCreateCompanionBuilder,
+          $$AnexosTableUpdateCompanionBuilder,
+          (Anexo, $$AnexosTableReferences),
+          Anexo,
+          PrefetchHooks Function({bool topicoId})
+        > {
+  $$AnexosTableTableManager(_$AppDatabase db, $AnexosTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AnexosTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AnexosTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AnexosTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<String> topicoId = const Value.absent(),
+                Value<String> tipo = const Value.absent(),
+                Value<String> nome = const Value.absent(),
+                Value<String> arquivo = const Value.absent(),
+                Value<int> bytes = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AnexosCompanion(
+                id: id,
+                atualizadoEm: atualizadoEm,
+                topicoId: topicoId,
+                tipo: tipo,
+                nome: nome,
+                arquivo: arquivo,
+                bytes: bytes,
+                criadoEm: criadoEm,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                required String topicoId,
+                required String tipo,
+                required String nome,
+                required String arquivo,
+                Value<int> bytes = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AnexosCompanion.insert(
+                id: id,
+                atualizadoEm: atualizadoEm,
+                topicoId: topicoId,
+                tipo: tipo,
+                nome: nome,
+                arquivo: arquivo,
+                bytes: bytes,
+                criadoEm: criadoEm,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$AnexosTable, Anexo>(table),
+                  $$AnexosTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({topicoId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (topicoId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.topicoId,
+                        referencedTable: $$AnexosTableReferences._topicoIdTable(
+                          db,
+                        ),
+                        referencedColumn: $$AnexosTableReferences
+                            ._topicoIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$AnexosTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $AnexosTable,
+      Anexo,
+      $$AnexosTableFilterComposer,
+      $$AnexosTableOrderingComposer,
+      $$AnexosTableAnnotationComposer,
+      $$AnexosTableCreateCompanionBuilder,
+      $$AnexosTableUpdateCompanionBuilder,
+      (Anexo, $$AnexosTableReferences),
+      Anexo,
+      PrefetchHooks Function({bool topicoId})
+    >;
+typedef $$FlashcardsTableCreateCompanionBuilder = FlashcardsCompanion Function({
+  Value<String> id,
+  Value<DateTime> atualizadoEm,
+  required String topicoId,
+  required String frente,
+  required String verso,
+  Value<int> ordem,
+  Value<int> caixa,
+  Value<DateTime> proximaRevisao,
+  Value<int> acertos,
+  Value<int> erros,
+  Value<DateTime> criadoEm,
+  Value<int> rowid,
+});
+typedef $$FlashcardsTableUpdateCompanionBuilder = FlashcardsCompanion Function({
+  Value<String> id,
+  Value<DateTime> atualizadoEm,
+  Value<String> topicoId,
+  Value<String> frente,
+  Value<String> verso,
+  Value<int> ordem,
+  Value<int> caixa,
+  Value<DateTime> proximaRevisao,
+  Value<int> acertos,
+  Value<int> erros,
+  Value<DateTime> criadoEm,
+  Value<int> rowid,
+});
+
+final class $$FlashcardsTableReferences
+    extends BaseReferences<_$AppDatabase, $FlashcardsTable, Flashcard> {
+  $$FlashcardsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $TopicosTable _topicoIdTable(_$AppDatabase db) =>
+      db.topicos.createAlias('flashcards__topico_id__topicos__id');
+
+  $$TopicosTableProcessedTableManager get topicoId {
+    final $_column = $_itemColumn<String>('topico_id')!;
+
+    final manager = $$TopicosTableTableManager(
+      $_db,
+      $_db.topicos,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_topicoIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$FlashcardsTableFilterComposer
+    extends Composer<_$AppDatabase, $FlashcardsTable> {
+  $$FlashcardsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get frente => $composableBuilder(
+    column: $table.frente,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get verso => $composableBuilder(
+    column: $table.verso,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get ordem => $composableBuilder(
+    column: $table.ordem,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get caixa => $composableBuilder(
+    column: $table.caixa,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get proximaRevisao => $composableBuilder(
+    column: $table.proximaRevisao,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get acertos => $composableBuilder(
+    column: $table.acertos,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get erros => $composableBuilder(
+    column: $table.erros,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$TopicosTableFilterComposer get topicoId {
+    final $$TopicosTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.topicoId,
+      referencedTable: $db.topicos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TopicosTableFilterComposer(
+            $db: $db,
+            $table: $db.topicos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$FlashcardsTableOrderingComposer
+    extends Composer<_$AppDatabase, $FlashcardsTable> {
+  $$FlashcardsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get frente => $composableBuilder(
+    column: $table.frente,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get verso => $composableBuilder(
+    column: $table.verso,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get ordem => $composableBuilder(
+    column: $table.ordem,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get caixa => $composableBuilder(
+    column: $table.caixa,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get proximaRevisao => $composableBuilder(
+    column: $table.proximaRevisao,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get acertos => $composableBuilder(
+    column: $table.acertos,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get erros => $composableBuilder(
+    column: $table.erros,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$TopicosTableOrderingComposer get topicoId {
+    final $$TopicosTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.topicoId,
+      referencedTable: $db.topicos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TopicosTableOrderingComposer(
+            $db: $db,
+            $table: $db.topicos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$FlashcardsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $FlashcardsTable> {
+  $$FlashcardsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get frente =>
+      $composableBuilder(column: $table.frente, builder: (column) => column);
+
+  GeneratedColumn<String> get verso =>
+      $composableBuilder(column: $table.verso, builder: (column) => column);
+
+  GeneratedColumn<int> get ordem =>
+      $composableBuilder(column: $table.ordem, builder: (column) => column);
+
+  GeneratedColumn<int> get caixa =>
+      $composableBuilder(column: $table.caixa, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get proximaRevisao => $composableBuilder(
+    column: $table.proximaRevisao,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get acertos =>
+      $composableBuilder(column: $table.acertos, builder: (column) => column);
+
+  GeneratedColumn<int> get erros =>
+      $composableBuilder(column: $table.erros, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get criadoEm =>
+      $composableBuilder(column: $table.criadoEm, builder: (column) => column);
+
+  $$TopicosTableAnnotationComposer get topicoId {
+    final $$TopicosTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.topicoId,
+      referencedTable: $db.topicos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TopicosTableAnnotationComposer(
+            $db: $db,
+            $table: $db.topicos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$FlashcardsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $FlashcardsTable,
+          Flashcard,
+          $$FlashcardsTableFilterComposer,
+          $$FlashcardsTableOrderingComposer,
+          $$FlashcardsTableAnnotationComposer,
+          $$FlashcardsTableCreateCompanionBuilder,
+          $$FlashcardsTableUpdateCompanionBuilder,
+          (Flashcard, $$FlashcardsTableReferences),
+          Flashcard,
+          PrefetchHooks Function({bool topicoId})
+        > {
+  $$FlashcardsTableTableManager(_$AppDatabase db, $FlashcardsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FlashcardsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FlashcardsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FlashcardsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<String> topicoId = const Value.absent(),
+                Value<String> frente = const Value.absent(),
+                Value<String> verso = const Value.absent(),
+                Value<int> ordem = const Value.absent(),
+                Value<int> caixa = const Value.absent(),
+                Value<DateTime> proximaRevisao = const Value.absent(),
+                Value<int> acertos = const Value.absent(),
+                Value<int> erros = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => FlashcardsCompanion(
+                id: id,
+                atualizadoEm: atualizadoEm,
+                topicoId: topicoId,
+                frente: frente,
+                verso: verso,
+                ordem: ordem,
+                caixa: caixa,
+                proximaRevisao: proximaRevisao,
+                acertos: acertos,
+                erros: erros,
+                criadoEm: criadoEm,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                required String topicoId,
+                required String frente,
+                required String verso,
+                Value<int> ordem = const Value.absent(),
+                Value<int> caixa = const Value.absent(),
+                Value<DateTime> proximaRevisao = const Value.absent(),
+                Value<int> acertos = const Value.absent(),
+                Value<int> erros = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => FlashcardsCompanion.insert(
+                id: id,
+                atualizadoEm: atualizadoEm,
+                topicoId: topicoId,
+                frente: frente,
+                verso: verso,
+                ordem: ordem,
+                caixa: caixa,
+                proximaRevisao: proximaRevisao,
+                acertos: acertos,
+                erros: erros,
+                criadoEm: criadoEm,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$FlashcardsTable, Flashcard>(table),
+                  $$FlashcardsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({topicoId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (topicoId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.topicoId,
+                        referencedTable: $$FlashcardsTableReferences
+                            ._topicoIdTable(db),
+                        referencedColumn: $$FlashcardsTableReferences
+                            ._topicoIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$FlashcardsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $FlashcardsTable,
+      Flashcard,
+      $$FlashcardsTableFilterComposer,
+      $$FlashcardsTableOrderingComposer,
+      $$FlashcardsTableAnnotationComposer,
+      $$FlashcardsTableCreateCompanionBuilder,
+      $$FlashcardsTableUpdateCompanionBuilder,
+      (Flashcard, $$FlashcardsTableReferences),
+      Flashcard,
+      PrefetchHooks Function({bool topicoId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -7208,4 +9370,8 @@ class $AppDatabaseManager {
       $$QuestoesTableTableManager(_db, _db.questoes);
   $$SessoesTableTableManager get sessoes =>
       $$SessoesTableTableManager(_db, _db.sessoes);
+  $$AnexosTableTableManager get anexos =>
+      $$AnexosTableTableManager(_db, _db.anexos);
+  $$FlashcardsTableTableManager get flashcards =>
+      $$FlashcardsTableTableManager(_db, _db.flashcards);
 }

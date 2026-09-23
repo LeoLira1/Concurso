@@ -7,6 +7,7 @@ import '../screens/concursos_screen.dart';
 import '../screens/estatisticas_screen.dart';
 import '../screens/lembretes_screen.dart';
 import '../screens/revisoes_screen.dart';
+import '../screens/topico_screen.dart';
 import '../screens/edital_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/materia_screen.dart';
@@ -560,43 +561,54 @@ class _TopicoMini extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 7),
-      child: Row(
-        children: [
-          Container(
-            width: 9,
-            height: 9,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: t.visto ? cor : Colors.transparent,
-              border: Border.all(
-                color: t.visto ? cor : cor.withValues(alpha: 0.6),
-                width: 1.5,
+    return InkWell(
+      borderRadius: BorderRadius.circular(10),
+      onTap: () {
+        final s = Scaffold.maybeOf(context);
+        if (s != null && s.isDrawerOpen) Navigator.pop(context);
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => TopicoScreen(topicoId: t.id)),
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 7),
+        child: Row(
+          children: [
+            Container(
+              width: 9,
+              height: 9,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: t.visto ? cor : Colors.transparent,
+                border: Border.all(
+                  color: t.visto ? cor : cor.withValues(alpha: 0.6),
+                  width: 1.5,
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              t.nome,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 14,
-                color: t.visto ? Cores.tintaSuave : Cores.tinta,
-              ),
-            ),
-          ),
-          if (nFilhos > 0)
-            Padding(
-              padding: const EdgeInsets.only(left: 8, right: 14),
+            const SizedBox(width: 10),
+            Expanded(
               child: Text(
-                '$nFilhos',
-                style: const TextStyle(fontSize: 13, color: Cores.tintaSuave),
+                t.nome,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: t.visto ? Cores.tintaSuave : Cores.tinta,
+                ),
               ),
             ),
-        ],
+            if (nFilhos > 0)
+              Padding(
+                padding: const EdgeInsets.only(left: 8, right: 14),
+                child: Text(
+                  '$nFilhos',
+                  style: const TextStyle(fontSize: 13, color: Cores.tintaSuave),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

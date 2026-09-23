@@ -20,6 +20,10 @@ import 'package:edital/state/notificacoes.dart';
 import 'package:edital/screens/revisoes_screen.dart';
 import 'package:edital/screens/lembretes_screen.dart';
 import 'package:edital/screens/estatisticas_screen.dart';
+import 'package:edital/screens/flashcards_screen.dart';
+import 'package:edital/screens/topico_screen.dart';
+import 'package:edital/state/arquivos.dart';
+import 'package:cross_file/cross_file.dart';
 import 'package:edital/theme.dart';
 import 'package:edital/util/texto.dart';
 import 'package:flutter/material.dart';
@@ -190,6 +194,50 @@ Future<AppDatabase> popular() async {
     cor: gm.cor,
   );
 
+  // Anexos e flashcards no tópico "Crase".
+  final port = (await db.materiaPorNome('Língua Portuguesa'))!.id;
+  final crase = (await db.watchTopicos(port).first)
+      .firstWhere((t) => t.nome == 'Crase')
+      .id;
+  final raizRepo = Directory.current.path;
+  for (final (arq, nome) in [
+    ('referencias/biblioteca.jpg', 'Mapa mental — crase'),
+    ('referencias/pocket_cal.jpg', 'Resumo do caderno'),
+  ]) {
+    await ArquivosAnexos.importar(
+      db: db,
+      topicoId: crase,
+      origem: XFile('$raizRepo/$arq'),
+      tipo: 'imagem',
+      nome: nome,
+    );
+  }
+  final pdf = File('${Directory.systemTemp.path}/crase_estrategia.pdf')
+    ..writeAsBytesSync(List.filled(812000, 37));
+  await ArquivosAnexos.importar(
+    db: db,
+    topicoId: crase,
+    origem: XFile(pdf.path),
+    tipo: 'pdf',
+    nome: 'Aula 07 — Crase (PDF)',
+  );
+  for (final (f, v) in const [
+    (
+      'Quando o uso da crase é facultativo?',
+      'Antes de nomes próprios femininos, de pronomes possessivos femininos e depois da preposição "até".',
+    ),
+    ('Há crase antes de horas?', 'Sim, em horas determinadas: "Chegou às 8h".'),
+    (
+      'Crase antes de palavra masculina?',
+      'Não, salvo quando subentendida "à moda de": "bife à milanesa".',
+    ),
+    ('Crase antes de verbo?', 'Nunca.'),
+  ]) {
+    await db.salvarFlashcard(topicoId: crase, frente: f, verso: v);
+  }
+  final cards = await db.watchFlashcards(crase).first;
+  await db.responderFlashcard(cards[3], acertou: true);
+
   // Algumas revisões vencendo hoje e uma atrasada.
   final revs =
       await (db.select(db.revisoes)
@@ -269,7 +317,12 @@ Cronometro cronometroExemplo(String materiaId, {bool pomodoro = false}) {
 }
 
 void main() {
-  setUpAll(carregarFontes);
+  setUpAll(() async {
+    await carregarFontes();
+    ArquivosAnexos.pastaFixa = await Directory.systemTemp.createTemp(
+      'anexos_capturas',
+    );
+  });
   // ignore: invalid_use_of_visible_for_testing_member
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
@@ -591,6 +644,79 @@ void main() {
       retrato,
       estatisticas,
       antes: rolar,
+    ),
+  );
+
+  // --- Etapa 6: anexos e flashcards ---
+  Future<void> precarregarImagens(WidgetTester t) async {
+    for (var i = 0; i < 4; i++) {
+      await t.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 300)),
+      );
+      await t.pump(const Duration(milliseconds: 100));
+    }
+  }
+
+  Widget topico(AppDatabase db) => app(
+    db,
+    FutureBuilder(
+      future: () async {
+        final port = (await db.materiaPorNome('Língua Portuguesa'))!.id;
+        return (await db.watchTopicos(port).first)
+            .firstWhere((t) => t.nome == 'Crase')
+            .id;
+      }(),
+      builder: (_, s) =>
+          s.data == null ? const SizedBox() : TopicoScreen(topicoId: s.data!),
+    ),
+  );
+
+  testWidgets(
+    'topico paisagem',
+    (t) => captura(
+      t,
+      '17_topico_paisagem',
+      paisagem,
+      topico,
+      antes: precarregarImagens,
+    ),
+  );
+  testWidgets(
+    'topico retrato',
+    (t) => captura(
+      t,
+      '17b_topico_retrato',
+      retrato,
+      topico,
+      antes: precarregarImagens,
+    ),
+  );
+
+  Widget estudo(AppDatabase db, {bool verso = false}) => app(
+    db,
+    FutureBuilder(
+      future: db.watchCartoesParaRevisar().first,
+      builder: (_, s) => s.data == null
+          ? const SizedBox()
+          : EstudoFlashcardsScreen(
+              titulo: 'Crase',
+              fila: s.data!,
+              mostrarVersoInicial: verso,
+            ),
+    ),
+  );
+
+  testWidgets(
+    'flashcard frente paisagem',
+    (t) => captura(t, '18_flashcard_paisagem', paisagem, estudo),
+  );
+  testWidgets(
+    'flashcard verso retrato',
+    (t) => captura(
+      t,
+      '18b_flashcard_verso_retrato',
+      retrato,
+      (db) => estudo(db, verso: true),
     ),
   );
 }

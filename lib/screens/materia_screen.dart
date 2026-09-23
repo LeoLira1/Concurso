@@ -3,7 +3,10 @@ import 'package:provider/provider.dart';
 
 import '../data/database.dart';
 import '../theme.dart';
+import '../widgets/assistir.dart';
 import '../widgets/comuns.dart';
+import 'flashcards_screen.dart';
+import 'topico_screen.dart';
 
 /// Árvore de tópicos a partir de uma lista plana.
 class ArvoreTopicos {
@@ -67,90 +70,96 @@ class MateriaScreen extends StatelessWidget {
               final folhas = [for (final t in raiz) ...arvore.folhas(t)];
               final vistos = folhas.where((t) => t.visto).length;
               final p = folhas.isEmpty ? 0.0 : vistos / folhas.length;
-              return Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 880),
-                  child: ReorderableListView.builder(
-                    padding: const EdgeInsets.fromLTRB(28, 0, 28, 120),
-                    buildDefaultDragHandles: false,
-                    header: Padding(
-                      padding: const EdgeInsets.only(bottom: 24),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Bolinha(cor, tamanho: 14),
-                                    const SizedBox(width: 8),
-                                    const Text(
-                                      'MATÉRIA',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w800,
-                                        letterSpacing: 1,
-                                        color: Cores.tintaSuave,
+              return Assistir<Map<String, (int, int)>>(
+                chave: materiaId,
+                stream: () => db.watchContagemExtras(materiaId),
+                builder: (context, extras) => Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 880),
+                    child: ReorderableListView.builder(
+                      padding: const EdgeInsets.fromLTRB(28, 0, 28, 120),
+                      buildDefaultDragHandles: false,
+                      header: Padding(
+                        padding: const EdgeInsets.only(bottom: 24),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Bolinha(cor, tamanho: 14),
+                                      const SizedBox(width: 8),
+                                      const Text(
+                                        'MATÉRIA',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w800,
+                                          letterSpacing: 1,
+                                          color: Cores.tintaSuave,
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  m.nome,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .displaySmall,
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  '$vistos de ${folhas.length} tópicos vistos',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    color: Cores.tintaSuave,
+                                    ],
                                   ),
-                                ),
-                                const SizedBox(height: 12),
-                                _Compartilhada(materiaId: m.id),
-                              ],
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    m.nome,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .displaySmall,
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    '$vistos de ${folhas.length} tópicos vistos',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      color: Cores.tintaSuave,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  _Compartilhada(materiaId: m.id),
+                                  _AtalhoFlashcards(materia: m),
+                                ],
+                              ),
+                            ),
+                            AnelProgresso(
+                              valor: p,
+                              cor: cor,
+                              tamanho: 96,
+                              espessura: 10,
+                            ),
+                          ],
+                        ),
+                      ),
+                      itemCount: raiz.length,
+                      onReorderItem: (de, para) {
+                        final ids = raiz.map((t) => t.id).toList();
+                        ids.insert(para, ids.removeAt(de));
+                        db.reordenarTopicos(ids);
+                      },
+                      itemBuilder: (context, i) => Padding(
+                        key: ValueKey(raiz[i].id),
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: Material(
+                          color: Cores.fundo,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            side: const BorderSide(
+                              color: Cores.linha,
+                              width: 1.5,
                             ),
                           ),
-                          AnelProgresso(
-                            valor: p,
+                          clipBehavior: Clip.antiAlias,
+                          child: _NoTopico(
+                            topico: raiz[i],
+                            arvore: arvore,
+                            irmaos: raiz,
                             cor: cor,
-                            tamanho: 96,
-                            espessura: 10,
+                            nivel: 0,
+                            indiceRaiz: i,
+                            extras: extras ?? const {},
                           ),
-                        ],
-                      ),
-                    ),
-                    itemCount: raiz.length,
-                    onReorderItem: (de, para) {
-                      final ids = raiz.map((t) => t.id).toList();
-                      ids.insert(para, ids.removeAt(de));
-                      db.reordenarTopicos(ids);
-                    },
-                    itemBuilder: (context, i) => Padding(
-                      key: ValueKey(raiz[i].id),
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: Material(
-                        color: Cores.fundo,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          side: const BorderSide(
-                            color: Cores.linha,
-                            width: 1.5,
-                          ),
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: _NoTopico(
-                          topico: raiz[i],
-                          arvore: arvore,
-                          irmaos: raiz,
-                          cor: cor,
-                          nivel: 0,
-                          indiceRaiz: i,
                         ),
                       ),
                     ),
@@ -238,6 +247,7 @@ class _NoTopico extends StatelessWidget {
     required this.cor,
     required this.nivel,
     this.indiceRaiz,
+    this.extras = const {},
   });
 
   final Topico topico;
@@ -246,6 +256,9 @@ class _NoTopico extends StatelessWidget {
   final Color cor;
   final int nivel;
   final int? indiceRaiz;
+
+  /// (anexos, flashcards) por tópico.
+  final Map<String, (int, int)> extras;
 
   static const _maxNivel = 2;
 
@@ -281,8 +294,12 @@ class _NoTopico extends StatelessWidget {
       }
     }
 
+    final (nAnexos, nCartoes) = extras[topico.id] ?? (0, 0);
     final linha = InkWell(
-      onTap: alternar,
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => TopicoScreen(topicoId: topico.id)),
+      ),
       child: Padding(
         padding: EdgeInsets.fromLTRB(8.0 + nivel * 28, 6, 4, 6),
         child: Row(
@@ -311,6 +328,8 @@ class _NoTopico extends StatelessWidget {
                 ),
               ),
             ),
+            if (nAnexos > 0) _Contagem(Icons.attach_file_rounded, nAnexos),
+            if (nCartoes > 0) _Contagem(Icons.style_outlined, nCartoes),
             if (filhos.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(left: 8),
@@ -384,6 +403,7 @@ class _NoTopico extends StatelessWidget {
             irmaos: filhos,
             cor: cor,
             nivel: nivel + 1,
+            extras: extras,
           ),
         const SizedBox(height: 6),
       ],
@@ -428,5 +448,61 @@ class _NoTopico extends StatelessWidget {
         );
         if (ok) await db.excluirTopico(topico.id);
     }
+  }
+}
+
+class _Contagem extends StatelessWidget {
+  const _Contagem(this.icone, this.n);
+  final IconData icone;
+  final int n;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(left: 10),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icone, size: 17, color: Cores.tintaSuave),
+        const SizedBox(width: 2),
+        Text(
+          '$n',
+          style: const TextStyle(
+            color: Cores.tintaSuave,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+/// "Flashcards · N para revisar" no cabeçalho da matéria.
+class _AtalhoFlashcards extends StatelessWidget {
+  const _AtalhoFlashcards({required this.materia});
+  final Materia materia;
+
+  @override
+  Widget build(BuildContext context) {
+    final db = context.read<AppDatabase>();
+    return Assistir<List<CartaoInfo>>(
+      chave: materia.id,
+      stream: () => db.watchCartoesParaRevisar(materiaId: materia.id),
+      builder: (context, l) {
+        final n = l?.length ?? 0;
+        if (n == 0) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.only(top: 12),
+          child: Pilula(
+            icone: Icons.style_outlined,
+            rotulo: 'Flashcards · $n para revisar',
+            aoTocar: () => abrirEstudoFlashcards(
+              context,
+              titulo: materia.nome,
+              materiaId: materia.id,
+            ),
+          ),
+        );
+      },
+    );
   }
 }
