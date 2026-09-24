@@ -836,6 +836,17 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
+  /// Quantidade de flashcards de cada tópico (mapa mental).
+  Stream<Map<String, int>> watchFlashcardsPorTopico() =>
+      customSelect(
+        'SELECT topico_id AS id, COUNT(*) AS n FROM flashcards GROUP BY topico_id',
+        readsFrom: {flashcards},
+      ).watch().map(
+        (rows) => {
+          for (final r in rows) r.read<String>('id'): r.read<int>('n'),
+        },
+      );
+
   // ---------------------------------------------------------------------------
   // Sessões
   // ---------------------------------------------------------------------------

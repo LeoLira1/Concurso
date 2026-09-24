@@ -97,6 +97,30 @@ Menu lateral → "Estatísticas". A tela segue o mesmo escopo da tela inicial: c
   - Atalhos: "Flashcards · N para revisar" na matéria e o card de flashcards do dia na tela de Revisões.
 - Na lista de tópicos, ícones mostram quantos anexos e cartões cada tópico tem.
 
+## Etapa 7: mapa mental
+
+Menu lateral → "Mapa mental", ou o botão **Mapa mental** no alto da tela de cada matéria (abre com ela no centro). O mapa segue o mesmo escopo da tela inicial: concurso em foco ou tudo junto.
+
+- **Gerado sozinho a partir do edital**: no centro fica o concurso (ou "Todos"); em volta, as matérias; depois, os tópicos e os subtópicos. Você não desenha nada.
+- **Filtro** no alto: "Edital inteiro" ou uma matéria só, que vai para o centro.
+- **Mapa de calor do estudo:**
+  - não visto: cinza claro;
+  - visto em parte (tópico com subtópicos): cor da matéria bem clara;
+  - visto: preenchido com a cor da matéria;
+  - revisão atrasada: borda vermelha;
+  - acerto abaixo de 60% (com pelo menos 10 questões): borda laranja;
+  - matéria: barra com a % de tópicos vistos.
+  - A **legenda** fica no canto e recolhe com um toque.
+- **Gestos:**
+  - pinça para zoom e um dedo para arrastar;
+  - botões + e −, **Centralizar** e **Ajustar à tela**;
+  - tocar numa matéria recolhe ou expande os tópicos dela. O "+30" no canto mostra quantos tópicos estão escondidos;
+  - tocar num tópico ou subtópico abre a tela do tópico (resumos, flashcards, "Estudar este tópico");
+  - segurar o dedo num nó mostra o nome completo e um resumo: horas estudadas, % de acerto, próxima revisão e nº de flashcards.
+- **Nada de tabela nova:** o mapa só lê o que já existe. As matérias recolhidas e a legenda aberta/fechada ficam nas preferências do aparelho, fora do sync do Turso.
+
+Como funciona: `lib/logic/mapa_mental.dart` monta a árvore e calcula o layout radial. O ângulo de cada ramo é proporcional ao número de descendentes. O raio de cada anel cresce até as caixas vizinhas não se tocarem. Com muitos nós, eles se alternam entre raios próximos, como tijolos. O desenho é um `CustomPainter` dentro de um `InteractiveViewer`, sem pacote novo. Textos e ligações ficam em cache, e o texto some quando fica pequeno demais para ler. Um edital com 8 matérias × 30 tópicos × 3 subtópicos (969 nós) calcula em poucas dezenas de milissegundos, e os testes conferem que nenhum nó se sobrepõe.
+
 ## Colar o conteúdo programático
 
 No edital do concurso, toque em **"Colar edital"**. Com o edital vazio, também aparece um card com esse atalho.
