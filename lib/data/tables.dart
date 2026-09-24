@@ -122,6 +122,10 @@ class Sessoes extends Table with Sincronizavel {
 
   /// Onde parou (texto curto), mostrado na próxima sessão da mesma matéria.
   TextColumn get pontoParada => text().nullable()();
+
+  /// 'provas' = criada por um Treino/Simulado (v6). As questões dela são
+  /// contadas pelas respostas (tabela respostas), não por estes números.
+  TextColumn get origem => text().nullable()();
 }
 
 /// Resumo ou mapa mental anexado a um tópico (v4). O arquivo fica na pasta
@@ -172,4 +176,102 @@ class TopicoConcursos extends Table {
 
   @override
   Set<Column> get primaryKey => {topicoId, concursoId};
+}
+
+// -----------------------------------------------------------------------------
+// Provas (banco de questões, v6)
+// -----------------------------------------------------------------------------
+
+/// Uma prova colada (formato "edital-prova-v1"). A mesma prova é
+/// reconhecida por banca + órgão + cargo + ano ([chave]).
+class Provas extends Table with Sincronizavel {
+  TextColumn get banca => text()();
+  TextColumn get orgao => text()();
+  TextColumn get cargo => text()();
+  IntColumn get ano => integer()();
+  TextColumn get chave => text()();
+
+  /// 'preliminar' ou 'definitivo'.
+  TextColumn get gabarito => text()();
+  IntColumn get numAlternativas => integer()();
+  IntColumn get totalQuestoes => integer()();
+
+  /// JSON número → letra, com todas as questões (inclusive descartadas).
+  TextColumn get gabaritoLido => text().withDefault(const Constant('{}'))();
+
+  /// JSON [{numero, motivo}].
+  TextColumn get descartadas => text().withDefault(const Constant('[]'))();
+  DateTimeColumn get criadoEm => dateTime().clientDefault(DateTime.now)();
+}
+
+/// Texto-base compartilhado por várias questões da prova.
+@DataClassName('TextoBase')
+class TextosBase extends Table with Sincronizavel {
+  TextColumn get provaId =>
+      text().references(Provas, #id, onDelete: KeyAction.cascade)();
+
+  /// Id do texto no JSON (ex.: "T1").
+  TextColumn get codigo => text()();
+  TextColumn get titulo => text().withDefault(const Constant(''))();
+  TextColumn get conteudo => text()();
+}
+
+/// Questão de prova. (A tabela "questoes" já guarda o registro manual de
+/// questões por matéria, por isso esta se chama questoes_prova.)
+@DataClassName('QuestaoProva')
+class QuestoesProva extends Table with Sincronizavel {
+  TextColumn get provaId =>
+      text().references(Provas, #id, onDelete: KeyAction.cascade)();
+  IntColumn get numero => integer()();
+  TextColumn get textoId => text().nullable().references(
+    TextosBase,
+    #id,
+    onDelete: KeyAction.setNull,
+  )();
+  TextColumn get materiaId =>
+      text().references(Materias, #id, onDelete: KeyAction.cascade)();
+
+  /// Nulo = "sem tópico".
+  TextColumn get topicoId =>
+      text().nullable().references(Topicos, #id, onDelete: KeyAction.setNull)();
+
+  /// Tópico como veio do JSON (sempre guardado).
+  TextColumn get topicoOriginal => text().withDefault(const Constant(''))();
+  TextColumn get enunciado => text()();
+
+  /// JSON letra → texto.
+  TextColumn get alternativas => text()();
+
+  /// Letra certa, ou "X" na anulada.
+  TextColumn get resposta => text()();
+
+  /// Separado por vírgula: anulada, imagem, revisar, desatualizada.
+  TextColumn get status => text().withDefault(const Constant(''))();
+  TextColumn get obs => text().withDefault(const Constant(''))();
+}
+
+/// Cada resposta dada numa questão (Treino ou Simulado).
+@DataClassName('Resposta')
+class Respostas extends Table with Sincronizavel {
+  TextColumn get questaoId =>
+      text().references(QuestoesProva, #id, onDelete: KeyAction.cascade)();
+  TextColumn get marcada => text()();
+  BoolColumn get acertou => boolean()();
+  IntColumn get segundos => integer().withDefault(const Constant(0))();
+
+  /// nao_sabia, desatencao ou pegadinha (nulo = não informado).
+  TextColumn get motivoErro => text().nullable()();
+  DateTimeColumn get data => dateTime().clientDefault(DateTime.now)();
+
+  /// 'treino' ou 'simulado'.
+  TextColumn get modo => text()();
+}
+
+/// Print anexado a uma questão com imagem. Fica só no aparelho (como os
+/// resumos), por isso não sincroniza.
+@DataClassName('PrintQuestao')
+class PrintsQuestao extends Table with Sincronizavel {
+  TextColumn get questaoId =>
+      text().references(QuestoesProva, #id, onDelete: KeyAction.cascade)();
+  TextColumn get arquivo => text()();
 }

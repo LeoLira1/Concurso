@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../data/database.dart';
+import '../data/provas_db.dart';
 import '../logic/metodo.dart';
 import '../screens/cronometro_screen.dart';
 import '../screens/topico_screen.dart';
@@ -157,7 +158,7 @@ class _Historico extends StatelessWidget {
       stream: () => db.watchRevisoesDoTopico(topico.id),
       builder: (context, revs) => Assistir<List<Sessao>>(
         chave: topico.id,
-        stream: () => db.watchSessoesDoTopico(topico.id),
+        stream: () => db.watchSessoesDoTopicoComQuestoes(topico.id),
         builder: (context, sessoes) {
           final ss = sessoes ?? const <Sessao>[];
           final total = ss.fold<int>(0, (a, s) => a + s.minutos);

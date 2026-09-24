@@ -152,6 +152,94 @@ No edital do concurso, toque em **"Colar edital"**. Com o edital vazio, também 
 - Matérias que já existem são reaproveitadas, com a mesma cor e o mesmo progresso. Tópicos com o mesmo nome (ignorando acento e maiúscula) não são duplicados, então dá para colar de novo sem problema.
 - Os tópicos colados entram no edital do concurso de destino. Se o tópico já existe na matéria (por exemplo, veio de outro concurso), ele só ganha o vínculo, mantendo progresso, revisões e flashcards.
 
+## Provas (banco de questões)
+
+Menu lateral → **Provas**. Lá ficam três telas: **Colar prova**, **Resolver** e **Estatísticas das provas**, e embaixo a lista **Minhas provas**. Na tela inicial, o botão **⚡ (Treino rápido: 10 questões)** abre direto 10 questões do concurso em foco: primeiro as que você nunca fez, depois as que errou.
+
+### Como transformar um PDF de prova em questões (fluxo com o Sonnet)
+
+1. Abra o Claude (Sonnet) e envie o PDF da prova e o do gabarito.
+2. Peça: *"Extraia esta prova no formato edital-prova-v1"*, colando junto a descrição do formato (abaixo) e a lista de matérias.
+3. Se a prova for grande, o Sonnet pode entregar em partes. Tudo bem: copie cada parte.
+4. No app: **Provas → Colar prova → Colar**. Para a continuação, toque em **Colar** de novo (ou cole numa outra hora: o app completa a mesma prova).
+5. Toque em **Conferir**. A prévia mostra o que o app entendeu. Corrija o que precisar e toque em **Importar**.
+
+### O formato "edital-prova-v1"
+
+```json
+{
+  "formato": "edital-prova-v1",
+  "prova": {
+    "banca": "…", "orgao": "…", "cargo": "…", "ano": 2019,
+    "gabarito": "definitivo",          // ou "preliminar"
+    "num_alternativas": 4,             // 4 ou 5
+    "total_questoes": 40,
+    "gabarito_lido": { "1": "C", "2": "A", "7": "X" },   // TODAS as questões
+    "descartadas": [ { "numero": 11, "motivo": "…" } ]
+  },
+  "textos": [ { "id": "T1", "titulo": "…", "conteudo": "…" } ],
+  "questoes": [
+    {
+      "numero": 1, "texto_id": "T1",      // ou null
+      "materia": "Língua Portuguesa", "topico": "Interpretação de texto",
+      "enunciado": "…",
+      "alternativas": { "A": "…", "B": "…", "C": "…", "D": "…" },
+      "resposta": "C",                    // "X" só se o status tiver "anulada"
+      "status": [],                       // anulada, imagem, revisar, desatualizada
+      "obs": "…"
+    }
+  ]
+}
+```
+
+Matérias possíveis: Língua Portuguesa; Matemática e Raciocínio Lógico; Noções de Informática; Direitos e Deveres Individuais e Coletivos; Cidadania e Segurança Pública; Ética no Serviço Público; Legislação de Trânsito; Crimes contra a Administração Pública; Leis Penais Especiais; Direito Constitucional; Direito Administrativo; Direito Penal; Noções de Segurança e Vigilância.
+
+### O que o app confere antes de importar
+
+Mensagens em português simples, dizendo qual questão tem problema:
+
+- JSON válido (em erro de digitação, diz a linha) e `"formato": "edital-prova-v1"`;
+- cada questão com todas as alternativas (4 ou 5, conforme a prova), resposta entre as letras válidas e "X" só em anulada;
+- `texto_id` que exista em `textos` e números sem repetição;
+- questões + descartadas = total da prova (se não bater, só avisa: pode faltar uma continuação);
+- **resposta × gabarito lido**: se forem diferentes, a questão fica em vermelho ("Resposta A, mas o gabarito lido diz D") e o botão Importar só libera depois que você escolher qual vale.
+
+### A prévia
+
+- Cabeçalho (banca, órgão, cargo, ano, preliminar/definitivo), contagem por matéria (com "nova" nas que ainda não existem), por status e a lista de descartadas com o motivo.
+- Cada questão mostra o tópico, os status e o "obs". **Toque numa questão** para mudar matéria, tópico, status e resposta.
+- **Tópicos**: o app procura o tópico mais parecido na matéria (ignora acento, maiúscula e palavras como "de", "lei"; compara palavras-chave). Se a semelhança é boa, liga sozinho: "Estatuto das Guardas – princípios mínimos de atuação" cai em "Estatuto Geral das Guardas Municipais (Lei 13.022/2014)". Se não, fica **sem tópico** e a edição mostra sugestões, "Criar tópico novo" e "Deixar sem tópico". O texto original do tópico é sempre guardado.
+- Matéria nova criada pela importação **não entra** em nenhum concurso (adicione no edital, se quiser).
+
+### Sem duplicar
+
+- A mesma prova é banca + órgão + cargo + ano; a questão é essa prova + o número. Colar de novo não duplica nada.
+- Se a prova salva tem gabarito **preliminar** e você cola o **definitivo**, o app atualiza respostas e status e mostra o que mudou ("Questão 7: resposta B → X, anulada").
+
+### Resolver
+
+- **Treino**: uma questão por vez, com a correção na hora. **Simulado**: você escolhe quantas questões e o tempo (sugestão: 4 minutos por questão), com cronômetro e a correção só no final.
+- Filtros: concurso (ou "Tudo junto"), matéria, tópico, banca, ano, "só as que errei" e "só as nunca feitas".
+- Ficam **fora do sorteio** por padrão: anuladas, desatualizadas e "revisar" ainda não conferidas. Cada uma tem uma chave para incluir.
+- Com um concurso em foco, entra a questão cujo tópico está no edital dele; questão "sem tópico" entra se a matéria dela faz parte do concurso.
+- Na questão: botão **Ler o texto** (abre o texto-base por cima, sem sair); **"Conferi, está certa"** nas marcadas "revisar"; aviso de **imagem** com a descrição e botões para anexar um print (câmera ou galeria), que aparece junto do enunciado; selo laranja **"Lei mudou"** com a explicação; selo **"Prova de 2019: confira a lei atual"** em legislação com mais de 4 anos.
+- Depois de responder, aparece o "obs". Ao errar, o app pergunta o motivo: **Não sabia**, **Desatenção** ou **Pegadinha** (dá para pular).
+
+### Estatísticas
+
+- Cada resposta guarda a questão, a letra marcada, se acertou, o tempo, o motivo do erro, a data e o modo. **Anuladas nunca contam** como acerto nem erro.
+- As respostas entram na % de acerto do **tópico** e da **matéria** usada pelo mapa mental (borda laranja abaixo de 60% com 10+ questões), na tela do tópico e nas estatísticas gerais.
+- Cada Treino ou Simulado vira uma **sessão de estudo com método "Questões"** (uma por matéria, com o tempo gasto), aparece na grade do mês e faz o ciclo avançar se a matéria da vez foi estudada.
+- **Estatísticas das provas**: % por matéria, tópico e banca; evolução semanal (12 semanas); tempo médio por questão; erros por motivo; e o **Caderno de erros** (questões erradas na última tentativa, com "Refazer" e "Refazer todas").
+
+### Minhas provas
+
+Toque numa prova para ver detalhes (matérias, descartadas, questões). A lixeira exclui a prova inteira, com confirmação: questões, respostas e prints saem, e as respostas saem das estatísticas (o tempo estudado continua).
+
+### Dados e sync
+
+Tabelas novas: `provas`, `textos_base`, `questoes_prova` (a tabela `questoes` já existia para o registro manual de questões) e `respostas`, todas no sync do Turso com gatilhos em `sync_pendentes`, inclusive exclusões. Os prints (`prints_questao`) ficam só no aparelho, como os resumos. As sessões ganharam a coluna `origem` (`provas` nas criadas por Treino/Simulado). Veja `lib/logic/provas.dart` (leitura, validação, semelhança de tópicos, sorteio) e `lib/data/provas_db.dart` (banco e estatísticas). Testes: `test/provas_test.dart` e `test/provas_widget_test.dart`, com a prova real de Araucária-PR 2019 em `test/dados/`.
+
 ## Sincronização (Turso)
 
 Toque no ícone de **nuvem** ao lado do logo e siga os passos. Você só configura uma vez em cada aparelho:
@@ -165,7 +253,7 @@ Toque no ícone de **nuvem** ao lado do logo e siga os passos. Você só configu
 - **Automática**: sincroniza ao abrir o app, ao voltar para ele, alguns segundos depois de cada alteração e a cada 5 minutos. Offline, as alterações ficam guardadas e vão depois.
 - **Primeira conexão**: se a nuvem e o aparelho já têm dados, você escolhe **Juntar** ou **Usar só os da nuvem**. A segunda opção apaga os dados do aparelho; é boa para o segundo aparelho, se ele só tiver o exemplo.
 - **Conflitos**: vale a alteração mais recente. Matérias com o mesmo nome criadas nos dois aparelhos viram uma só, com os tópicos e sessões dos dois.
-- **O que sincroniza**: concursos, edital (inclusive em quais concursos cada tópico está), progresso, ciclo, sessões, revisões e flashcards.
-- **O que não sincroniza**: fotos e PDFs anexados ficam no aparelho onde foram adicionados. Lembretes e pomodoro são configurados em cada aparelho.
+- **O que sincroniza**: concursos, edital (inclusive em quais concursos cada tópico está), progresso, ciclo, sessões, revisões, flashcards, provas, questões e respostas.
+- **O que não sincroniza**: fotos e PDFs anexados (e os prints das questões) ficam no aparelho onde foram adicionados. Lembretes e pomodoro são configurados em cada aparelho.
 
 Como funciona: gatilhos do SQLite anotam cada mudança local, inclusive exclusões, em `sync_pendentes`. O app envia essas linhas para uma tabela genérica `registros` no Turso, pela API HTTP (Hrana, `/v2/pipeline`). Cada gravação recebe uma `versao` crescente, e cada aparelho baixa só o que veio depois da última versão que já viu. Veja `lib/data/sync/`.

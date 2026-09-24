@@ -12,6 +12,7 @@ import 'assistir.dart';
 import 'comuns.dart';
 import 'dia_sheet.dart';
 import 'botao_revisoes.dart';
+import 'botao_treino.dart';
 import 'proxima_ciclo.dart';
 
 /// Grade do mês (referência: pocket cal). Dias estudados ficam preenchidos
@@ -82,6 +83,8 @@ class GradeMes extends StatelessWidget {
                     Expanded(child: ProximaDoCiclo(concursoId: painel.foco.id)),
                     const SizedBox(width: 8),
                     const BotaoRevisoes(compacto: true),
+                    const SizedBox(width: 8),
+                    const BotaoTreinoRapido(compacto: true),
                   ],
                 ),
               ],
@@ -239,7 +242,12 @@ class _BarraTopo extends StatelessWidget {
               child: ProximaDoCiclo(concursoId: concursoId),
             ),
           ),
-        if (!compacta) ...[const SizedBox(width: 12), const BotaoRevisoes()],
+        if (!compacta) ...[
+          const SizedBox(width: 12),
+          const BotaoRevisoes(),
+          const SizedBox(width: 8),
+          const BotaoTreinoRapido(compacto: true),
+        ],
         const Spacer(flex: 1),
         Pilula(rotulo: 'Hoje', aoTocar: estado.irParaHoje),
         const SizedBox(width: 8),

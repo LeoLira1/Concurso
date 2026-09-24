@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/database.dart';
+import '../data/provas_db.dart';
 import '../logic/mapa_mental.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
@@ -436,7 +437,7 @@ class MapaMentalScreenState extends State<MapaMentalScreen>
               stream: () => db.watchTodosTopicos(concursoId: escopo),
               builder: (context, topicos) => Assistir<List<Sessao>>(
                 chave: 'sessoes',
-                stream: db.watchTodasSessoes,
+                stream: db.watchSessoesComQuestoes,
                 builder: (context, sessoes) => Assistir<List<RevisaoInfo>>(
                   chave: ('revisoes', escopo),
                   stream: () => db.watchRevisoesPendentes(

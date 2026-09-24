@@ -112,6 +112,7 @@ class Sincronizador {
   /// Apaga os dados deste aparelho (para usar só os da nuvem).
   Future<void> apagarLocal() => _aplicando(() async {
     await db.customStatement('DELETE FROM anexos');
+    await db.customStatement('DELETE FROM prints_questao');
     for (final t in tabelasSincronizadas.reversed) {
       await db.customStatement('DELETE FROM ${t.nome}');
     }
@@ -388,7 +389,12 @@ class Sincronizador {
     }
 
     // Fica a recebida: move tudo da local para ela.
-    for (final tabela in const ['topicos', 'questoes', 'sessoes']) {
+    for (final tabela in const [
+      'topicos',
+      'questoes',
+      'sessoes',
+      'questoes_prova',
+    ]) {
       final ids = await db
           .customSelect(
             'SELECT id FROM $tabela WHERE materia_id = ?',
