@@ -946,4 +946,179 @@ NOÇÕES DE DIREITO ADMINISTRATIVO: 1 Noções de organização administrativa. 
     (t) =>
         captura(t, '33_mapa_celular', celular, mapaPort, preparar: dadosMapa),
   );
+
+  testWidgets(
+    'importar estruturado',
+    (t) => captura(
+      t,
+      '34_importar_estruturado_paisagem',
+      paisagem,
+      (db) => comFoco(
+        db,
+        (id) => ImportarScreen(concursoId: id, textoInicial: _estruturado),
+      ),
+    ),
+  );
 }
+
+const _estruturado = '''
+LÍNGUA PORTUGUESA:
+Compreensão textual
+Sílabas
+Encontros vocálicos e consonantais
+Dígrafos
+Tonicidade
+Reforma ortográfica de 2009
+Acentuação
+Prosódia
+Estrutura e formação das palavras
+Classificação e flexão das palavras
+- Substantivo
+- Artigo
+- Adjetivo
+- Numeral
+- Pronome
+- Verbo
+- Advérbio
+- Preposição
+- Conjunção
+- Interjeição
+Emprego de tempos e modos verbais
+Significação das palavras
+Sinonímia, antonímia, polissemia, parônimos, homônimos, denotação e conotação
+Termos essenciais, integrantes e acessórios da oração
+- Sujeito
+- Predicado
+- Predicativo do sujeito
+- Predicativo do objeto
+- Transitividade verbal
+- Objeto direto
+- Objeto indireto
+- Complemento nominal
+- Agente da passiva
+- Adjunto adnominal
+- Adjunto adverbial
+- Aposto
+Vocativo
+Crase
+Pronomes — emprego, formas de tratamento e colocação
+Pontuação
+Coesão e coerência textual
+
+NOÇÕES DE INFORMÁTICA:
+Conceitos básicos de informática
+Hardware e software
+Sistema operacional Windows
+Arquivos, pastas e atalhos
+Dispositivos de entrada, saída e armazenamento
+Editores de texto — Word e LibreOffice Writer
+Planilhas — Excel e LibreOffice Calc
+Apresentações — PowerPoint e LibreOffice Impress
+Internet e navegadores
+Correio eletrônico (e-mail)
+Noções de redes de computadores
+Segurança da informação — vírus, malwares, phishing, antivírus e firewall
+Backup e proteção de dados
+Boas práticas no uso da internet
+
+MATEMÁTICA E RACIOCÍNIO LÓGICO:
+Conjuntos numéricos (naturais, inteiros, racionais, irracionais e reais)
+Razão e proporção
+Grandezas diretamente e inversamente proporcionais
+Regra de três simples e composta
+Sistema monetário brasileiro
+Porcentagem
+Juros simples e compostos
+Equações e inequações de primeiro e segundo graus
+Sequências e padrões
+Progressões aritméticas e geométricas
+Análise combinatória e princípios de contagem
+Probabilidade
+Resolução de situações-problema
+Sistemas de medidas
+Cálculo de áreas e volumes
+Lógica proposicional e estruturas lógicas
+Lógica de argumentação — analogias, inferências, deduções e conclusões
+Diagramas lógicos
+
+ATUALIDADES DE CALDAS NOVAS:
+História de Caldas Novas
+Formação histórica, política e administrativa do município
+Aspectos geográficos
+Aspectos demográficos
+Economia do município
+Turismo
+Organização político-administrativa
+Poder Executivo e Poder Legislativo municipal
+Símbolos oficiais do município
+Atualidades de Caldas Novas
+
+DIREITOS E DEVERES INDIVIDUAIS E COLETIVOS:
+Direito à vida (art. 5º, caput)
+Direito à liberdade (art. 5º, caput)
+Princípio da igualdade (art. 5º, I)
+Legalidade e anterioridade penal (art. 5º, II e XXXIX)
+Liberdade de manifestação do pensamento (art. 5º, IV)
+Intimidade, vida privada, honra e imagem (art. 5º, X)
+Inviolabilidade do domicílio (art. 5º, XI)
+Sigilo da correspondência e das comunicações (art. 5º, XII)
+Liberdade de locomoção (art. 5º, XV)
+Direito de reunião e liberdade de associação (art. 5º, XVI a XXI)
+Direito de propriedade e função social (art. 5º, XXII e XXIII)
+Vedação ao racismo (art. 5º, XLII)
+Integridade física e moral do preso (art. 5º, XLIX)
+Provas ilícitas (art. 5º, LVI)
+Presunção de inocência (art. 5º, LVII)
+Direito ao silêncio e não autoincriminação (art. 5º, LXIII)
+
+CIDADANIA E SEGURANÇA PÚBLICA:
+Cidadania — conceito, fundamentos e exercício
+Direitos políticos na Constituição Federal
+Cidadania e meio ambiente
+Segurança pública na CF (art. 144)
+Órgãos e atribuições da segurança pública
+Guardas Municipais na CF (art. 144, § 8º)
+Estatuto Geral das Guardas Municipais (Lei 13.022/2014)
+Princípios, competências, atribuições e limites das Guardas Municipais
+Direitos humanos e atuação das Guardas Municipais
+
+ÉTICA NO SERVIÇO PÚBLICO:
+Ética e moral
+Princípios e valores éticos
+Ética e democracia
+Ética e cidadania
+Ética na função pública
+Conduta ética, responsabilidade e atendimento ao cidadão
+
+LEGISLAÇÃO DE TRÂNSITO:
+Código de Trânsito Brasileiro (Lei 9.503/1997)
+- Capítulo I — Disposições preliminares
+- Capítulo II — Sistema Nacional de Trânsito
+- Capítulo III — Normas gerais de circulação e conduta
+- Capítulo XIX — Crimes de trânsito
+
+CRIMES CONTRA A ADMINISTRAÇÃO PÚBLICA:
+Funcionário público para fins penais (arts. 327 e 328)
+Peculato (arts. 312 e 313)
+Concussão (art. 316)
+Corrupção passiva (art. 317)
+Prevaricação (art. 319)
+Condescendência criminosa (art. 320)
+Corrupção ativa (art. 333)
+Tráfico de influência (art. 332)
+Resistência (art. 329)
+Desobediência (art. 330)
+Desacato (art. 331)
+
+LEIS PENAIS ESPECIAIS:
+Abuso de Autoridade (Lei 13.869/2019)
+Crimes Hediondos (Lei 8.072/1990)
+Crimes de Tortura (Lei 9.455/1997)
+Estatuto da Criança e do Adolescente (Lei 8.069/1990)
+- Disposições preliminares (arts. 1º a 6º)
+- Medidas de proteção (arts. 98 a 102)
+- Prática de ato infracional (arts. 103 a 128)
+- Medidas pertinentes aos pais ou responsável (arts. 129 e 130)
+Lei Maria da Penha (Lei 11.340/2006) — medidas protetivas e crime de descumprimento
+Estatuto do Desarmamento (Lei 10.826/2003)
+''';

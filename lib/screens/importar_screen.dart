@@ -99,7 +99,9 @@ class _ImportarScreenState extends State<ImportarScreen> {
   @override
   Widget build(BuildContext context) {
     final incluidos = _itens.where((m) => m.incluir).toList();
-    final nTopicos = incluidos.fold<int>(0, (a, m) => a + m.totalTopicos);
+    final nTopicos = incluidos.fold<int>(0, (a, m) => a + m.topicos.length);
+    final nSub =
+        incluidos.fold<int>(0, (a, m) => a + m.totalTopicos) - nTopicos;
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 72,
@@ -117,6 +119,7 @@ class _ImportarScreenState extends State<ImportarScreen> {
           );
           final previa = _Previa(
             itens: _itens,
+            estruturado: modoEstruturado(_texto.text),
             existentes: _existentes,
             aoMudar: () => setState(() {}),
           );
@@ -169,7 +172,7 @@ class _ImportarScreenState extends State<ImportarScreen> {
                         child: Text(
                           _itens.isEmpty
                               ? 'Cole o texto do edital para ver a separação.'
-                              : '${incluidos.length} ${incluidos.length == 1 ? 'matéria' : 'matérias'} · $nTopicos tópicos',
+                              : '${incluidos.length} ${incluidos.length == 1 ? 'matéria' : 'matérias'} · ${contagemTopicos(nTopicos, nSub)}',
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
@@ -340,10 +343,15 @@ class _Editor extends StatelessWidget {
 class _Previa extends StatelessWidget {
   const _Previa({
     required this.itens,
+    required this.estruturado,
     required this.existentes,
     required this.aoMudar,
   });
   final List<MateriaImportada> itens;
+
+  /// Texto com cabeçalhos "MATÉRIA:" em linha própria (ver
+  /// [modoEstruturado]): mostra o aviso no topo da prévia.
+  final bool estruturado;
   final Map<String, int> existentes;
   final VoidCallback aoMudar;
 
@@ -377,14 +385,79 @@ class _Previa extends StatelessWidget {
         ),
       );
     }
+    final extra = estruturado ? 1 : 0;
     return ListView.builder(
       padding: const EdgeInsets.only(bottom: 24),
-      itemCount: itens.length,
-      itemBuilder: (context, i) => _CartaoMateria(
-        m: itens[i],
-        cor: Color(cores[i]),
-        existe: existentes.containsKey(chaveMateria(itens[i].nome)),
-        aoMudar: aoMudar,
+      itemCount: itens.length + extra,
+      itemBuilder: (context, i) {
+        if (i < extra) return _AvisoEstruturado(itens: itens);
+        i -= extra;
+        return _CartaoMateria(
+          m: itens[i],
+          cor: Color(cores[i]),
+          existe: existentes.containsKey(chaveMateria(itens[i].nome)),
+          aoMudar: aoMudar,
+        );
+      },
+    );
+  }
+}
+
+/// "19 tópicos + 22 subtópicos" (ou só "14 tópicos").
+String contagemTopicos(int topicos, int sub) {
+  final t = '$topicos ${topicos == 1 ? 'tópico' : 'tópicos'}';
+  if (sub == 0) return t;
+  return '$t + $sub ${sub == 1 ? 'subtópico' : 'subtópicos'}';
+}
+
+class _AvisoEstruturado extends StatelessWidget {
+  const _AvisoEstruturado({required this.itens});
+  final List<MateriaImportada> itens;
+
+  @override
+  Widget build(BuildContext context) {
+    final topicos = itens.fold<int>(0, (a, m) => a + m.topicos.length);
+    final sub = itens.fold<int>(0, (a, m) => a + m.totalTopicos) - topicos;
+    String n(int v, String um, String varios) => '$v ${v == 1 ? um : varios}';
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      decoration: BoxDecoration(
+        color: Cores.fundoLateral,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Cores.linha, width: 1.5),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.format_list_bulleted_rounded, size: 22),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Modo estruturado',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Só as linhas em MAIÚSCULAS terminando com ":" viram '
+                  'matéria. Cada linha é um tópico, e as que começam com '
+                  '"-" são subtópicos.\n'
+                  '${n(itens.length, 'matéria', 'matérias')}, '
+                  '${n(topicos, 'tópico', 'tópicos')} e '
+                  '${n(sub, 'subtópico', 'subtópicos')}.',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Cores.tintaSuave,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -454,7 +527,10 @@ class _CartaoMateriaState extends State<_CartaoMateria> {
                           ),
                           Text(
                             [
-                              '${m.totalTopicos} tópicos',
+                              contagemTopicos(
+                                m.topicos.length,
+                                m.totalTopicos - m.topicos.length,
+                              ),
                               if (widget.existe)
                                 'já existe · só entram os tópicos novos',
                             ].join('  ·  '),
