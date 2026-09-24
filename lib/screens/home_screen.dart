@@ -48,6 +48,7 @@ class HomeScreen extends StatelessWidget {
               foco: foco,
               materias: mats,
               filtro: filtro,
+              verTudo: estado.verTudo,
             );
             if (telaLarga(context)) {
               return Scaffold(
@@ -91,12 +92,19 @@ class Painel {
     required this.foco,
     required this.materias,
     required this.filtro,
+    this.verTudo = false,
   });
 
   final List<Concurso> concursos;
   final Concurso foco;
   final List<MateriaInfo> materias;
   final String? filtro;
+
+  /// "Tudo junto": mostra os tópicos de todos os editais.
+  final bool verTudo;
+
+  /// Concurso cujo edital define os tópicos mostrados (nulo = todos).
+  String? get escopo => verTudo ? null : foco.id;
 
   MateriaInfo? get materiaFiltrada {
     for (final m in materias) {

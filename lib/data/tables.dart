@@ -157,3 +157,19 @@ class Flashcards extends Table with Sincronizavel {
   IntColumn get erros => integer().withDefault(const Constant(0))();
   DateTimeColumn get criadoEm => dateTime().clientDefault(DateTime.now)();
 }
+
+/// Em quais editais (concursos) um tópico entra (v5). A matéria e o tópico
+/// são compartilhados, com um progresso só; o vínculo diz quais concursos
+/// mostram o tópico. Só tópicos de primeiro nível têm vínculo: os
+/// subtópicos seguem o tópico pai.
+@DataClassName('TopicoConcurso')
+class TopicoConcursos extends Table {
+  TextColumn get topicoId =>
+      text().references(Topicos, #id, onDelete: KeyAction.cascade)();
+  TextColumn get concursoId =>
+      text().references(Concursos, #id, onDelete: KeyAction.cascade)();
+  DateTimeColumn get atualizadoEm => dateTime().clientDefault(DateTime.now)();
+
+  @override
+  Set<Column> get primaryKey => {topicoId, concursoId};
+}

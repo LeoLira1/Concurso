@@ -13,6 +13,7 @@ Future<void> abrirEstudoFlashcards(
   required String titulo,
   String? topicoId,
   String? materiaId,
+  String? concursoId,
   bool todos = false,
 }) async {
   final db = context.read<AppDatabase>();
@@ -20,6 +21,7 @@ Future<void> abrirEstudoFlashcards(
       .watchCartoesParaRevisar(
         topicoId: topicoId,
         materiaId: materiaId,
+        concursoId: concursoId,
         ate: todos ? DateTime(9999) : null,
       )
       .first;

@@ -94,8 +94,8 @@ class _SidebarState extends State<Sidebar> {
           const SizedBox(height: 12),
           Expanded(
             child: Assistir<List<Topico>>(
-              chave: 'topicos',
-              stream: db.watchTodosTopicos,
+              chave: ('topicos', p.escopo),
+              stream: () => db.watchTodosTopicos(concursoId: p.escopo),
               builder: (context, topicos) {
                 final arvore = ArvoreTopicos(
                   (topicos ?? const <Topico>[])
@@ -160,7 +160,7 @@ class _SidebarState extends State<Sidebar> {
                             MaterialPageRoute(
                               builder: (_) => MateriaScreen(
                                 materiaId: m.materia.id,
-                                concursoId: p.foco.id,
+                                concursoId: p.escopo,
                               ),
                             ),
                           );

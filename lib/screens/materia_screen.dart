@@ -37,7 +37,10 @@ class MateriaScreen extends StatelessWidget {
     required this.concursoId,
   });
   final String materiaId;
-  final String concursoId;
+
+  /// Edital mostrado: só os tópicos deste concurso. Nulo = "Tudo junto"
+  /// (tópicos de qualquer edital, mais a seção "Sem edital").
+  final String? concursoId;
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +82,7 @@ class MateriaScreen extends StatelessWidget {
             ),
           ),
           body: StreamBuilder<List<Topico>>(
-            stream: db.watchTopicos(materiaId),
+            stream: db.watchTopicos(materiaId, concursoId: concursoId),
             builder: (context, tSnap) {
               final arvore = ArvoreTopicos(tSnap.data ?? const []);
               final raiz = arvore.raiz();
@@ -135,7 +138,10 @@ class MateriaScreen extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 12),
                                   _Compartilhada(materiaId: m.id),
-                                  _AtalhoFlashcards(materia: m),
+                                  _AtalhoFlashcards(
+                                    materia: m,
+                                    concursoId: concursoId,
+                                  ),
                                 ],
                               ),
                             ),
@@ -148,6 +154,9 @@ class MateriaScreen extends StatelessWidget {
                           ],
                         ),
                       ),
+                      footer: concursoId == null
+                          ? _SemEdital(materiaId: materiaId, cor: cor)
+                          : null,
                       itemCount: raiz.length,
                       onReorderItem: (de, para) {
                         final ids = raiz.map((t) => t.id).toList();
@@ -199,7 +208,11 @@ class MateriaScreen extends StatelessWidget {
       dica: 'Crase\nPontuação\nConcordância\n- Nominal\n- Verbal',
     );
     if (texto == null || !context.mounted) return;
-    await context.read<AppDatabase>().adicionarTopicosEmLote(materiaId, texto);
+    await context.read<AppDatabase>().adicionarTopicosEmLote(
+      materiaId,
+      texto,
+      concursoIds: concursoId == null ? null : [concursoId!],
+    );
   }
 }
 
@@ -494,15 +507,19 @@ class _Contagem extends StatelessWidget {
 
 /// "Flashcards · N para revisar" no cabeçalho da matéria.
 class _AtalhoFlashcards extends StatelessWidget {
-  const _AtalhoFlashcards({required this.materia});
+  const _AtalhoFlashcards({required this.materia, required this.concursoId});
   final Materia materia;
+  final String? concursoId;
 
   @override
   Widget build(BuildContext context) {
     final db = context.read<AppDatabase>();
     return Assistir<List<CartaoInfo>>(
-      chave: materia.id,
-      stream: () => db.watchCartoesParaRevisar(materiaId: materia.id),
+      chave: (materia.id, concursoId),
+      stream: () => db.watchCartoesParaRevisar(
+        materiaId: materia.id,
+        concursoId: concursoId,
+      ),
       builder: (context, l) {
         final n = l?.length ?? 0;
         if (n == 0) return const SizedBox.shrink();
@@ -515,7 +532,98 @@ class _AtalhoFlashcards extends StatelessWidget {
               context,
               titulo: materia.nome,
               materiaId: materia.id,
+              concursoId: concursoId,
             ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Tópicos da matéria que não estão no edital de nenhum concurso (por
+/// exemplo, depois de excluir o concurso que os tinha). Só no "Tudo junto".
+class _SemEdital extends StatelessWidget {
+  const _SemEdital({required this.materiaId, required this.cor});
+  final String materiaId;
+  final Color cor;
+
+  @override
+  Widget build(BuildContext context) {
+    final db = context.read<AppDatabase>();
+    return Assistir<List<Topico>>(
+      chave: materiaId,
+      stream: () => db.watchTopicosSemEdital(materiaId),
+      builder: (context, l) {
+        final arvore = ArvoreTopicos(l ?? const []);
+        final raiz = arvore.raiz();
+        if (raiz.isEmpty) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.only(top: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Sem edital (${raiz.length})',
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Não estão no edital de nenhum concurso. Abra um '
+                          'tópico para pôr num edital, ou apague todos.',
+                          style: TextStyle(color: Cores.tintaSuave),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Cores.acento,
+                    ),
+                    onPressed: () async {
+                      final ok = await confirmar(
+                        context,
+                        titulo: 'Apagar ${raiz.length} tópicos sem edital?',
+                        mensagem:
+                            'Os subtópicos, revisões, flashcards e anexos '
+                            'deles também são apagados. Não dá para desfazer.',
+                        acao: 'Apagar',
+                      );
+                      if (ok) await db.excluirTopicosSemEdital(materiaId);
+                    },
+                    icon: const Icon(Icons.delete_outline_rounded),
+                    label: const Text('Apagar todos'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              for (final t in raiz)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Material(
+                    color: Cores.fundoLateral,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      side: const BorderSide(color: Cores.linha, width: 1.5),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: _NoTopico(
+                      topico: t,
+                      arvore: arvore,
+                      irmaos: raiz,
+                      cor: cor,
+                      nivel: 0,
+                    ),
+                  ),
+                ),
+            ],
           ),
         );
       },

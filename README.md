@@ -16,6 +16,14 @@ No tablet: abra o link, baixe e toque em `edital.apk` (autorize "instalar apps d
 - **Meus concursos**: cadastre quantos concursos quiser (nome, banca, data da prova e cor). Um deles fica marcado como **foco atual**.
 - **Edital**: matérias → tópicos → subtópicos. Dá para adicionar, renomear, reordenar (arrastando) e excluir. Também dá para colar vários tópicos de uma vez, um por linha, e as linhas que começam com `-` viram subtópicos.
 - **Matérias compartilhadas**: nomes iguais (ignorando acento e maiúscula) são a mesma matéria. Tópicos, progresso, revisões e questões de "Português" valem para todos os concursos que têm Português.
+- **Tópicos por edital**: cada concurso mostra só os tópicos do edital dele. O tópico continua um só, com um progresso só, e sabe em quais concursos está:
+  - Com um concurso em foco, todas as telas mostram só os tópicos dele: matéria, sidebar, grade, mapa mental, ciclo, revisões, flashcards do dia e estatísticas. Em "Tudo junto", aparece a união.
+  - **Na tela do tópico**, as pílulas em "No edital de" mostram os concursos. Toque numa pílula para pôr ou tirar o tópico daquele edital. Os subtópicos seguem o tópico pai.
+  - Tópicos criados na tela da matéria entram no edital do concurso em foco. Em "Tudo junto", entram em todos os concursos que têm a matéria.
+  - **Excluir um concurso** tira só os vínculos dele. Um tópico que também está em outro edital continua lá, com todo o progresso.
+  - **Sem edital**: tópicos que ficam sem nenhum concurso aparecem no fim da tela da matéria, no modo "Tudo junto", com um botão "Apagar todos".
+  - Na atualização, cada tópico que já existia entrou no edital de todos os concursos que têm a matéria dele, para ninguém perder nada. A limpeza é feita na tela do tópico.
+  - Os vínculos sincronizam com o Turso como o resto, inclusive quando são tirados.
 - **Tela do mês** (tablet deitado): sidebar com as matérias do concurso em foco (bolinha colorida, nº de tópicos e subtópicos aninhados) e a grade do mês. Dias estudados ficam preenchidos com borda escura (mais escura quando passa de 1h). Tocar numa matéria filtra a grade. "Foco / Tudo junto" alterna entre o concurso em foco e todos juntos. Segurar o dedo numa matéria abre os tópicos dela.
 - **Tablet em pé / celular**: grade em tela cheia, matérias no menu ☰ e filtros em pílulas no rodapé.
 - Tocar num dia abre o registro manual de estudo. O timer vai fazer isso automaticamente na próxima etapa.
@@ -101,7 +109,8 @@ Menu lateral → "Estatísticas". A tela segue o mesmo escopo da tela inicial: c
 
 Menu lateral → "Mapa mental", ou o botão **Mapa mental** no alto da tela de cada matéria (abre com ela no centro). O mapa segue o mesmo escopo da tela inicial: concurso em foco ou tudo junto.
 
-- **Gerado sozinho a partir do edital**: no centro fica o concurso (ou "Todos"); em volta, as matérias; depois, os tópicos e os subtópicos. Você não desenha nada.
+- **Gerado sozinho a partir do edital**: no centro fica o concurso (ou "Todos"). Em volta ficam as matérias, e cada matéria é o centro de um "balão": os tópicos dela a rodeiam no círculo inteiro, e os subtópicos ficam para fora do tópico, na mesma direção. Você não desenha nada.
+- **Organizado**: nenhum nó fica em cima de outro, e nenhuma linha passa por cima de um nó que não seja o dela. As linhas ficam por baixo dos nós. Quando os tópicos não cabem numa volta, eles se alternam entre dois ou mais anéis.
 - **Filtro** no alto: "Edital inteiro" ou uma matéria só, que vai para o centro.
 - **Mapa de calor do estudo:**
   - não visto: cinza claro;
@@ -110,7 +119,7 @@ Menu lateral → "Mapa mental", ou o botão **Mapa mental** no alto da tela de c
   - revisão atrasada: borda vermelha;
   - acerto abaixo de 60% (com pelo menos 10 questões): borda laranja;
   - matéria: barra com a % de tópicos vistos.
-  - A **legenda** fica no canto e recolhe com um toque.
+  - A **legenda** começa recolhida (só o botão "Legenda") e abre com um toque. O app lembra se ela ficou aberta ou fechada, neste aparelho.
 - **Gestos:**
   - pinça para zoom e um dedo para arrastar;
   - botões + e −, **Centralizar** e **Ajustar à tela**;
@@ -119,7 +128,7 @@ Menu lateral → "Mapa mental", ou o botão **Mapa mental** no alto da tela de c
   - segurar o dedo num nó mostra o nome completo e um resumo: horas estudadas, % de acerto, próxima revisão e nº de flashcards.
 - **Nada de tabela nova:** o mapa só lê o que já existe. As matérias recolhidas e a legenda aberta/fechada ficam nas preferências do aparelho, fora do sync do Turso.
 
-Como funciona: `lib/logic/mapa_mental.dart` monta a árvore e calcula o layout radial. O ângulo de cada ramo é proporcional ao número de descendentes. O raio de cada anel cresce até as caixas vizinhas não se tocarem. Com muitos nós, eles se alternam entre raios próximos, como tijolos. O desenho é um `CustomPainter` dentro de um `InteractiveViewer`, sem pacote novo. Textos e ligações ficam em cache, e o texto some quando fica pequeno demais para ler. Um edital com 8 matérias × 30 tópicos × 3 subtópicos (969 nós) calcula em poucas dezenas de milissegundos, e os testes conferem que nenhum nó se sobrepõe.
+Como funciona: `lib/logic/mapa_mental.dart` monta a árvore e calcula o layout em balões. Em volta de cada matéria, o ângulo de cada tópico é proporcional ao número de subtópicos do ramo, no círculo inteiro. Fica só um vão na direção do centro, por onde chega a linha da matéria. O raio de cada anel cresce até as caixas vizinhas não se tocarem e até sobrar espaço para as linhas passarem entre elas. Com muitos nós, eles se alternam entre anéis, como tijolos. No fim, o layout confere cada linha contra cada nó; se algo ainda encostar, os anéis daquele nível se afastam até resolver. Os balões das matérias ficam em volta do centro sem se tocar. O desenho é um `CustomPainter` dentro de um `InteractiveViewer`, sem pacote novo. Textos e ligações ficam em cache, e o texto some quando fica pequeno demais para ler. Um edital com 8 matérias × 30 tópicos × 3 subtópicos (969 nós) calcula em poucas dezenas de milissegundos, e os testes conferem que nenhum nó se sobrepõe e nenhuma linha cruza um nó (inclusive numa matéria com 45 tópicos).
 
 ## Colar o conteúdo programático
 
@@ -140,7 +149,8 @@ No edital do concurso, toque em **"Colar edital"**. Com o edital vazio, também 
   - quebras de linha e palavras hifenizadas do PDF;
   - números que não são numeração (Lei nº 8.112/1990, art. 5).
 - Na prévia dá para **renomear** e **desmarcar** matérias antes de importar.
-- Matérias que já existem são reaproveitadas, com a mesma cor e o mesmo progresso. Tópicos com o mesmo nome não são duplicados, então dá para colar de novo sem problema.
+- Matérias que já existem são reaproveitadas, com a mesma cor e o mesmo progresso. Tópicos com o mesmo nome (ignorando acento e maiúscula) não são duplicados, então dá para colar de novo sem problema.
+- Os tópicos colados entram no edital do concurso de destino. Se o tópico já existe na matéria (por exemplo, veio de outro concurso), ele só ganha o vínculo, mantendo progresso, revisões e flashcards.
 
 ## Sincronização (Turso)
 
@@ -155,7 +165,7 @@ Toque no ícone de **nuvem** ao lado do logo e siga os passos. Você só configu
 - **Automática**: sincroniza ao abrir o app, ao voltar para ele, alguns segundos depois de cada alteração e a cada 5 minutos. Offline, as alterações ficam guardadas e vão depois.
 - **Primeira conexão**: se a nuvem e o aparelho já têm dados, você escolhe **Juntar** ou **Usar só os da nuvem**. A segunda opção apaga os dados do aparelho; é boa para o segundo aparelho, se ele só tiver o exemplo.
 - **Conflitos**: vale a alteração mais recente. Matérias com o mesmo nome criadas nos dois aparelhos viram uma só, com os tópicos e sessões dos dois.
-- **O que sincroniza**: concursos, edital, progresso, ciclo, sessões, revisões e flashcards.
+- **O que sincroniza**: concursos, edital (inclusive em quais concursos cada tópico está), progresso, ciclo, sessões, revisões e flashcards.
 - **O que não sincroniza**: fotos e PDFs anexados ficam no aparelho onde foram adicionados. Lembretes e pomodoro são configurados em cada aparelho.
 
 Como funciona: gatilhos do SQLite anotam cada mudança local, inclusive exclusões, em `sync_pendentes`. O app envia essas linhas para uma tabela genérica `registros` no Turso, pela API HTTP (Hrana, `/v2/pipeline`). Cada gravação recebe uma `versao` crescente, e cada aparelho baixa só o que veio depois da última versão que já viu. Veja `lib/data/sync/`.

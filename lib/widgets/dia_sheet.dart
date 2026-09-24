@@ -42,7 +42,7 @@ class _DiaSheetState extends State<_DiaSheet> {
       .watchTodasMaterias();
   late final Stream<List<Topico>> _topicos = context
       .read<AppDatabase>()
-      .watchTodosTopicos();
+      .watchTodosTopicos(semFiltro: true);
 
   Future<void> _registrar() async {
     final db = context.read<AppDatabase>();

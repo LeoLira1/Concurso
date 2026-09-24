@@ -39,6 +39,22 @@ class MateriaInfo {
   double get progresso => total == 0 ? 0 : vistos / total;
 }
 
+/// Condição SQL: o tópico de alias [t] está no edital do concurso dado pela
+/// expressão SQL [concurso] (ex.: `c.id` ou `'uuid'`), ou, com [concurso]
+/// nulo, em algum edital ("Tudo junto"). Subtópicos seguem o tópico pai:
+/// vale o vínculo do próprio tópico, do pai ou do avô.
+String sqlNoEdital(String t, String? concurso) {
+  final c = concurso == null ? '' : ' AND tc.concurso_id = $concurso';
+  return 'EXISTS (SELECT 1 FROM topico_concursos tc WHERE tc.topico_id IN '
+      '($t.id, $t.pai_id, (SELECT a.pai_id FROM topicos a WHERE a.id = $t.pai_id))'
+      '$c)';
+}
+
+/// Id como literal SQL (ids são UUIDs; o escape é só por segurança).
+String sqlTexto(String v) => "'${v.replaceAll("'", "''")}'";
+
+String? _sqlConcurso(String? id) => id == null ? null : sqlTexto(id);
+
 class ProgressoConcurso {
   const ProgressoConcurso(this.materias, this.total, this.vistos);
   final int materias;
@@ -58,6 +74,7 @@ class ProgressoConcurso {
     Sessoes,
     Anexos,
     Flashcards,
+    TopicoConcursos,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -65,7 +82,7 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? driftDatabase(name: 'edital'));
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -89,6 +106,22 @@ class AppDatabase extends _$AppDatabase {
       if (de < 4) {
         await m.createTable(anexos);
         await m.createTable(flashcards);
+      }
+      if (de < 5) {
+        await m.createTable(topicoConcursos);
+        // Gatilhos do sync antes de copiar: os vínculos criados aqui também
+        // vão para a nuvem.
+        for (final c in comandosInfraSync()) {
+          await customStatement(c);
+        }
+        // Ninguém perde nada: cada tópico entra em todos os concursos que
+        // hoje têm a matéria dele. A limpeza é feita na tela do tópico.
+        await customStatement('''
+          INSERT OR IGNORE INTO topico_concursos (topico_id, concurso_id, atualizado_em)
+          SELECT t.id, cm.concurso_id, CAST(strftime('%s', 'now') AS INTEGER)
+          FROM topicos t JOIN concurso_materias cm ON cm.materia_id = t.materia_id
+          WHERE t.pai_id IS NULL
+        ''');
       }
     },
     beforeOpen: (details) async {
@@ -130,9 +163,10 @@ class AppDatabase extends _$AppDatabase {
       FROM concurso_materias cm
       LEFT JOIN topicos t ON t.materia_id = cm.materia_id
         AND NOT EXISTS (SELECT 1 FROM topicos f WHERE f.pai_id = t.id)
+        AND ${sqlNoEdital('t', 'cm.concurso_id')}
       GROUP BY cm.concurso_id
       ''',
-      readsFrom: {concursoMaterias, topicos},
+      readsFrom: {concursoMaterias, topicos, topicoConcursos},
     ).watch().map(
       (rows) => {
         for (final r in rows)
@@ -238,11 +272,16 @@ class AppDatabase extends _$AppDatabase {
 
   /// Matérias de um concurso (na ordem do edital) ou, com [concursoId] nulo,
   /// todas as matérias de todos os concursos (ordem alfabética).
+  /// Os totais de tópicos contam só os do edital do concurso (ou, com
+  /// [concursoId] nulo, os que estão em algum edital).
   Stream<List<MateriaInfo>> watchMaterias(String? concursoId) {
-    const progresso = '''
-      (SELECT COUNT(*) FROM topicos t WHERE t.materia_id = m.id
+    final noEdital = sqlNoEdital('t', _sqlConcurso(concursoId));
+    final progresso =
+        '''
+      (SELECT COUNT(*) FROM topicos t WHERE t.materia_id = m.id AND $noEdital
          AND NOT EXISTS (SELECT 1 FROM topicos f WHERE f.pai_id = t.id)) AS total,
       (SELECT COUNT(*) FROM topicos t WHERE t.materia_id = m.id AND t.visto = 1
+         AND $noEdital
          AND NOT EXISTS (SELECT 1 FROM topicos f WHERE f.pai_id = t.id)) AS vistos
     ''';
     final query = concursoId == null
@@ -254,7 +293,7 @@ class AppDatabase extends _$AppDatabase {
             WHERE m.id IN (SELECT materia_id FROM concurso_materias)
             ORDER BY m.nome COLLATE NOCASE
             ''',
-            readsFrom: {materias, topicos, concursoMaterias},
+            readsFrom: {materias, topicos, concursoMaterias, topicoConcursos},
           )
         : customSelect(
             '''
@@ -266,7 +305,7 @@ class AppDatabase extends _$AppDatabase {
             ORDER BY cm.ordem, m.nome COLLATE NOCASE
             ''',
             variables: [Variable.withString(concursoId)],
-            readsFrom: {materias, topicos, concursoMaterias},
+            readsFrom: {materias, topicos, concursoMaterias, topicoConcursos},
           );
     return query.watch().map(
       (rows) => [
@@ -370,6 +409,12 @@ class AppDatabase extends _$AppDatabase {
                 cm.materiaId.equals(materiaId),
           ))
           .go();
+      // Os tópicos dela saem do edital deste concurso.
+      await customStatement(
+        'DELETE FROM topico_concursos WHERE concurso_id = ? AND topico_id IN '
+        '(SELECT id FROM topicos WHERE materia_id = ?)',
+        [concursoId, materiaId],
+      );
       await _limparMateriasOrfas();
     });
   }
@@ -486,19 +531,88 @@ class AppDatabase extends _$AppDatabase {
   // Tópicos
   // ---------------------------------------------------------------------------
 
-  Stream<List<Topico>> watchTopicos(String materiaId) =>
-      (select(topicos)
-            ..where((t) => t.materiaId.equals(materiaId))
-            ..orderBy([(t) => OrderingTerm.asc(t.ordem)]))
-          .watch();
+  Stream<List<Topico>> _watchTopicosOnde(String onde, List<Variable> vars) =>
+      customSelect(
+        'SELECT t.* FROM topicos t WHERE $onde ORDER BY t.ordem',
+        variables: vars,
+        readsFrom: {topicos, topicoConcursos},
+      ).watch().map((rows) => [for (final r in rows) topicos.map(r.data)]);
 
-  Stream<List<Topico>> watchTodosTopicos() =>
-      (select(topicos)..orderBy([(t) => OrderingTerm.asc(t.ordem)])).watch();
+  /// Tópicos da matéria no edital de [concursoId] (ou, com ele nulo, em
+  /// algum edital). Com [semFiltro], todos, inclusive os "sem edital".
+  Stream<List<Topico>> watchTopicos(
+    String materiaId, {
+    String? concursoId,
+    bool semFiltro = false,
+  }) => _watchTopicosOnde(
+    't.materia_id = ?'
+    '${semFiltro ? '' : ' AND ${sqlNoEdital('t', _sqlConcurso(concursoId))}'}',
+    [Variable.withString(materiaId)],
+  );
 
+  /// Tópicos da matéria que não estão em nenhum edital (e os subtópicos).
+  Stream<List<Topico>> watchTopicosSemEdital(String materiaId) =>
+      _watchTopicosOnde('t.materia_id = ? AND NOT ${sqlNoEdital('t', null)}', [
+        Variable.withString(materiaId),
+      ]);
+
+  /// Todos os tópicos no escopo (ver [watchTopicos]).
+  Stream<List<Topico>> watchTodosTopicos({
+    String? concursoId,
+    bool semFiltro = false,
+  }) => _watchTopicosOnde(
+    semFiltro ? '1' : sqlNoEdital('t', _sqlConcurso(concursoId)),
+    const [],
+  );
+
+  /// Tópico de primeiro nível acima de [id] (ou ele mesmo).
+  Future<Topico?> raizDoTopico(String id) async {
+    var t = await topico(id);
+    for (var i = 0; i < 10 && t?.paiId != null; i++) {
+      t = await topico(t!.paiId!);
+    }
+    return t;
+  }
+
+  /// Concursos em cujo edital o tópico (de primeiro nível) está.
+  Stream<Set<String>> watchVinculos(String topicoId) =>
+      (select(topicoConcursos)..where((v) => v.topicoId.equals(topicoId)))
+          .watch()
+          .map((l) => {for (final v in l) v.concursoId});
+
+  Future<void> vincular(String topicoId, String concursoId) =>
+      into(topicoConcursos).insert(
+        TopicoConcursosCompanion.insert(
+          topicoId: topicoId,
+          concursoId: concursoId,
+        ),
+        mode: InsertMode.insertOrIgnore,
+      );
+
+  Future<void> desvincular(String topicoId, String concursoId) =>
+      (delete(topicoConcursos)..where(
+            (v) =>
+                v.topicoId.equals(topicoId) & v.concursoId.equals(concursoId),
+          ))
+          .go();
+
+  /// Apaga os tópicos da matéria que não estão em nenhum edital.
+  Future<int> excluirTopicosSemEdital(String materiaId) => customUpdate(
+    'DELETE FROM topicos WHERE materia_id = ? AND pai_id IS NULL AND NOT '
+    'EXISTS (SELECT 1 FROM topico_concursos tc WHERE tc.topico_id = topicos.id)',
+    variables: [Variable.withString(materiaId)],
+    updates: {topicos, topicoConcursos},
+    updateKind: UpdateKind.delete,
+  );
+
+  /// Cria um tópico. Os de primeiro nível entram no edital de
+  /// [concursoIds]; sem essa lista, no de todos os concursos que têm a
+  /// matéria. Subtópicos seguem o pai e não têm vínculo próprio.
   Future<String> adicionarTopico(
     String materiaId,
     String nome, {
     String? paiId,
+    Iterable<String>? concursoIds,
   }) async {
     final r = await customSelect(
       'SELECT COALESCE(MAX(ordem), -1) AS m FROM topicos WHERE materia_id = ? AND '
@@ -516,12 +630,29 @@ class AppDatabase extends _$AppDatabase {
         ordem: Value(r.read<int>('m') + 1),
       ),
     );
+    if (paiId == null) {
+      final alvos =
+          concursoIds ??
+          [
+            for (final cm in await (select(
+              concursoMaterias,
+            )..where((cm) => cm.materiaId.equals(materiaId))).get())
+              cm.concursoId,
+          ];
+      for (final c in alvos) {
+        await vincular(row.id, c);
+      }
+    }
     return row.id;
   }
 
   /// Adiciona vários tópicos de uma vez: uma linha por tópico; linhas
   /// iniciadas por "-", "•", "*" ou recuo viram subtópicos do anterior.
-  Future<void> adicionarTopicosEmLote(String materiaId, String texto) {
+  Future<void> adicionarTopicosEmLote(
+    String materiaId,
+    String texto, {
+    Iterable<String>? concursoIds,
+  }) {
     return transaction(() async {
       String? ultimoPai;
       for (final linha in texto.split('\n')) {
@@ -533,7 +664,11 @@ class AppDatabase extends _$AppDatabase {
         if (sub) {
           await adicionarTopico(materiaId, nome, paiId: ultimoPai);
         } else {
-          ultimoPai = await adicionarTopico(materiaId, nome);
+          ultimoPai = await adicionarTopico(
+            materiaId,
+            nome,
+            concursoIds: concursoIds,
+          );
         }
       }
     });
@@ -601,14 +736,21 @@ class AppDatabase extends _$AppDatabase {
   // Revisões
   // ---------------------------------------------------------------------------
 
-  JoinedSelectStatement<HasResultSet, dynamic> _consultaRevisoes(DateTime ate) {
+  JoinedSelectStatement<HasResultSet, dynamic> _consultaRevisoes(
+    DateTime ate,
+    String? concursoId,
+  ) {
     return select(revisoes).join([
         innerJoin(topicos, topicos.id.equalsExp(revisoes.topicoId)),
         innerJoin(materias, materias.id.equalsExp(topicos.materiaId)),
       ])
       ..where(
         revisoes.feitaEm.isNull() &
-            revisoes.dataPrevista.isSmallerOrEqualValue(ate),
+            revisoes.dataPrevista.isSmallerOrEqualValue(ate) &
+            CustomExpression<bool>(
+              sqlNoEdital('topicos', _sqlConcurso(concursoId)),
+              watchedTables: [topicoConcursos],
+            ),
       )
       ..orderBy([
         OrderingTerm.asc(revisoes.dataPrevista),
@@ -625,12 +767,17 @@ class AppDatabase extends _$AppDatabase {
       ),
   ];
 
-  /// Revisões ainda não feitas com data até [ate] (inclui as atrasadas).
-  Stream<List<RevisaoInfo>> watchRevisoesPendentes(DateTime ate) =>
-      _consultaRevisoes(ate).watch().map(_lerRevisoes);
+  /// Revisões ainda não feitas com data até [ate] (inclui as atrasadas),
+  /// dos tópicos no edital de [concursoId] (nulo = em algum edital).
+  Stream<List<RevisaoInfo>> watchRevisoesPendentes(
+    DateTime ate, {
+    String? concursoId,
+  }) => _consultaRevisoes(ate, concursoId).watch().map(_lerRevisoes);
 
-  Future<List<RevisaoInfo>> revisoesPendentes(DateTime ate) async =>
-      _lerRevisoes(await _consultaRevisoes(ate).get());
+  Future<List<RevisaoInfo>> revisoesPendentes(
+    DateTime ate, {
+    String? concursoId,
+  }) async => _lerRevisoes(await _consultaRevisoes(ate, concursoId).get());
 
   Future<void> concluirRevisao(String id) =>
       (update(revisoes)..where((r) => r.id.equals(id))).write(
@@ -785,11 +932,13 @@ class AppDatabase extends _$AppDatabase {
   }
 
   /// Cartões para revisar até [ate] (hoje, por padrão), com tópico e matéria.
-  /// Filtra por tópico ou matéria quando informados.
+  /// Filtra por tópico ou matéria quando informados. Sem tópico, só entram
+  /// os do edital de [concursoId] (nulo = em algum edital).
   Stream<List<CartaoInfo>> watchCartoesParaRevisar({
     String? topicoId,
     String? materiaId,
     DateTime? ate,
+    String? concursoId,
   }) {
     final limite = soDia(ate ?? DateTime.now());
     final q =
@@ -803,7 +952,16 @@ class AppDatabase extends _$AppDatabase {
             OrderingTerm.asc(flashcards.caixa),
             OrderingTerm.asc(flashcards.ordem),
           ]);
-    if (topicoId != null) q.where(flashcards.topicoId.equals(topicoId));
+    if (topicoId != null) {
+      q.where(flashcards.topicoId.equals(topicoId));
+    } else {
+      q.where(
+        CustomExpression<bool>(
+          sqlNoEdital('topicos', _sqlConcurso(concursoId)),
+          watchedTables: [topicoConcursos],
+        ),
+      );
+    }
     if (materiaId != null) q.where(topicos.materiaId.equals(materiaId));
     return q.watch().map(
       (rows) => [
@@ -940,9 +1098,49 @@ class AppDatabase extends _$AppDatabase {
   // Importar conteúdo programático
   // ---------------------------------------------------------------------------
 
+  /// Insere [lista] na matéria sem duplicar: um tópico com o mesmo nome no
+  /// mesmo nível (ignorando acento e maiúscula) é reaproveitado, com o
+  /// progresso, as revisões e os flashcards dele. Os de primeiro nível
+  /// entram no edital de [concursoId]. Retorna quantos tópicos são novos.
+  Future<int> _inserirTopicos(
+    String materiaId,
+    String? paiId,
+    List<TopicoImportado> lista,
+    String concursoId,
+  ) async {
+    var novos = 0;
+    final existentes =
+        await (select(topicos)..where(
+              (t) =>
+                  t.materiaId.equals(materiaId) &
+                  (paiId == null ? t.paiId.isNull() : t.paiId.equals(paiId)),
+            ))
+            .get();
+    final porNome = {for (final t in existentes) chaveTexto(t.nome): t.id};
+    for (final t in lista) {
+      var id = porNome[chaveTexto(t.nome)];
+      if (id == null) {
+        id = await adicionarTopico(
+          materiaId,
+          t.nome,
+          paiId: paiId,
+          concursoIds: [concursoId],
+        );
+        porNome[chaveTexto(t.nome)] = id;
+        novos++;
+      } else if (paiId == null) {
+        await vincular(id, concursoId);
+      }
+      if (t.filhos.isNotEmpty) {
+        novos += await _inserirTopicos(materiaId, id, t.filhos, concursoId);
+      }
+    }
+    return novos;
+  }
+
   /// Adiciona as matérias e tópicos separados do edital ao concurso.
-  /// Matérias que já existem (mesmo nome) são reaproveitadas e tópicos com o
-  /// mesmo nome no mesmo nível não são duplicados.
+  /// Matérias que já existem (mesmo nome) são reaproveitadas; tópicos que
+  /// já existem na matéria só ganham o vínculo com o concurso.
   /// Retorna (matérias, tópicos novos).
   Future<(int, int)> importarConteudo(
     String concursoId,
@@ -952,32 +1150,6 @@ class AppDatabase extends _$AppDatabase {
       final cores = {for (final m in await select(materias).get()) m.cor};
       var nMaterias = 0, nTopicos = 0;
 
-      Future<void> inserir(
-        String materiaId,
-        String? paiId,
-        List<TopicoImportado> lista,
-      ) async {
-        final existentes =
-            await (select(topicos)..where(
-                  (t) =>
-                      t.materiaId.equals(materiaId) &
-                      (paiId == null
-                          ? t.paiId.isNull()
-                          : t.paiId.equals(paiId)),
-                ))
-                .get();
-        final porNome = {for (final t in existentes) chaveTexto(t.nome): t.id};
-        for (final t in lista) {
-          var id = porNome[chaveTexto(t.nome)];
-          if (id == null) {
-            id = await adicionarTopico(materiaId, t.nome, paiId: paiId);
-            porNome[chaveTexto(t.nome)] = id;
-            nTopicos++;
-          }
-          if (t.filhos.isNotEmpty) await inserir(materiaId, id, t.filhos);
-        }
-      }
-
       for (final m in itens) {
         if (!m.incluir || m.nome.trim().isEmpty) continue;
         final existente = await materiaPorNome(m.nome);
@@ -985,7 +1157,7 @@ class AppDatabase extends _$AppDatabase {
         cores.add(cor);
         final id = await adicionarMateria(concursoId, m.nome, cor);
         nMaterias++;
-        await inserir(id, null, m.topicos);
+        nTopicos += await _inserirTopicos(id, null, m.topicos, concursoId);
       }
       return (nMaterias, nTopicos);
     });
@@ -1007,12 +1179,28 @@ class AppDatabase extends _$AppDatabase {
       exemplo: true,
     );
     for (final m in exemploGuardaMunicipal.materias) {
-      final existente = await materiaPorNome(m.nome);
       final mid = await adicionarMateria(id, m.nome, m.cor);
-      if (existente != null) continue; // já tem tópicos próprios
-      await adicionarTopicosEmLote(mid, m.topicos);
+      // Os tópicos do exemplo entram só no edital do exemplo; se a matéria
+      // já existe, os de mesmo nome são reaproveitados.
+      await _inserirTopicos(mid, null, _arvoreDeLinhas(m.topicos), id);
     }
   });
+}
+
+/// "Tópico" / "- Subtópico", uma linha cada, em árvore.
+List<TopicoImportado> _arvoreDeLinhas(String texto) {
+  final r = <TopicoImportado>[];
+  for (final linha in texto.split('\n')) {
+    final nome = linha.replaceFirst(RegExp(r'^\s*[-•*–]?\s*'), '').trim();
+    if (nome.isEmpty) continue;
+    final sub = RegExp(r'^(\s+|\s*[-•*–]\s*)').hasMatch(linha);
+    if (sub && r.isNotEmpty) {
+      r.last.filhos.add(TopicoImportado(nome));
+    } else {
+      r.add(TopicoImportado(nome));
+    }
+  }
+  return r;
 }
 
 /// Fila do ciclo + onde o concurso está nela.

@@ -48,24 +48,19 @@ double limiteFonte(double s) {
 class CacheMapa {
   CacheMapa(this.layout, this.origem) {
     // Ligações agrupadas por cor e espessura: poucos drawPath por quadro.
-    for (final n in layout.nos) {
-      final p = n.pai;
-      if (p == null) continue;
-      final a = p.centro + origem, b = n.centro + origem;
-      final meio = (p.raio + n.raio) / 2;
-      final c1 = p.profundidade == 0
-          ? a
-          : Offset(meio * math.cos(p.angulo), meio * math.sin(p.angulo)) +
-                origem;
-      final c2 =
-          Offset(meio * math.cos(n.angulo), meio * math.sin(n.angulo)) + origem;
+    // São as mesmas polilinhas que o layout confere (nenhuma atravessa um
+    // nó que não seja o dela) e ficam por baixo dos nós.
+    for (final l in layout.ligacoes) {
       final path = ligacoes.putIfAbsent((
-        n.no.cor,
-        n.profundidade,
+        l.filho.no.cor,
+        l.filho.profundidade,
       ), () => Path());
-      path
-        ..moveTo(a.dx, a.dy)
-        ..cubicTo(c1.dx, c1.dy, c2.dx, c2.dy, b.dx, b.dy);
+      final p0 = l.pontos.first + origem;
+      path.moveTo(p0.dx, p0.dy);
+      for (final p in l.pontos.skip(1)) {
+        final q = p + origem;
+        path.lineTo(q.dx, q.dy);
+      }
     }
   }
 
@@ -341,10 +336,44 @@ class RotulosMateriasPainter extends CustomPainter {
       if (n.profundidade > 1) continue;
       final centro = MatrixUtils.transformPoint(m, n.centro + cache.origem);
       if (n.profundidade == 0) {
-        // O centro nunca fica coberto por rótulos.
-        ocupados.add(
-          MatrixUtils.transformRect(m, n.retangulo.shift(cache.origem)),
+        // O centro nunca fica coberto por rótulos. Se o nome dele sumiu
+        // (zoom pequeno), vai por cima, em preto como a caixa.
+        var area = MatrixUtils.transformRect(
+          m,
+          n.retangulo.shift(cache.origem),
         );
+        if (n.no.tipo == TipoNo.raiz && fonteDoNo(n) * s < _menorFonteNaTela) {
+          final tp = _textos.putIfAbsent(
+            n,
+            () => TextPainter(
+              text: TextSpan(
+                text: n.no.rotulo,
+                style: const TextStyle(
+                  fontFamily: 'Roboto',
+                  fontSize: 13,
+                  height: 1.15,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                ),
+              ),
+              maxLines: 2,
+              ellipsis: '…',
+              textAlign: TextAlign.center,
+              textDirection: TextDirection.ltr,
+            )..layout(maxWidth: 150),
+          );
+          area = Rect.fromCenter(
+            center: centro,
+            width: tp.width + 20,
+            height: tp.height + 10,
+          );
+          canvas.drawRRect(
+            RRect.fromRectAndRadius(area, const Radius.circular(10)),
+            Paint()..color = Cores.tinta,
+          );
+          tp.paint(canvas, area.center - Offset(tp.width / 2, tp.height / 2));
+        }
+        ocupados.add(area);
         continue;
       }
       if (n.no.tipo != TipoNo.materia) continue;
