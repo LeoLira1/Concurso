@@ -224,4 +224,329 @@ Legislação Específica: Estatuto Geral das Guardas Municipais (Lei 13.022/2014
       await db.close();
     },
   );
+
+  group('modo estruturado', () {
+    test(
+      'edital de Guarda Municipal: 10 matérias, 110 tópicos, 30 subtópicos',
+      () {
+        expect(modoEstruturado(_editalEstruturado), isTrue);
+        final r = separarEdital(_editalEstruturado);
+        expect(r.map((m) => m.nome), [
+          'Língua Portuguesa',
+          'Noções de Informática',
+          'Matemática e Raciocínio Lógico',
+          'Atualidades de Caldas Novas',
+          'Direitos e Deveres Individuais e Coletivos',
+          'Cidadania e Segurança Pública',
+          'Ética no Serviço Público',
+          'Legislação de Trânsito',
+          'Crimes contra a Administração Pública',
+          'Leis Penais Especiais',
+        ]);
+        final topicos = r.fold<int>(0, (a, m) => a + m.topicos.length);
+        final subtopicos = r.fold<int>(
+          0,
+          (a, m) => a + m.topicos.fold<int>(0, (b, t) => b + t.filhos.length),
+        );
+        expect(topicos, 110);
+        expect(subtopicos, 30);
+        // Nenhum subtópico tem filhos: só dois níveis.
+        for (final m in r) {
+          for (final t in m.topicos) {
+            for (final f in t.filhos) {
+              expect(f.filhos, isEmpty);
+            }
+          }
+        }
+
+        final porNome = {for (final m in r) m.nome: m.topicos};
+        expect(
+          {for (final e in porNome.entries) e.key: e.value.length},
+          {
+            'Língua Portuguesa': 19,
+            'Noções de Informática': 14,
+            'Matemática e Raciocínio Lógico': 18,
+            'Atualidades de Caldas Novas': 10,
+            'Direitos e Deveres Individuais e Coletivos': 16,
+            'Cidadania e Segurança Pública': 9,
+            'Ética no Serviço Público': 6,
+            'Legislação de Trânsito': 1,
+            'Crimes contra a Administração Pública': 11,
+            'Leis Penais Especiais': 6,
+          },
+        );
+        TopicoImportado topico(String materia, String nome) =>
+            porNome[materia]!.firstWhere((t) => t.nome == nome);
+
+        final classes = topico(
+          'Língua Portuguesa',
+          'Classificação e flexão das palavras',
+        );
+        expect(classes.filhos, hasLength(10));
+        expect(classes.filhos.first.nome, 'Substantivo');
+        expect(classes.filhos.last.nome, 'Interjeição');
+        expect(
+          topico(
+            'Língua Portuguesa',
+            'Termos essenciais, integrantes e acessórios da oração',
+          ).filhos,
+          hasLength(12),
+        );
+        final ctb = porNome['Legislação de Trânsito']!.single;
+        expect(ctb.nome, 'Código de Trânsito Brasileiro (Lei 9.503/1997)');
+        expect(ctb.filhos, hasLength(4));
+        expect(ctb.filhos.last.nome, 'Capítulo XIX — Crimes de trânsito');
+        expect(
+          topico(
+            'Leis Penais Especiais',
+            'Estatuto da Criança e do Adolescente (Lei 8.069/1990)',
+          ).filhos,
+          hasLength(4),
+        );
+
+        // Linhas que antes viravam matéria agora são tópicos, inteiras.
+        expect(
+          nomes(porNome['Noções de Informática']!),
+          containsAll([
+            'Conceitos básicos de informática',
+            'Noções de redes de computadores',
+            'Segurança da informação — vírus, malwares, phishing, antivírus e firewall',
+          ]),
+        );
+        expect(
+          nomes(porNome['Matemática e Raciocínio Lógico']!),
+          containsAll([
+            'Progressões aritméticas e geométricas',
+            'Lógica proposicional e estruturas lógicas',
+          ]),
+        );
+        expect(
+          nomes(porNome['Atualidades de Caldas Novas']!),
+          containsAll(['História de Caldas Novas', 'Economia do município']),
+        );
+        // Artigos, leis e parágrafos não viram numeração nem quebram a linha.
+        expect(
+          porNome['Direitos e Deveres Individuais e Coletivos']![1].nome,
+          'Direito à liberdade (art. 5º, caput)',
+        );
+        expect(
+          nomes(porNome['Cidadania e Segurança Pública']!),
+          containsAll([
+            'Guardas Municipais na CF (art. 144, § 8º)',
+            'Estatuto Geral das Guardas Municipais (Lei 13.022/2014)',
+          ]),
+        );
+        expect(
+          porNome['Leis Penais Especiais']![4].nome,
+          'Lei Maria da Penha (Lei 11.340/2006) — medidas protetivas e crime de descumprimento',
+        );
+      },
+    );
+
+    test('só cabeçalhos "MAIÚSCULAS:" viram matéria; o resto é tópico', () {
+      const texto = '''
+Tópico antes de qualquer matéria
+CONHECIMENTOS BÁSICOS:
+LÍNGUA PORTUGUESA:
+- Subtópico sem tópico vira tópico
+Língua Portuguesa
+Crase. Pontuação; Regência
+1.2 Concordância
+- Verbal
+''';
+      expect(modoEstruturado(texto), isTrue);
+      final r = separarEdital(texto);
+      expect(r.map((m) => m.nome), [
+        'Nova matéria',
+        'Conhecimentos Básicos', // nunca é ignorado como grupo
+        'Língua Portuguesa',
+      ]);
+      expect(nomes(r[0].topicos), ['Tópico antes de qualquer matéria']);
+      expect(r[1].topicos, isEmpty);
+      expect(nomes(r[2].topicos), [
+        'Subtópico sem tópico vira tópico',
+        'Língua Portuguesa',
+        'Crase. Pontuação; Regência',
+        '1.2 Concordância',
+      ]);
+      expect(nomes(r[2].topicos.last.filhos), ['Verbal']);
+    });
+
+    test(
+      'sem cabeçalho "MAIÚSCULAS:" em linha própria, segue a heurística',
+      () {
+        expect(
+          modoEstruturado('LÍNGUA PORTUGUESA: 1 Crase. 2 Pontuação.'),
+          isFalse,
+        );
+        expect(modoEstruturado('Língua Portuguesa:\nCrase'), isFalse);
+        expect(
+          modoEstruturado('DIREITO CONSTITUCIONAL\n1. Constituição.'),
+          isFalse,
+        );
+      },
+    );
+  });
 }
+
+const _editalEstruturado = '''
+LÍNGUA PORTUGUESA:
+Compreensão textual
+Sílabas
+Encontros vocálicos e consonantais
+Dígrafos
+Tonicidade
+Reforma ortográfica de 2009
+Acentuação
+Prosódia
+Estrutura e formação das palavras
+Classificação e flexão das palavras
+- Substantivo
+- Artigo
+- Adjetivo
+- Numeral
+- Pronome
+- Verbo
+- Advérbio
+- Preposição
+- Conjunção
+- Interjeição
+Emprego de tempos e modos verbais
+Significação das palavras
+Sinonímia, antonímia, polissemia, parônimos, homônimos, denotação e conotação
+Termos essenciais, integrantes e acessórios da oração
+- Sujeito
+- Predicado
+- Predicativo do sujeito
+- Predicativo do objeto
+- Transitividade verbal
+- Objeto direto
+- Objeto indireto
+- Complemento nominal
+- Agente da passiva
+- Adjunto adnominal
+- Adjunto adverbial
+- Aposto
+Vocativo
+Crase
+Pronomes — emprego, formas de tratamento e colocação
+Pontuação
+Coesão e coerência textual
+
+NOÇÕES DE INFORMÁTICA:
+Conceitos básicos de informática
+Hardware e software
+Sistema operacional Windows
+Arquivos, pastas e atalhos
+Dispositivos de entrada, saída e armazenamento
+Editores de texto — Word e LibreOffice Writer
+Planilhas — Excel e LibreOffice Calc
+Apresentações — PowerPoint e LibreOffice Impress
+Internet e navegadores
+Correio eletrônico (e-mail)
+Noções de redes de computadores
+Segurança da informação — vírus, malwares, phishing, antivírus e firewall
+Backup e proteção de dados
+Boas práticas no uso da internet
+
+MATEMÁTICA E RACIOCÍNIO LÓGICO:
+Conjuntos numéricos (naturais, inteiros, racionais, irracionais e reais)
+Razão e proporção
+Grandezas diretamente e inversamente proporcionais
+Regra de três simples e composta
+Sistema monetário brasileiro
+Porcentagem
+Juros simples e compostos
+Equações e inequações de primeiro e segundo graus
+Sequências e padrões
+Progressões aritméticas e geométricas
+Análise combinatória e princípios de contagem
+Probabilidade
+Resolução de situações-problema
+Sistemas de medidas
+Cálculo de áreas e volumes
+Lógica proposicional e estruturas lógicas
+Lógica de argumentação — analogias, inferências, deduções e conclusões
+Diagramas lógicos
+
+ATUALIDADES DE CALDAS NOVAS:
+História de Caldas Novas
+Formação histórica, política e administrativa do município
+Aspectos geográficos
+Aspectos demográficos
+Economia do município
+Turismo
+Organização político-administrativa
+Poder Executivo e Poder Legislativo municipal
+Símbolos oficiais do município
+Atualidades de Caldas Novas
+
+DIREITOS E DEVERES INDIVIDUAIS E COLETIVOS:
+Direito à vida (art. 5º, caput)
+Direito à liberdade (art. 5º, caput)
+Princípio da igualdade (art. 5º, I)
+Legalidade e anterioridade penal (art. 5º, II e XXXIX)
+Liberdade de manifestação do pensamento (art. 5º, IV)
+Intimidade, vida privada, honra e imagem (art. 5º, X)
+Inviolabilidade do domicílio (art. 5º, XI)
+Sigilo da correspondência e das comunicações (art. 5º, XII)
+Liberdade de locomoção (art. 5º, XV)
+Direito de reunião e liberdade de associação (art. 5º, XVI a XXI)
+Direito de propriedade e função social (art. 5º, XXII e XXIII)
+Vedação ao racismo (art. 5º, XLII)
+Integridade física e moral do preso (art. 5º, XLIX)
+Provas ilícitas (art. 5º, LVI)
+Presunção de inocência (art. 5º, LVII)
+Direito ao silêncio e não autoincriminação (art. 5º, LXIII)
+
+CIDADANIA E SEGURANÇA PÚBLICA:
+Cidadania — conceito, fundamentos e exercício
+Direitos políticos na Constituição Federal
+Cidadania e meio ambiente
+Segurança pública na CF (art. 144)
+Órgãos e atribuições da segurança pública
+Guardas Municipais na CF (art. 144, § 8º)
+Estatuto Geral das Guardas Municipais (Lei 13.022/2014)
+Princípios, competências, atribuições e limites das Guardas Municipais
+Direitos humanos e atuação das Guardas Municipais
+
+ÉTICA NO SERVIÇO PÚBLICO:
+Ética e moral
+Princípios e valores éticos
+Ética e democracia
+Ética e cidadania
+Ética na função pública
+Conduta ética, responsabilidade e atendimento ao cidadão
+
+LEGISLAÇÃO DE TRÂNSITO:
+Código de Trânsito Brasileiro (Lei 9.503/1997)
+- Capítulo I — Disposições preliminares
+- Capítulo II — Sistema Nacional de Trânsito
+- Capítulo III — Normas gerais de circulação e conduta
+- Capítulo XIX — Crimes de trânsito
+
+CRIMES CONTRA A ADMINISTRAÇÃO PÚBLICA:
+Funcionário público para fins penais (arts. 327 e 328)
+Peculato (arts. 312 e 313)
+Concussão (art. 316)
+Corrupção passiva (art. 317)
+Prevaricação (art. 319)
+Condescendência criminosa (art. 320)
+Corrupção ativa (art. 333)
+Tráfico de influência (art. 332)
+Resistência (art. 329)
+Desobediência (art. 330)
+Desacato (art. 331)
+
+LEIS PENAIS ESPECIAIS:
+Abuso de Autoridade (Lei 13.869/2019)
+Crimes Hediondos (Lei 8.072/1990)
+Crimes de Tortura (Lei 9.455/1997)
+Estatuto da Criança e do Adolescente (Lei 8.069/1990)
+- Disposições preliminares (arts. 1º a 6º)
+- Medidas de proteção (arts. 98 a 102)
+- Prática de ato infracional (arts. 103 a 128)
+- Medidas pertinentes aos pais ou responsável (arts. 129 e 130)
+Lei Maria da Penha (Lei 11.340/2006) — medidas protetivas e crime de descumprimento
+Estatuto do Desarmamento (Lei 10.826/2003)
+''';

@@ -9,6 +9,12 @@
 /// Tópicos: numeração decimal (1, 1.1, 1.1.1), algarismos romanos
 /// (I, II...), marcadores (•, -) ou, sem numeração, frases separadas por
 /// ponto ou ponto e vírgula.
+///
+/// Modo estruturado: se alguma linha for um cabeçalho em MAIÚSCULAS
+/// terminando com ":" ("LÍNGUA PORTUGUESA:"), o texto já vem organizado.
+/// Aí só essas linhas viram matéria, cada linha comum é um tópico e as
+/// que começam com "-" são subtópicos do tópico anterior. Nenhuma das
+/// regras acima (nome de disciplina, grupos, numeração, frases) é usada.
 library;
 
 class TopicoImportado {
@@ -148,6 +154,10 @@ const _conectivos = {
   'ou',
   'um',
   'uma',
+  'contra',
+  'sobre',
+  'entre',
+  'sem',
 };
 
 /// "NOÇÕES DE DIREITO CONSTITUCIONAL" -> "Noções de Direito Constitucional".
@@ -463,11 +473,69 @@ List<TopicoImportado> separarTopicos(String conteudo) {
 }
 
 // -----------------------------------------------------------------------------
+// Modo estruturado
+// -----------------------------------------------------------------------------
+
+final _terminaEmDoisPontos = RegExp(r'^(.+?)\s*:$');
+final _subtopico = RegExp(r'^[-–—]');
+
+/// "LÍNGUA PORTUGUESA:" sozinha na linha.
+bool _cabecalhoEstruturado(String linha) {
+  final m = _terminaEmDoisPontos.firstMatch(linha.trim());
+  return m != null && _emMaiusculas(m.group(1)!);
+}
+
+/// Verdadeiro se o texto tem ao menos um cabeçalho em MAIÚSCULAS
+/// terminando com ":" numa linha própria (ver [separarEdital]).
+bool modoEstruturado(String texto) =>
+    texto.replaceAll('\r', '').split('\n').any(_cabecalhoEstruturado);
+
+List<MateriaImportada> _separarEstruturado(String texto) {
+  final resultado = <MateriaImportada>[];
+  final porChave = <String, MateriaImportada>{};
+  MateriaImportada? atual;
+  TopicoImportado? ultimo;
+
+  MateriaImportada materia(String nome) =>
+      porChave.putIfAbsent(chaveTexto(nome), () {
+        final m = MateriaImportada(nome, []);
+        resultado.add(m);
+        return m;
+      });
+
+  for (final bruta in texto.replaceAll('\r', '').split('\n')) {
+    final l = bruta.trim();
+    if (l.isEmpty) continue; // linha em branco só separa blocos
+    if (_cabecalhoEstruturado(l)) {
+      final nome = nomeDeMateria(l);
+      if (nome.isEmpty) continue;
+      atual = materia(nome);
+      ultimo = null;
+      continue;
+    }
+    final nome = _limparTopico(l);
+    if (nome.isEmpty) continue;
+    atual ??= materia('Nova matéria');
+    final t = TopicoImportado(nome);
+    if (_subtopico.hasMatch(l) && ultimo != null) {
+      ultimo.filhos.add(t);
+    } else {
+      atual.topicos.add(t);
+      ultimo = t;
+    }
+  }
+  return resultado;
+}
+
+// -----------------------------------------------------------------------------
 // Entrada principal
 // -----------------------------------------------------------------------------
 
-/// Separa o texto colado em matérias com seus tópicos.
+/// Separa o texto colado em matérias com seus tópicos. Com cabeçalhos
+/// "MATÉRIA:" em linha própria usa o modo estruturado; senão, as regras
+/// para texto bruto copiado de PDF.
 List<MateriaImportada> separarEdital(String texto) {
+  if (modoEstruturado(texto)) return _separarEstruturado(texto);
   final blocos = _blocos(texto);
   final resultado = <MateriaImportada>[];
   final porChave = <String, MateriaImportada>{};

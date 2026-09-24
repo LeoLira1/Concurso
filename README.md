@@ -126,6 +126,11 @@ Como funciona: `lib/logic/mapa_mental.dart` monta a árvore e calcula o layout r
 No edital do concurso, toque em **"Colar edital"**. Com o edital vazio, também aparece um card com esse atalho.
 
 - Cole o texto copiado do PDF, pelo botão **Colar** ou segurando o dedo no campo. A separação aparece na hora: lado a lado no tablet deitado, ou na aba **Prévia** em pé.
+- **Modo estruturado** (o jeito mais confiável): escreva cada matéria em MAIÚSCULAS terminando com ":", numa linha só ("LÍNGUA PORTUGUESA:"). Embaixo, um tópico por linha; linhas que começam com "-" são subtópicos do tópico de cima. Linhas em branco só separam as matérias. Com pelo menos uma linha assim, o app entra nesse modo e avisa na prévia:
+  - só essas linhas viram matéria, e nenhuma é ignorada;
+  - cada linha comum vira um tópico inteiro, sem cortar em ponto, vírgula ou travessão;
+  - "(art. 5º, caput)", "Lei 13.022/2014" e "§ 8º" ficam como estão.
+- Sem linhas assim (texto bruto copiado do PDF), valem as regras abaixo.
 - **O que o app reconhece:**
   - matérias em MAIÚSCULAS ("LÍNGUA PORTUGUESA:"), no formato "Nome: conteúdo" ou numa linha só com o nome;
   - tópicos numerados (1, 1.1, 1.1.1) e algarismos romanos;
