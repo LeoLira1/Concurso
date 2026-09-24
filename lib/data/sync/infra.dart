@@ -17,7 +17,8 @@ class TabelaSinc {
 }
 
 /// Em ordem de dependência (pais antes dos filhos).
-/// Anexos ficam de fora: o arquivo só existe no aparelho que o criou.
+/// Anexos e prints de questões ficam de fora: o arquivo só existe no
+/// aparelho que o criou.
 const tabelasSincronizadas = [
   TabelaSinc('concursos', ['id']),
   TabelaSinc('materias', ['id']),
@@ -28,6 +29,10 @@ const tabelasSincronizadas = [
   TabelaSinc('questoes', ['id']),
   TabelaSinc('sessoes', ['id']),
   TabelaSinc('flashcards', ['id']),
+  TabelaSinc('provas', ['id']),
+  TabelaSinc('textos_base', ['id']),
+  TabelaSinc('questoes_prova', ['id']),
+  TabelaSinc('respostas', ['id']),
 ];
 
 TabelaSinc? tabelaSinc(String nome) {

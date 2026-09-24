@@ -7,6 +7,7 @@ import '../screens/concursos_screen.dart';
 import '../screens/estatisticas_screen.dart';
 import '../screens/lembretes_screen.dart';
 import '../screens/mapa_mental_screen.dart';
+import '../screens/provas_screen.dart';
 import '../screens/revisoes_screen.dart';
 import '../screens/sincronizacao_screen.dart';
 import '../state/sincronizacao.dart';
@@ -218,6 +219,17 @@ class _SidebarState extends State<Sidebar> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const RevisoesScreen()),
+                    );
+                  },
+                ),
+                _Linha(
+                  icone: Icons.quiz_outlined,
+                  rotulo: 'Provas',
+                  aoTocar: () {
+                    _fecharDrawer();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ProvasScreen()),
                     );
                   },
                 ),

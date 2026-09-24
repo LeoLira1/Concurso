@@ -26,6 +26,13 @@ import 'package:edital/screens/estatisticas_screen.dart';
 import 'package:edital/screens/flashcards_screen.dart';
 import 'package:edital/screens/topico_screen.dart';
 import 'package:edital/screens/importar_screen.dart';
+import 'package:edital/data/provas_db.dart';
+import 'package:edital/logic/provas.dart';
+import 'package:edital/screens/colar_prova_screen.dart';
+import 'package:edital/screens/estatisticas_provas_screen.dart';
+import 'package:edital/screens/provas_screen.dart';
+import 'package:edital/screens/questoes_screen.dart';
+import 'package:edital/screens/resolver_screen.dart';
 import 'package:edital/state/arquivos.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:edital/theme.dart';
@@ -957,6 +964,162 @@ NOÇÕES DE DIREITO ADMINISTRATIVO: 1 Noções de organização administrativa. 
         db,
         (id) => ImportarScreen(concursoId: id, textoInicial: _estruturado),
       ),
+    ),
+  );
+
+  // --- Provas (banco de questões) ---
+  final araucaria = File('test/dados/araucaria_2019.json').readAsStringSync();
+  Future<void> dadosProvas(AppDatabase db) async {
+    final l = lerProva(araucaria);
+    await db.ligarTopicos(l.prova!);
+    await db.importarProva(l.prova!);
+    final qs = await db.questoesCompletas();
+    final agora = DateTime.now();
+    for (final (i, q) in qs.indexed) {
+      if (i % 5 == 4) continue;
+      final certa = i % 3 != 0;
+      final id = await db.registrarResposta(
+        questaoId: q.id,
+        marcada: certa ? q.questao.resposta : 'A',
+        acertou: certa && q.questao.resposta != 'X',
+        segundos: 60 + (i * 37) % 180,
+        modo: i.isEven ? 'treino' : 'simulado',
+        motivoErro: certa ? null : motivosErro.keys.elementAt(i % 3),
+      );
+      await (db.update(db.respostas)..where((r) => r.id.equals(id))).write(
+        RespostasCompanion(
+          data: Value(agora.subtract(Duration(days: (i * 5) % 70))),
+        ),
+      );
+    }
+  }
+
+  Widget questao(AppDatabase db, int numero, ModoQuestoes modo) => app(
+    db,
+    FutureBuilder(
+      future: db.questoesCompletas(
+        filtro: const FiltroQuestoes(
+          incluirAnuladas: true,
+          incluirDesatualizadas: true,
+          incluirRevisar: true,
+        ),
+      ),
+      builder: (_, s) => s.data == null
+          ? const SizedBox()
+          : QuestoesScreen(
+              questoes: [
+                s.data!.firstWhere((q) => q.questao.numero == numero),
+                ...s.data!.where((q) => q.questao.numero != numero).take(9),
+              ],
+              modo: modo,
+              minutos: modo == ModoQuestoes.simulado ? 40 : null,
+            ),
+    ),
+  );
+
+  Future<void> errar(WidgetTester t) async {
+    await t.tap(find.byKey(const ValueKey('alt-B')));
+    await t.pump();
+    await t.tap(find.byKey(const ValueKey('responder')));
+    await assentar(t, settle: false);
+    await t.drag(find.byType(Scrollable).first, const Offset(0, -500));
+  }
+
+  testWidgets(
+    'provas',
+    (t) => captura(
+      t,
+      '35_provas_paisagem',
+      paisagem,
+      (db) => app(db, const ProvasScreen()),
+      preparar: dadosProvas,
+    ),
+  );
+  testWidgets(
+    'colar prova previa',
+    (t) => captura(
+      t,
+      '36_colar_prova_previa_paisagem',
+      paisagem,
+      (db) => app(db, ColarProvaScreen(textoInicial: araucaria)),
+      antes: (t) async {
+        await t.tap(find.byKey(const ValueKey('ler-prova')));
+      },
+    ),
+  );
+  testWidgets(
+    'treino',
+    (t) => captura(
+      t,
+      '37_treino_paisagem',
+      paisagem,
+      (db) => questao(db, 2, ModoQuestoes.treino),
+      preparar: dadosProvas,
+      settle: false,
+    ),
+  );
+  testWidgets(
+    'treino corrigido',
+    (t) => captura(
+      t,
+      '37b_treino_corrigido_retrato',
+      retrato,
+      (db) => questao(db, 2, ModoQuestoes.treino),
+      preparar: dadosProvas,
+      settle: false,
+      antes: errar,
+    ),
+  );
+  testWidgets(
+    'treino celular lei mudou',
+    (t) => captura(
+      t,
+      '37c_treino_celular',
+      celular,
+      (db) => questao(db, 37, ModoQuestoes.treino),
+      preparar: dadosProvas,
+      settle: false,
+    ),
+  );
+  testWidgets(
+    'simulado',
+    (t) => captura(
+      t,
+      '38_simulado_paisagem',
+      paisagem,
+      (db) => questao(db, 3, ModoQuestoes.simulado),
+      preparar: dadosProvas,
+      settle: false,
+    ),
+  );
+  testWidgets(
+    'resolver',
+    (t) => captura(
+      t,
+      '39_resolver_paisagem',
+      paisagem,
+      (db) => app(db, const ResolverScreen()),
+      preparar: dadosProvas,
+    ),
+  );
+  testWidgets(
+    'estatisticas provas',
+    (t) => captura(
+      t,
+      '40_estatisticas_provas_paisagem',
+      paisagem,
+      (db) => app(db, const EstatisticasProvasScreen()),
+      preparar: dadosProvas,
+    ),
+  );
+  testWidgets(
+    'estatisticas provas celular',
+    (t) => captura(
+      t,
+      '40b_estatisticas_provas_celular',
+      celular,
+      (db) => app(db, const EstatisticasProvasScreen()),
+      preparar: dadosProvas,
     ),
   );
 }

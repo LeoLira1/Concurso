@@ -1,0 +1,614 @@
+{
+  "formato": "edital-prova-v1",
+  "prova": {
+    "banca": "Fundação de Apoio à UNESPAR (Campus de Paranavaí)",
+    "orgao": "Prefeitura do Município de Araucária – PR",
+    "cargo": "Guarda Municipal",
+    "ano": 2019,
+    "gabarito": "definitivo",
+    "num_alternativas": 4,
+    "total_questoes": 40,
+    "gabarito_lido": {
+      "1": "C", "2": "A", "3": "A", "4": "B", "5": "D", "6": "A", "7": "X", "8": "B", "9": "D", "10": "B",
+      "11": "B", "12": "D", "13": "C", "14": "B", "15": "A", "16": "C", "17": "A", "18": "D", "19": "A", "20": "D",
+      "21": "C", "22": "B", "23": "D", "24": "X", "25": "A", "26": "D", "27": "C", "28": "A", "29": "D", "30": "B",
+      "31": "B", "32": "A", "33": "B", "34": "A", "35": "D", "36": "D", "37": "C", "38": "C", "39": "C", "40": "B"
+    },
+    "descartadas": [
+      { "numero": 11, "motivo": "Conhecimentos gerais do município (data de fundação de Araucária)." },
+      { "numero": 12, "motivo": "Conhecimentos gerais do estado (geografia do Paraná: maior rio paranaense)." },
+      { "numero": 14, "motivo": "Conhecimentos gerais do estado (aeroportos internacionais do Paraná) e dado da época ('atualmente')." },
+      { "numero": 15, "motivo": "Conhecimentos gerais do município (história de Araucária)." }
+    ]
+  },
+  "textos": [
+    {
+      "id": "T1",
+      "titulo": "Menos de 1% dos sites brasileiros são acessíveis para pessoas com deficiência",
+      "conteudo": "Menos de 1% dos sites brasileiros são acessíveis para pessoas com deficiência\nMesmo com existência de lei que determina a acessibilidade digital, mais de 14 milhões de portais ativos no país possuem problemas estruturais que dificultam a navegação\nNATHALIA FABRO\n29 OUT 2019\n\nUm novo relatório indica que 99% dos sites que estão ativos no Brasil não são acessíveis para pessoas com deficiência. O levantamento foi realizado pela BigData Corp, empresa especializada em trabalhar com um grande conjunto de dados (Big Data), e o Movimento Web Para Todos (MWPT).\nO Brasil possui atualmente mais de 24 milhões de portais registrados. No entanto, apenas 14 milhões são ativos – ou seja, endereços atualizados frequentemente e que foram o foco desse estudo. De todos, somente 0,61% dos sites passarram em testes de acessibilidade, e 99,39% tiveram pelo menos uma falha que dificulta a navegação de pessoas com deficiência.\nSites governamentais – que possuem \".gov.br\" no domínio – também foram analisados e o resultado tampouco é positivo: apenas 0,34% foram aprovados. Isso significa que 99,66% dos portais de prefeituras, estados ou ministérios, por exemplo, não estão completamente acessíveis.\nA pesquisa avaliou questões como linguagem HTML, problemas em formulários, links e a presença de descrição de imagens – recurso que permite a explicação de fotografias para pessoas com deficiência visual. Práticas consideradas adequadas estão disponíveis nas Diretrizes de Acessibilidade para Conteúdo Web (WCAG) 2.1, mantida pela World Wide Web Consortium (W3C), organização mundial de padronização da web.\n\"Coisas simples, como acessar aplicativos de relacionamentos, consultar preços e entrar na conta bancária podem ser feitas com o celular ou no desktop, mas algumas dessas tecnologias são excludentes para pessoas com deficiência\", afirma Simone Freire, idealizadora do MWPT. \"O mundo digital precisa derrubar as barreiras de navegação para melhorar o acesso de todas as pessoas.\"\n\nTexto adaptado de: https://revistagalileu.globo.com/Tecnologia/noticia/2019/10/menos-de-1-dos-sites-brasileiros-sao-acessiveis-para-pessoas-com-deficiencia.html. Acesso em 06 de novembro de 2019."
+    },
+    {
+      "id": "T2",
+      "titulo": "Mariana, 4 anos: estudo que guiará reparações por danos à saúde está 'na gaveta' há 6 meses",
+      "conteudo": "Mariana, 4 anos: estudo que guiará reparações por danos à saúde está 'na gaveta' há 6 meses\nCamilla Veras Mota\nDa BBC News Brasil em São Paulo\n\nHá quatro anos, o rompimento de uma barragem no município mineiro de Mariana chocou o país e deixou 19 mortos. E o processo de reparação às famílias das vítimas, aos sobreviventes e aos desabrigados ainda está longe do fim.\n\n(Disponível em: https://www.bbc.com/portuguese/brasil-50309184. Acesso em 05 de novembro de 2019.)"
+    }
+  ],
+  "questoes": [
+    {
+      "numero": 1,
+      "texto_id": "T1",
+      "materia": "Língua Portuguesa",
+      "topico": "Interpretação de texto",
+      "enunciado": "De acordo com o texto, é CORRETO afirmar que:",
+      "alternativas": {
+        "A": "Apenas 1% dos sites do Brasil são ativos às pessoas com necessidades especiais.",
+        "B": "A acessibilidade digital viabilizou novas oportunidades às pessoas com deficiência.",
+        "C": "Portais brasileiros ainda não são completamente acessíveis para pessoas com deficiência.",
+        "D": "Sites governamentais se sobressaem em relação aos demais sites analisados, por apresentarem menores problemas de acesso."
+      },
+      "resposta": "C",
+      "status": [],
+      "obs": ""
+    },
+    {
+      "numero": 2,
+      "texto_id": "T1",
+      "materia": "Língua Portuguesa",
+      "topico": "Conjunções – valor semântico de “No entanto”",
+      "enunciado": "“No entanto, apenas 14 milhões são ativos – ou seja, endereços atualizados frequentemente e que foram o foco desse estudo.” O termo em destaque expressa ideia de:",
+      "alternativas": {
+        "A": "Oposição.",
+        "B": "Alternância.",
+        "C": "Explicação.",
+        "D": "Conclusão."
+      },
+      "resposta": "A",
+      "status": [],
+      "obs": "O termo em destaque (sublinhado no original) é “No entanto”."
+    },
+    {
+      "numero": 3,
+      "texto_id": null,
+      "materia": "Língua Portuguesa",
+      "topico": "Interpretação de tirinha – inferência",
+      "enunciado": "Leia a tirinha:\n\nFernando Gonsales. Níquel Náusea: Nem tudo que balança cai. São Paulo: Devir, 2003.\n\nDe acordo com a fala do menino, no primeiro quadrinho, podemos inferir que:",
+      "alternativas": {
+        "A": "Ele destaca a importância da beleza interior.",
+        "B": "Ele ignora as utilidades do porquinho.",
+        "C": "Ele ressalta a feiura e inutilidade do porquinho.",
+        "D": "Ele expressa a curiosidade em saber o que tem dentro do cofrinho."
+      },
+      "resposta": "A",
+      "status": ["imagem"],
+      "obs": "Tirinha de dois quadrinhos, em preto e branco (Níquel Náusea). Quadrinho 1: um personagem de aparência porcina, andando, com um balão de fala. Fala transcrita: “NÃO IMPORTA SE VOCÊ É FEIO OU BONITO!” (no original o acento do É aparece como apóstrofo). Quadrinho 2: o mesmo personagem levanta um martelo sobre um cofrinho em forma de porquinho, em cima de uma mesa. Balão de fala transcrito: “IMPORTA É O QUE VOCÊ TEM POR DENTRO!”. Há um pequeno rabisco ao lado do balão do quadrinho 2 (elemento gráfico, sem texto legível)."
+    },
+    {
+      "numero": 4,
+      "texto_id": null,
+      "materia": "Língua Portuguesa",
+      "topico": "Função sintática do pronome relativo “que”",
+      "enunciado": "Leia as orações abaixo:\n\nI. Li o livro que você indicou.\nII. O livro a que você se referiu é ótimo.\n\nSobre a função sintática do termo em destaque, é CORRETO afirmar que:",
+      "alternativas": {
+        "A": "Em I e II, o termo em destaque liga as orações e funciona como sujeito.",
+        "B": "Em I, o termo em destaque funciona como objeto direto e, em II, como objeto indireto.",
+        "C": "Em I e II, o termo em destaque liga as orações e funciona como objeto indireto.",
+        "D": "Em I, o termo em destaque funciona como sujeito e, em II, como objeto direto."
+      },
+      "resposta": "B",
+      "status": [],
+      "obs": "O termo em destaque (sublinhado no original) é o “que” em I e em II."
+    },
+    {
+      "numero": 5,
+      "texto_id": "T2",
+      "materia": "Língua Portuguesa",
+      "topico": "Tempos verbais – valor temporal e aspectual",
+      "enunciado": "Analise os termos em destaque e marque (V) para verdadeiro e (F) para falso nas afirmativas a seguir:\n\n( ) “Guiará” denota uma ação simultânea ao momento da escrita do texto.\n( ) “Chocou” e “deixou” denotam ações ocorridas durante um período definido.\n( ) “Está” poderia ser substituído por “estava”, sem alteração de sentido.\n\nAssinale a alternativa com a ordem CORRETA, de cima para baixo:",
+      "alternativas": {
+        "A": "V – F – V.",
+        "B": "V – F – F.",
+        "C": "F – V – V.",
+        "D": "F – V – F."
+      },
+      "resposta": "D",
+      "status": [],
+      "obs": "Termos em destaque (sublinhados no texto-base): “guiará”, “está” (no título), “chocou” e “deixou” (no corpo do texto)."
+    },
+    {
+      "numero": 6,
+      "texto_id": null,
+      "materia": "Matemática e Raciocínio Lógico",
+      "topico": "Equação do 2º grau – raízes, discriminante e produto das raízes",
+      "enunciado": "Após analisar cada um dos itens abaixo sobre equações do segundo grau, assinale a alternativa CORRETA:\n\nI. A equação: 4x² + 12x – 16 = 0 possui duas raízes reais distintas, sendo que uma dessas raízes possui um valor positivo e a outra possui um valor negativo.\nII. Se o discriminante de uma equação for maior que zero, essa equação terá duas raízes reais distintas.\nIII. O produto da raiz x₁ pela raiz x₂ da equação: 3C² - 15C + 12 = 0 é igual a 5 e seus coeficientes são, respectivamente, a = 3, b = 15 e c = 12.",
+      "alternativas": {
+        "A": "Somente os itens I e II estão corretos.",
+        "B": "Somente o item II está correto.",
+        "C": "Somente os itens II e III estão corretos.",
+        "D": "Nenhum item está correto."
+      },
+      "resposta": "A",
+      "status": ["revisar"],
+      "obs": "Na extração, os índices de x₁ e x₂ vieram soltos (“1 x” / “2 x”); conferir no PDF. No item III a equação aparece escrita com “C” no lugar da incógnita (“3C² - 15C + 12 = 0”), como no original."
+    },
+    {
+      "numero": 7,
+      "texto_id": null,
+      "materia": "Matemática e Raciocínio Lógico",
+      "topico": "Teoria dos conjuntos – operações (união, interseção, diferença)",
+      "enunciado": "Considerando os conjuntos D = {17,19,21,24,29}, E = {16,18,22,23,26,27,30} e F = {16,18,20,22,23,26,27,30}, assinale a alternativa CORRETA sobre esses conjuntos após analisar os itens a seguir:\n\nI. O conjunto {17,19,21,24,29}, pode ser obtido através da operação (F - E ) ∪ (D - F).\nII. O conjunto {16,18,20,22,23,26,27,30} pode ser obtido através da operação (F ∩ E) ∪ (F - E).\nIII. Efetuando a operação (F ∩ E) ∪ D obtemos um conjunto com 13 elementos e que contém o conjunto E.",
+      "alternativas": {
+        "A": "Somente o item I está correto.",
+        "B": "Somente os itens I e II estão corretos.",
+        "C": "Somente os itens II e III estão corretos.",
+        "D": "Nenhum item está correto."
+      },
+      "resposta": "X",
+      "status": ["anulada", "revisar"],
+      "obs": "Anulada no gabarito definitivo. Os símbolos de união (∪) e interseção (∩) se perderam na extração de texto e foram conferidos na imagem da página; confirmar no PDF."
+    },
+    {
+      "numero": 8,
+      "texto_id": null,
+      "materia": "Matemática e Raciocínio Lógico",
+      "topico": "Problema com sistema de equações do 1º grau",
+      "enunciado": "Luiz comprou algumas camisetas para revender e em uma semana ele conseguiu vender uma quantidade de 105 camisetas entre camisetas com estampas e camisetas sem estampa, arrecadando um valor de R$ 3540,00. Sabe-se que ele vendeu cada camiseta com estampa por R$ 36,00 e cada camiseta sem estampa por R$ 32,00. De acordo com essas informações, assinale a alternativa que representa a quantidade de camisetas que Luiz vendeu com estampa:",
+      "alternativas": {
+        "A": "38 camisetas com estampa.",
+        "B": "45 camisetas com estampa.",
+        "C": "54 camisetas com estampa.",
+        "D": "58 camisetas com estampa."
+      },
+      "resposta": "B",
+      "status": [],
+      "obs": ""
+    },
+    {
+      "numero": 9,
+      "texto_id": null,
+      "materia": "Matemática e Raciocínio Lógico",
+      "topico": "Porcentagem e juros compostos",
+      "enunciado": "Pedro emprestou para seu amigo uma quantia de R$ 1225,00 que representa 35% da quantia que ele recebeu de décimo terceiro salário e o restante dessa quantia, ele investiu em uma instituição financeira que rende juros compostos de 4% ao trimestre. Com base nessas informações, podemos afirmar que Pedro irá receber de juros ao término de um semestre, uma quantia igual a:",
+      "alternativas": {
+        "A": "R$ 138,46.",
+        "B": "R$ 150,75.",
+        "C": "R$ 172,30.",
+        "D": "R$ 185,64."
+      },
+      "resposta": "D",
+      "status": [],
+      "obs": ""
+    },
+    {
+      "numero": 10,
+      "texto_id": null,
+      "materia": "Matemática e Raciocínio Lógico",
+      "topico": "Regra de três composta",
+      "enunciado": "Em uma fábrica de televisores, trabalham 42 funcionários no turno da manhã, todos no mesmo ritmo de trabalho e eles conseguem produzir em 6 horas uma quantidade de 882 televisores. Considerando que essa fábrica precise produzir no turno da tarde 1372 televisores em 7 horas de trabalho, utilizando a mão-de-obra de funcionários que trabalham no mesmo ritmo dos funcionários do turno da manhã, assinale a alternativa que representa a quantidade de funcionários necessária para produzir essa quantidade de televisores.",
+      "alternativas": {
+        "A": "48 funcionários.",
+        "B": "56 funcionários.",
+        "C": "60 funcionários.",
+        "D": "64 funcionários."
+      },
+      "resposta": "B",
+      "status": [],
+      "obs": ""
+    },
+    {
+      "numero": 13,
+      "texto_id": null,
+      "materia": "Cidadania e Segurança Pública",
+      "topico": "Agenda 21 (Rio-92) – desenvolvimento sustentável",
+      "enunciado": "Foi um Plano de ações das Nações Unidas criado e aprovado ao longo da Rio -92 com intuito de garantir o desenvolvimento sustentável pleno no planeta ao longo do Século XXI. Trata-se da:",
+      "alternativas": {
+        "A": "Agenda 19.",
+        "B": "Agenda 20.",
+        "C": "Agenda 21.",
+        "D": "Agenda 22."
+      },
+      "resposta": "C",
+      "status": [],
+      "obs": "Dúvida: está na seção “Conhecimentos Gerais e Atualidades”, mas não é conhecimento local (município/estado) nem notícia da época; por isso não foi descartada. Nenhuma matéria da lista se encaixa bem (tema ambiental global); classificada em “Cidadania e Segurança Pública” por aproximação."
+    },
+    {
+      "numero": 16,
+      "texto_id": null,
+      "materia": "Noções de Segurança e Vigilância",
+      "topico": "Proteção do patrimônio público – termo de responsabilidade",
+      "enunciado": "Analise as assertivas e assinale a alternativa CORRETA no que se refere aos procedimentos quanto à proteção do patrimônio público:\n\nI. A função do termo de responsabilidade é responsabilizar os servidores pelas informações e estado dos bens ao Patrimônio, tais como: danificação, inservibilidade, necessidade de reparo, desaparecimento.\nII. Deverão ser relacionados no termo de responsabilidade todos os bens, inclusive os provenientes de doação, cessão e locação.\nIII. É obrigação de todo servidor zelar pela boa conservação dos bens patrimoniais que estão sob sua guarda ou uso.\nIV. Nenhum servidor poderá movimentar um bem patrimonial sem a devida autorização da unidade de Patrimônio.\nV. Excepcionalmente, é permitida a utilização de qualquer bem patrimonial para finalidade particular.",
+      "alternativas": {
+        "A": "Todas as assertivas estão corretas.",
+        "B": "Todas as assertivas estão incorretas.",
+        "C": "Somente a assertiva V está incorreta.",
+        "D": "Somente as assertivas I, IV e V estão corretas."
+      },
+      "resposta": "C",
+      "status": [],
+      "obs": ""
+    },
+    {
+      "numero": 17,
+      "texto_id": null,
+      "materia": "Noções de Segurança e Vigilância",
+      "topico": "Proteção do patrimônio – sindicância e inquérito",
+      "enunciado": "Para abertura do processo de sindicância ou inquérito, a unidade de patrimônio deverá comunicar:",
+      "alternativas": {
+        "A": "O órgão de controle interno da prefeitura.",
+        "B": "O Ministério Público.",
+        "C": "O chefe de gabinete do prefeito.",
+        "D": "A Câmara Municipal."
+      },
+      "resposta": "A",
+      "status": [],
+      "obs": "Dúvida: pode depender de norma administrativa interna do município, mas o enunciado não cita nenhuma lei ou decreto municipal expressamente; por isso não foi descartada."
+    },
+    {
+      "numero": 18,
+      "texto_id": null,
+      "materia": "Noções de Segurança e Vigilância",
+      "topico": "Vigilância do patrimônio público – controle de acesso",
+      "enunciado": "Analise as afirmativas e marque (V) para verdadeiro e (F) para falso, no que se refere aos serviços de vigilância do patrimônio público:\n\n( ) É obrigatório o controle de saída dos servidores da repartição pública.\n( ) Durante o horário de expediente, a vigilância dentro das repartições públicas deverá ser feita sempre portando armas de fogo.\n( ) O vigilante deve controlar o acesso de prestadores de serviços de empresas terceirizadas por meio da conferência do nome completo e documento de identidade com lista de funcionários autorizados.\n( ) O acesso irrestrito a todos os órgãos e setores da repartição pública é um direito fundamental do cidadão.\n\nAssinale a alternativa que apresenta a sequência CORRETA:",
+      "alternativas": {
+        "A": "F, F, F, V.",
+        "B": "V, V, V, V.",
+        "C": "F, V, V, F.",
+        "D": "F, F, V, F."
+      },
+      "resposta": "D",
+      "status": [],
+      "obs": ""
+    },
+    {
+      "numero": 19,
+      "texto_id": null,
+      "materia": "Noções de Segurança e Vigilância",
+      "topico": "Proteção e vigilância de repartições – rondas noturnas",
+      "enunciado": "Quanto aos procedimentos de proteção e vigilância das repartições públicas, é INCORRETO afirmar que:",
+      "alternativas": {
+        "A": "As rondas noturnas, em regra, devem ser feitas somente na parte externa dos prédios públicos.",
+        "B": "Após o expediente, as entradas e saídas da repartição devem permanecer trancadas.",
+        "C": "Durante o período em que a repartição estiver fechada, não é permitida a entrada de terceiros, salvo com expressa autorização do superior imediato.",
+        "D": "Faz parte dos procedimentos da ronda noturna a verificação das portas, portões e janelas da repartição."
+      },
+      "resposta": "A",
+      "status": [],
+      "obs": ""
+    },
+    {
+      "numero": 20,
+      "texto_id": null,
+      "materia": "Noções de Segurança e Vigilância",
+      "topico": "Procedimentos no posto de portaria",
+      "enunciado": "São procedimentos do servidor público quando assumir o posto de segurança da portaria, EXCETO:",
+      "alternativas": {
+        "A": "Fazer a leitura do livro de ocorrências.",
+        "B": "Conferir os materiais que pertencerem ao posto de trabalho.",
+        "C": "Fazer uso do telefone fixo estritamente para ligações de emergência ou a serviço da unidade.",
+        "D": "É permitido ao vigilante, quando solicitado e por breve período, fazer outro tipo de trabalho alheio à área da segurança, mesmo que não tenha sido autorizado pelo seu superior imediato."
+      },
+      "resposta": "D",
+      "status": [],
+      "obs": ""
+    },
+    {
+      "numero": 21,
+      "texto_id": null,
+      "materia": "Noções de Segurança e Vigilância",
+      "topico": "Controle de entrada e saída de pessoas e veículos",
+      "enunciado": "Assinale a alternativa CORRETA no que se refere ao controle de entrada e saída de veículos e pessoas na repartição com controle de entrada:",
+      "alternativas": {
+        "A": "Os servidores lotados na repartição são dispensados da identificação mediante a apresentação do crachá funcional, mas as entradas e saídas de colaboradores terceirizados durante o horário de expediente serão sempre controladas através da utilização do crachá.",
+        "B": "O acesso de cidadãos em repartições com entrada controlada poderá ser feito mediante apresentação de documento oficial de identificação sem foto, sem necessidade de registro nominal de entrada e saída.",
+        "C": "Em caso de contratação de empresas prestadoras de serviços, o responsável deverá encaminhar à portaria uma relação com o nome e documento oficial de identificação com foto das pessoas autorizadas a acessar a repartição.",
+        "D": "O acesso de fornecedores poderá ser realizado mediante autorização verbal do superior imediato."
+      },
+      "resposta": "C",
+      "status": [],
+      "obs": ""
+    },
+    {
+      "numero": 22,
+      "texto_id": null,
+      "materia": "Noções de Segurança e Vigilância",
+      "topico": "Defesa civil – Política Nacional de Proteção e Defesa Civil (redução de riscos de desastres)",
+      "enunciado": "Indique as cinco ações que compõem o principal objetivo da redução de riscos de desastres, integrantes da Política Nacional de Proteção e Defesa Civil:",
+      "alternativas": {
+        "A": "Rescaldo; alienação; preparação; resposta e reciclagem.",
+        "B": "Prevenção; mitigação; preparação; resposta e recuperação.",
+        "C": "Rescaldo; mitigação; persuasão; resposta e recuperação.",
+        "D": "Prevenção; alienação; preparação; incorporação e recuperação."
+      },
+      "resposta": "B",
+      "status": [],
+      "obs": ""
+    },
+    {
+      "numero": 23,
+      "texto_id": null,
+      "materia": "Noções de Segurança e Vigilância",
+      "topico": "Defesa civil – planos, plano de contingência e órgão municipal",
+      "enunciado": "Analise as assertivas e assinale a alternativa CORRETA quanto as ações de defesa civil:\n\nI. Os Planos Municipais de Redução de Risco são instrumentos de planejamento, baseados na participação social; do mapeamento e análise dos riscos; e da elaboração de propostas de intervenções estruturais e não estruturais.\nII. A principal atribuição do Órgão Municipal de Proteção e Defesa Civil é conhecer e identificar os riscos de desastres no município.\nIII. Em caso de calamidade pública, o prefeito poderá convocar todos os servidores municipais para atuarem como agentes de defesa civil.\nIV. O plano de contingência é a formalização de uma estratégia de enfrentamento dos desastres onde estão descritas as características dos eventos a serem enfrentados, os locais possíveis de acontecimento, o número provável de afetados e as ações de prevenção e de resposta que o poder público estabeleceu para enfrentá-los.\nV. As ações do Órgão Municipal de Proteção e Defesa Civil não admitem interação com outros órgão públicos ou privados.",
+      "alternativas": {
+        "A": "Todas as assertivas estão corretas.",
+        "B": "Todas as assertivas estão incorretas.",
+        "C": "Somente a assertiva III está incorreta.",
+        "D": "Somente as assertivas I, II e IV estão corretas."
+      },
+      "resposta": "D",
+      "status": [],
+      "obs": ""
+    },
+    {
+      "numero": 24,
+      "texto_id": null,
+      "materia": "Noções de Segurança e Vigilância",
+      "topico": "Deveres do guarda municipal na vigilância de repartições",
+      "enunciado": "Quanto aos deveres do guarda municipal, é CORRETO afirmar que:",
+      "alternativas": {
+        "A": "A Guarda Municipal, de caráter civil, exercerá a vigilância diurna e noturna dos bens públicos de uso comum, quais sejam: ruas, praças, cemitérios públicos, unidades de saúde.",
+        "B": "Deverá abordar coercitivamente pessoas em atitude suspeita dentro das repartições, sempre conduzindo-as imediatamente até a autoridade policial.",
+        "C": "Poderá afastar-se ou abandonar o seu local de serviço, para tratar de assuntos particulares, desde que comunique previamente seu superior imediato.",
+        "D": "Durante o trabalho noturno na repartição pública, deverá fazer rondas também nas imediações (ruas, praças), desde que com a devida comunicação ao superior imediato."
+      },
+      "resposta": "X",
+      "status": ["anulada"],
+      "obs": "Anulada no gabarito definitivo."
+    },
+    {
+      "numero": 25,
+      "texto_id": null,
+      "materia": "Noções de Segurança e Vigilância",
+      "topico": "Prevenção de incêndios",
+      "enunciado": "Analise as afirmativas e marque (V) para verdadeiro e (F) para falso, no que se refere aos procedimentos de prevenção de incêndios:\n\n( ) Não se deve acumular lixo em local não destinado para este fim.\n( ) Não se deve armazenar líquidos inflamáveis em locais de risco.\n( ) Não se deve sobrecarregar a instalação elétrica e também não estocar G.L.P. em ambientes fechados.\n( ) Deve-se manter desobstruídos os extintores, hidrantes e saídas de emergência.",
+      "alternativas": {
+        "A": "V, V, V, F.",
+        "B": "F, V, F, F.",
+        "C": "V, V, V, V.",
+        "D": "F, F, V, V."
+      },
+      "resposta": "A",
+      "status": [],
+      "obs": "Resposta copiada do gabarito definitivo (A). Observação: o último item parece verdadeiro, então o gabarito oficial pode estar inconsistente com o enunciado; mantido exatamente como está no gabarito."
+    },
+    {
+      "numero": 26,
+      "texto_id": null,
+      "materia": "Noções de Segurança e Vigilância",
+      "topico": "Combate a incêndios – agentes extintores",
+      "enunciado": "Assinale a alternativa INCORRETA no que se refere aos procedimentos de combate a incêndios:",
+      "alternativas": {
+        "A": "Para extinguir fogo em materiais sólidos do tipo madeiras, papelão, tecidos, o método adequado é o uso de extintor à base de água.",
+        "B": "O extintor à base de gás carbônico é adequado para extinção de incêndio em líquidos inflamáveis.",
+        "C": "O extintor à base de espuma serve para extinguir o incêndio por abafamento, com ação secundária de resfriamento.",
+        "D": "O extintor à base de pó químico de bicarbonato de potássio é mais eficiente que o extintor de pó químico de bicarbonato de sódio."
+      },
+      "resposta": "D",
+      "status": [],
+      "obs": ""
+    },
+    {
+      "numero": 27,
+      "texto_id": null,
+      "materia": "Noções de Segurança e Vigilância",
+      "topico": "Comunicação por rádio – código Q",
+      "enunciado": "Relacione a coluna 02 de acordo com a coluna 01, quanto ao código “Q” na comunicação radiofônica:\n\nColuna 01:\n( 1 ) QRL\n( 2 ) QTI\n( 3 ) QTC\n( 4 ) QRU\n\nColuna 02:\n( ) Mensagem, notícia, recado.\n( ) Você está ocupado?\n( ) Qual é o seu rumo VERDADEIRO?.\n( ) Tem algo para mim?\n\nA sequência CORRETA é:",
+      "alternativas": {
+        "A": "3, 4, 2, 1.",
+        "B": "4, 1, 2, 3.",
+        "C": "3, 1, 2, 4.",
+        "D": "3, 4, 1, 2."
+      },
+      "resposta": "C",
+      "status": [],
+      "obs": "As duas colunas aparecem lado a lado no PDF; foram separadas em “Coluna 01” e “Coluna 02”."
+    },
+    {
+      "numero": 28,
+      "texto_id": null,
+      "materia": "Noções de Segurança e Vigilância",
+      "topico": "Prevenção e combate a incêndio – métodos e classes de fogo",
+      "enunciado": "Assinale a alternativa CORRETA quanto aos procedimentos de segurança e combate a incêndios:\n\nI. O Método Direto de uso de água em incêndios de classe A consiste no jato contínuo ou chuveiro com abertura de 30° ou menos, sempre concentrando o ataque na base do fogo até que ele seja extinto.\nII. O método seguro de se prevenir o acúmulo de vazamento de gás ou líquido sob pressão é a retirada do objeto de locais fechados.\nIII. Para a extinção de incêndios de classe C, é necessário que o agente extintor não conduza a corrente elétrica e atue por princípio de abafamento ou interrupção (quebra) da reação em cadeia.\nIV. A extinção dos incêndios da classe D deve ser feita por abafamento e sem a utilização de água e ou espuma.\nV. Para utilizar o extintor, deve-se puxar a trava de segurança, apontar a mangueira para a base das chamas, manter o extintor na vertical e acionar o gatilho.",
+      "alternativas": {
+        "A": "Todas as assertivas estão corretas.",
+        "B": "Todas as assertivas estão incorretas.",
+        "C": "Somente a assertiva IV está incorreta.",
+        "D": "Somente as assertivas I, II, IV e V estão corretas."
+      },
+      "resposta": "A",
+      "status": [],
+      "obs": ""
+    },
+    {
+      "numero": 29,
+      "texto_id": null,
+      "materia": "Noções de Segurança e Vigilância",
+      "topico": "Normas de higiene – lavagem das mãos e higienização",
+      "enunciado": "Quanto as normas de higiene, é CORRETO afirmar que:",
+      "alternativas": {
+        "A": "A higienização das mãos com álcool gel a 30 % tem por finalidade reduzir a carga microbiana das mãos, podendo substituir a higienização por água e sabão.",
+        "B": "Para manter um ambiente mais saudável, deve-se manter sempre as portas e janelas fechadas e utilizar o menos possível o ar condicionado.",
+        "C": "Na higienização de telefones e aparelhos eletrônicos, deve-se utilizar hipoclorito de sódio diluído na proporção de 50 % com água.",
+        "D": "Na lavagem das mãos, deve-se evitar se encostar na pia, deve-se ensaboar as mãos, friccionando a palma, o dorso, os espaços interdigitais, polegar, articulações, unhas e extremidades, dedos, punhos e por fim, enxaguar."
+      },
+      "resposta": "D",
+      "status": [],
+      "obs": "Dúvida de classificação: higiene não consta na lista de matérias; classificada em “Noções de Segurança e Vigilância” por ser procedimento geral de saúde/prevenção, próximo de primeiros socorros."
+    },
+    {
+      "numero": 30,
+      "texto_id": null,
+      "materia": "Direito Administrativo",
+      "topico": "Moralidade administrativa e improbidade",
+      "enunciado": "Analise as afirmativas e marque (V) para verdadeiro e (F) para falso, conforme seja verdadeiro ou falso, no que se refere à moralidade pública.\n\n( ) Quando o administrador público age contrariando as regras de probidade administrativa também a moralidade administrativa restou prejudicada, desrespeitada, ainda que de forma indireta.\n( ) A improbidade é ato de violação à moralidade administrativa e a outros princípios e regras da Administração Pública (expressos ou implícitos), conforme previsão em lei específica.\n( ) No ordenamento jurídico, não existem mecanismos para impedir a prática de atos de imoralidade pública.\n( ) Os princípios previstos no texto constitucional devem ser observados pelo administrador público em sua atuação administrativa, pois não se pode aceitar a prática de atos atentatórios à moralidade administrativa.\n\nAssinale a alternativa que apresenta a sequência CORRETA:",
+      "alternativas": {
+        "A": "V, F, V, V.",
+        "B": "V, V, F, V.",
+        "C": "F, V, F, V.",
+        "D": "V, V, V, V."
+      },
+      "resposta": "B",
+      "status": [],
+      "obs": "A Lei de Improbidade Administrativa (Lei 8.429/1992) foi alterada em 2021 (Lei 14.230/2021), mas as afirmativas são genéricas e não dependem dessas mudanças; não marcada como desatualizada."
+    },
+    {
+      "numero": 31,
+      "texto_id": null,
+      "materia": "Direito Penal",
+      "topico": "Crime consumado, tentativa e desistência voluntária (arts. 14 e 15)",
+      "enunciado": "De acordo com o Código Penal Brasileiro, assinale a alternativa INCORRETA:",
+      "alternativas": {
+        "A": "Diz-se o crime consumado, quando nele se reúnem todos os elementos de sua definição legal.",
+        "B": "Diz-se o crime tentado, quando, iniciada a execução, o agente, voluntariamente, impede que o resultado se produza.",
+        "C": "Salvo disposição em contrário, pune-se a tentativa com a pena correspondente ao crime consumado, diminuída de um a dois terços.",
+        "D": "O agente que, voluntariamente, desiste de prosseguir na execução ou impede que o resultado se produza, só responde pelos atos já praticados."
+      },
+      "resposta": "B",
+      "status": [],
+      "obs": ""
+    },
+    {
+      "numero": 32,
+      "texto_id": null,
+      "materia": "Direito Penal",
+      "topico": "Crimes contra o patrimônio – roubo, dano e furto",
+      "enunciado": "No que se refere aos crimes contra o patrimônio, analise os itens a seguir:\n\nI. Subtrair coisa móvel alheia, para si ou para outrem, mediante grave ameaça ou violência à pessoa, ou depois de havê-la, por qualquer meio, reduzido à impossibilidade de resistência.\nII. Destruir, inutilizar ou deteriorar coisa alheia.\nIII. Subtrair, para si ou para outrem, coisa alheia móvel.\n\nAs condutas acima descritas caracterizam, respectivamente, os crime de:",
+      "alternativas": {
+        "A": "Roubo, dano e furto.",
+        "B": "Furto, dano e roubo.",
+        "C": "Extorsão, dano e furto.",
+        "D": "Furto, dano e extorsão."
+      },
+      "resposta": "A",
+      "status": [],
+      "obs": ""
+    },
+    {
+      "numero": 33,
+      "texto_id": null,
+      "materia": "Crimes contra a Administração Pública",
+      "topico": "Prevaricação (art. 319)",
+      "enunciado": "“Retardar ou deixar de praticar, indevidamente, ato de ofício, ou praticá-lo contra disposição expressa de lei, para satisfazer interesse ou sentimento pessoal” constitui o crime de:",
+      "alternativas": {
+        "A": "Condescendência criminosa.",
+        "B": "Prevaricação.",
+        "C": "Corrupção passiva.",
+        "D": "Peculato."
+      },
+      "resposta": "B",
+      "status": [],
+      "obs": ""
+    },
+    {
+      "numero": 34,
+      "texto_id": null,
+      "materia": "Leis Penais Especiais",
+      "topico": "Lei Maria da Penha – âmbito da violência doméstica e familiar (art. 5º)",
+      "enunciado": "Para os efeitos da Lei Maria da Penha, configura violência doméstica e familiar contra a mulher qualquer ação ou omissão baseada no gênero que lhe cause morte, lesão, sofrimento físico, sexual ou psicológico e dano moral ou patrimonial, praticada no âmbito da unidade doméstica, da família ou em qualquer relação íntima de afeto. Sobre o tema, assinale a alternativa INCORRETA:",
+      "alternativas": {
+        "A": "O âmbito da unidade doméstica compreende o espaço de convívio permanente de pessoas, com ou sem vínculo familiar, exceto as esporadicamente agregadas.",
+        "B": "O âmbito da família compreende a comunidade formada por indivíduos que são ou se consideram aparentados, unidos por laços naturais, por afinidade ou por vontade expressa.",
+        "C": "A relação íntima de afeto abrange a relação em que o agressor tenha convivido com a ofendida, independentemente de coabitação.",
+        "D": "As relações pessoais referidas pela Lei Maria da Penha independem de orientação sexual."
+      },
+      "resposta": "A",
+      "status": [],
+      "obs": ""
+    },
+    {
+      "numero": 35,
+      "texto_id": null,
+      "materia": "Leis Penais Especiais",
+      "topico": "Lei Maria da Penha – formas de violência e manutenção do vínculo trabalhista",
+      "enunciado": "Segundo a Lei Maria da Penha, analise os itens a seguir e assinale a alternativa CORRETA:\n\nI. Violência física contra a mulher é entendida como qualquer conduta que ofenda a integridade ou a saúde corporal da mulher.\nII. Violência moral é entendida como qualquer conduta que configure calúnia, difamação ou injúria.\nIII. O juiz assegurará a manutenção do vínculo trabalhista, quando necessário o afastamento do local de trabalho, por até seis meses, à mulher em situação de violência doméstica e familiar, para preservar sua integridade física e psicológica.",
+      "alternativas": {
+        "A": "Apenas o item I está correto.",
+        "B": "Apenas os itens I e II estão corretos.",
+        "C": "Apenas os itens II e III estão corretos.",
+        "D": "Todos os itens estão corretos."
+      },
+      "resposta": "D",
+      "status": [],
+      "obs": ""
+    },
+    {
+      "numero": 36,
+      "texto_id": null,
+      "materia": "Leis Penais Especiais",
+      "topico": "Lei de Drogas – porte para consumo pessoal (art. 28)",
+      "enunciado": "A Lei de Drogas estabelece penas para quem adquire, guarda, tem em depósito, transporta ou traz consigo, para consumo pessoal, drogas sem autorização ou em desacordo com determinação legal ou regulamentar. Assinale a alternativa que NÃO apresenta uma pena prevista pelo texto legal:",
+      "alternativas": {
+        "A": "Advertência sobre os efeitos das drogas.",
+        "B": "Prestação de serviços à comunidade.",
+        "C": "Medida educativa de comparecimento a programa ou curso educativo.",
+        "D": "Prisão."
+      },
+      "resposta": "D",
+      "status": [],
+      "obs": ""
+    },
+    {
+      "numero": 37,
+      "texto_id": null,
+      "materia": "Leis Penais Especiais",
+      "topico": "Estatuto do Desarmamento – porte de arma das guardas municipais (art. 6º)",
+      "enunciado": "Conforme a Lei n.º 10.826/03, analise os itens a seguir e assinale a alternativa CORRETA:\n\nI. É permitido o porte de arma de fogo para os integrantes das guardas municipais das capitais dos Estados e dos Municípios com mais de 500.000 (quinhentos mil) habitantes, nas condições estabelecidas no regulamento da Lei n.º 10.826/03.\nII. É permitido o porte de arma de fogo para os integrantes das guardas municipais dos Municípios com mais de 50.000 (cinqüenta mil) e menos de 500.000 (quinhentos mil) habitantes, quando em serviço.",
+      "alternativas": {
+        "A": "Apenas o item I está correto.",
+        "B": "Apenas o item II está correto.",
+        "C": "Os itens I e II estão corretos.",
+        "D": "Nenhum item está correto."
+      },
+      "resposta": "C",
+      "status": ["desatualizada"],
+      "obs": "Cobra o critério de população do art. 6º, III e IV, da Lei 10.826/2003. O STF declarou esses critérios inconstitucionais em 2021 (ADIs 5538 e 5948); hoje todas as guardas municipais têm direito ao porte, independentemente do tamanho do município. Gabarito copiado como definitivo da época (C)."
+    },
+    {
+      "numero": 38,
+      "texto_id": null,
+      "materia": "Cidadania e Segurança Pública",
+      "topico": "Estatuto Geral das Guardas Municipais (Lei 13.022/2014) – disposições gerais, consórcio e formação",
+      "enunciado": "Nos termos do Estatuto Geral das Guardas Municipais, assinale a alternativa CORRETA:",
+      "alternativas": {
+        "A": "Incumbe às guardas municipais, instituições de caráter militar, uniformizadas e armadas conforme previsto em lei, a função de proteção municipal preventiva, ressalvadas as competências da União, dos Estados e do Distrito Federal.",
+        "B": "A estrutura hierárquica da guarda municipal pode utilizar denominação idêntica à das forças militares, quanto aos postos e graduações, títulos, uniformes, distintivos e condecorações.",
+        "C": "Municípios limítrofes podem, mediante consórcio público, utilizar, reciprocamente, os serviços da guarda municipal de maneira compartilhada.",
+        "D": "O Estado deverá, mediante convênio com os Municípios interessados, manter órgão de formação e aperfeiçoamento centralizado, em cujo conselho gestor seja assegurada a participação dos Municípios conveniados."
+      },
+      "resposta": "C",
+      "status": [],
+      "obs": "Lei 13.022/2014 é lei federal; não descartar. Matéria escolhida por aproximação, já que a lista não tem uma matéria específica para o Estatuto."
+    },
+    {
+      "numero": 39,
+      "texto_id": null,
+      "materia": "Cidadania e Segurança Pública",
+      "topico": "Estatuto das Guardas – princípios mínimos de atuação",
+      "enunciado": "Nos termos do Estatuto Geral das Guardas Municipais, assinale a alternativa que NÃO apresenta um princípio mínimo de atuação das guardas municipais:",
+      "alternativas": {
+        "A": "Proteção dos direitos humanos fundamentais, do exercício da cidadania e das liberdades públicas.",
+        "B": "Preservação da vida, redução do sofrimento e diminuição das perdas.",
+        "C": "Patrulhamento repressivo.",
+        "D": "Compromisso com a evolução social da comunidade."
+      },
+      "resposta": "C",
+      "status": [],
+      "obs": ""
+    },
+    {
+      "numero": 40,
+      "texto_id": null,
+      "materia": "Cidadania e Segurança Pública",
+      "topico": "Estatuto das Guardas – controle interno, externo e controle social",
+      "enunciado": "O funcionamento das guardas municipais será acompanhado por órgãos próprios, permanentes, autônomos e com atribuições de fiscalização, investigação e auditoria, mediante:\n\nI. Controle externo, exercido por corregedoria, naquelas com efetivo superior a 50 (cinquenta) servidores da guarda e em todas as que utilizam arma de fogo, para apurar as infrações disciplinares atribuídas aos integrantes de seu quadro.\nII. Controle interno, exercido por ouvidoria, independente em relação à direção da respectiva guarda, qualquer que seja o número de servidores da guarda municipal, para receber, examinar e encaminhar reclamações, sugestões, elogios e denúncias acerca da conduta de seus dirigentes e integrantes e das atividades do órgão, propor soluções, oferecer recomendações e informar os resultados aos interessados, garantindo-lhes orientação, informação e resposta.\nIII. O Poder Executivo municipal poderá criar órgão colegiado para exercer o controle social das atividades de segurança do Município, analisar a alocação e aplicação dos recursos públicos e monitorar os objetivos e metas da política municipal de segurança e, posteriormente, a adequação e eventual necessidade de adaptação das medidas adotadas face aos resultados obtidos.\n\nDe acordo com o Estatuto Geral das Guardas Municipais:",
+      "alternativas": {
+        "A": "Apenas o item I está correto",
+        "B": "Apenas o item III está correto.",
+        "C": "Os itens I, II e III estão corretos.",
+        "D": "Nenhum item está correto."
+      },
+      "resposta": "B",
+      "status": [],
+      "obs": ""
+    }
+  ]
+}

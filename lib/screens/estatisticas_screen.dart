@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../data/database.dart';
+import '../data/provas_db.dart';
 import '../logic/estatisticas.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
@@ -48,7 +49,7 @@ class _EstatisticasScreenState extends State<EstatisticasScreen> {
             stream: () => db.watchMaterias(escopo),
             builder: (context, mats) => Assistir<List<Sessao>>(
               chave: 'sessoes',
-              stream: db.watchTodasSessoes,
+              stream: db.watchSessoesComQuestoes,
               builder: (context, sessoes) {
                 if (mats == null || sessoes == null) {
                   return const SizedBox.shrink();

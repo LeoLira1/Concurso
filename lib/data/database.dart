@@ -75,6 +75,11 @@ class ProgressoConcurso {
     Anexos,
     Flashcards,
     TopicoConcursos,
+    Provas,
+    TextosBase,
+    QuestoesProva,
+    Respostas,
+    PrintsQuestao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -82,7 +87,7 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? driftDatabase(name: 'edital'));
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -109,6 +114,8 @@ class AppDatabase extends _$AppDatabase {
       }
       if (de < 5) {
         await m.createTable(topicoConcursos);
+        // Os gatilhos do sync cobrem as tabelas das provas (v6).
+        await _criarTabelasProvas(m);
         // Gatilhos do sync antes de copiar: os vínculos criados aqui também
         // vão para a nuvem.
         for (final c in comandosInfraSync()) {
@@ -123,6 +130,7 @@ class AppDatabase extends _$AppDatabase {
           WHERE t.pai_id IS NULL
         ''');
       }
+      if (de < 6) await _criarTabelasProvas(m);
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
@@ -131,6 +139,28 @@ class AppDatabase extends _$AppDatabase {
       }
     },
   );
+
+  /// Tabelas das provas (v6). Idempotente: um banco "rebaixado" pode já
+  /// ter parte delas.
+  Future<void> _criarTabelasProvas(Migrator m) async {
+    final cols = await customSelect('PRAGMA table_info(sessoes)').get();
+    if (!cols.any((c) => c.read<String>('name') == 'origem')) {
+      await m.addColumn(sessoes, sessoes.origem);
+    }
+    for (final t in <TableInfo>[
+      provas,
+      textosBase,
+      questoesProva,
+      respostas,
+      printsQuestao,
+    ]) {
+      final existe = await customSelect(
+        "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?",
+        variables: [Variable.withString(t.actualTableName)],
+      ).get();
+      if (existe.isEmpty) await m.createTable(t);
+    }
+  }
 
   // ---------------------------------------------------------------------------
   // Concursos
@@ -260,10 +290,12 @@ class AppDatabase extends _$AppDatabase {
   }
 
   /// Matérias que não pertencem a nenhum concurso são apagadas
-  /// (junto com tópicos, revisões e questões, via cascade).
+  /// (junto com tópicos, revisões e questões, via cascade). As que têm
+  /// questões de prova ficam: a prova pode ter matéria fora dos editais.
   Future<void> _limparMateriasOrfas() => customStatement(
     'DELETE FROM materias WHERE id NOT IN '
-    '(SELECT materia_id FROM concurso_materias)',
+    '(SELECT materia_id FROM concurso_materias) AND id NOT IN '
+    '(SELECT materia_id FROM questoes_prova)',
   );
 
   // ---------------------------------------------------------------------------
@@ -865,6 +897,7 @@ class AppDatabase extends _$AppDatabase {
   /// Nomes de arquivo ainda referenciados (para limpar órfãos no disco).
   Future<Set<String>> arquivosDeAnexos() async => {
     for (final a in await select(anexos).get()) a.arquivo,
+    for (final p in await select(printsQuestao).get()) p.arquivo,
   };
 
   // ---------------------------------------------------------------------------
@@ -1043,6 +1076,7 @@ class AppDatabase extends _$AppDatabase {
     int questoesAcertos = 0,
     int paginas = 0,
     String? pontoParada,
+    String? origem,
   }) {
     final parada = pontoParada?.trim();
     return into(sessoes).insert(
@@ -1058,6 +1092,7 @@ class AppDatabase extends _$AppDatabase {
         ),
         paginas: Value(paginas < 0 ? 0 : paginas),
         pontoParada: Value(parada == null || parada.isEmpty ? null : parada),
+        origem: Value(origem),
       ),
     );
   }

@@ -4,6 +4,7 @@ import 'package:cross_file/cross_file.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../data/database.dart';
+import '../data/provas_db.dart';
 
 /// Arquivos de anexos (fotos e PDFs) guardados na pasta privada do app.
 /// Ficam só neste aparelho (a sincronização futura cuidará dos arquivos).
@@ -51,6 +52,26 @@ abstract final class ArquivosAnexos {
       arquivo: nomeArquivo,
       bytes: await destino.length(),
     );
+  }
+
+  /// Print de uma questão de prova (fica só neste aparelho).
+  static Future<void> importarPrint({
+    required AppDatabase db,
+    required String questaoId,
+    required XFile origem,
+  }) async {
+    final nomeArquivo = '${novoId()}.${extensao(origem.name)}';
+    final destino = await arquivo(nomeArquivo);
+    await origem.saveTo(destino.path);
+    await db.adicionarPrint(questaoId, nomeArquivo);
+  }
+
+  static Future<void> excluirPrint(AppDatabase db, PrintQuestao p) async {
+    await db.excluirPrint(p.id);
+    try {
+      final f = await arquivo(p.arquivo);
+      if (await f.exists()) await f.delete();
+    } catch (_) {}
   }
 
   static Future<void> excluir(AppDatabase db, Anexo a) async {
