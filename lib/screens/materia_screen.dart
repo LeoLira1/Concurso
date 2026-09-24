@@ -6,6 +6,7 @@ import '../theme.dart';
 import '../widgets/assistir.dart';
 import '../widgets/comuns.dart';
 import 'flashcards_screen.dart';
+import 'mapa_mental_screen.dart';
 import 'topico_screen.dart';
 
 /// Árvore de tópicos a partir de uma lista plana.
@@ -48,7 +49,22 @@ class MateriaScreen extends StatelessWidget {
         if (m == null) return const Scaffold(body: SizedBox.shrink());
         final cor = Color(m.cor);
         return Scaffold(
-          appBar: AppBar(toolbarHeight: 72),
+          appBar: AppBar(
+            toolbarHeight: 72,
+            actions: [
+              TextButton.icon(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => MapaMentalScreen(materiaInicial: materiaId),
+                  ),
+                ),
+                icon: const Icon(Icons.hub_outlined),
+                label: const Text('Mapa mental'),
+              ),
+              const SizedBox(width: 12),
+            ],
+          ),
           floatingActionButton: FloatingActionButton.extended(
             onPressed: () => _adicionarVarios(context),
             backgroundColor: Cores.tinta,

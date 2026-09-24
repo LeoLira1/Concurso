@@ -13,6 +13,7 @@ import 'package:edital/screens/concursos_screen.dart';
 import 'package:edital/screens/cronometro_screen.dart';
 import 'package:edital/screens/edital_screen.dart';
 import 'package:edital/screens/home_screen.dart';
+import 'package:edital/screens/mapa_mental_screen.dart';
 import 'package:edital/screens/materia_screen.dart';
 import 'package:edital/state/app_state.dart';
 import 'package:edital/state/sessao_ativa.dart';
@@ -340,8 +341,10 @@ void main() {
     Future<void> Function(WidgetTester t)? antes,
     bool settle = true,
     VoidCallback? depois,
+    Future<void> Function(AppDatabase db)? preparar,
   }) async {
     final db = (await tester.runAsync(popular))!;
+    if (preparar != null) await tester.runAsync(() => preparar(db));
     tester.view.physicalSize = tamanho * 2;
     tester.view.devicePixelRatio = 2;
     addTearDown(tester.view.reset);
@@ -855,5 +858,92 @@ NOÇÕES DE DIREITO ADMINISTRATIVO: 1 Noções de organização administrativa. 
         await t.pumpAndSettle();
       },
     ),
+  );
+
+  // --- Etapa 7: mapa mental ---
+  Future<void> dadosMapa(AppDatabase db) async {
+    {
+      final port = (await db.materiaPorNome('Língua Portuguesa'))!.id;
+      final tops = await db.watchTopicos(port).first;
+      Topico tp(String n) => tops.firstWhere((x) => x.nome == n);
+      // Acerto baixo em Regência; subtópicos em parte em Classes de palavras.
+      await db.registrarSessao(
+        dia: DateTime.now(),
+        minutos: 40,
+        materiaId: port,
+        topicoId: tp('Regência nominal e verbal').id,
+        questoesFeitas: 20,
+        questoesAcertos: 9,
+      );
+      await db.registrarSessao(
+        dia: DateTime.now(),
+        minutos: 95,
+        materiaId: port,
+        topicoId: tp('Crase').id,
+        questoesFeitas: 30,
+        questoesAcertos: 24,
+      );
+      await db.marcarVisto(tp('Pronomes').id, true);
+      await db.marcarVisto(tp('Crase').id, true);
+    }
+  }
+
+  Widget mapa(AppDatabase db) => app(db, const MapaMentalScreen());
+  Widget mapaPort(AppDatabase db) => app(
+    db,
+    FutureBuilder(
+      future: db.materiaPorNome('Língua Portuguesa'),
+      builder: (_, s) => s.data == null
+          ? const SizedBox()
+          : MapaMentalScreen(materiaInicial: s.data!.id),
+    ),
+  );
+  Future<void> segurarCrase(WidgetTester t) async {
+    final db = t.element(find.byType(MaterialApp)).read<AppDatabase>();
+    final port = (await t.runAsync(
+      () => db.materiaPorNome('Língua Portuguesa'),
+    ))!;
+    final crase = (await t.runAsync(() => db.watchTopicos(port.id).first))!
+        .firstWhere((x) => x.nome == 'Crase');
+    final estado = t.state<MapaMentalScreenState>(
+      find.byType(MapaMentalScreen),
+    );
+    // ignore: invalid_use_of_visible_for_testing_member
+    await t.longPressAt(estado.posicaoGlobal(crase.id)!);
+  }
+
+  testWidgets(
+    'mapa paisagem',
+    (t) => captura(t, '30_mapa_paisagem', paisagem, mapa, preparar: dadosMapa),
+  );
+  testWidgets(
+    'mapa retrato',
+    (t) => captura(t, '30b_mapa_retrato', retrato, mapa, preparar: dadosMapa),
+  );
+  testWidgets(
+    'mapa materia paisagem',
+    (t) => captura(
+      t,
+      '31_mapa_materia_paisagem',
+      paisagem,
+      mapaPort,
+      preparar: dadosMapa,
+    ),
+  );
+  testWidgets(
+    'mapa resumo paisagem',
+    (t) => captura(
+      t,
+      '32_mapa_resumo_paisagem',
+      paisagem,
+      mapaPort,
+      preparar: dadosMapa,
+      antes: segurarCrase,
+    ),
+  );
+  testWidgets(
+    'mapa celular',
+    (t) =>
+        captura(t, '33_mapa_celular', celular, mapaPort, preparar: dadosMapa),
   );
 }
