@@ -573,7 +573,7 @@ class _CardsMaterias extends StatelessWidget {
                 MaterialPageRoute(
                   builder: (_) => MateriaScreen(
                     materiaId: m.materia.id,
-                    concursoId: painel.foco.id,
+                    concursoId: painel.escopo,
                   ),
                 ),
               ),

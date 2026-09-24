@@ -60,10 +60,21 @@ void verificar(NoMapa arvore) {
   for (final n in l.nos) {
     expect(n.centro.dx.isFinite && n.centro.dy.isFinite, isTrue);
     expect(l.limites.contains(n.centro), isTrue);
-    if (n.pai != null) {
-      // Filho sempre mais longe do centro que o pai.
+    if (n.pai != null && n.pai != n.polo) {
+      // Subtópico sempre para fora do tópico, em volta da mesma matéria.
+      expect(n.polo, same(n.pai!.polo));
       expect(n.raio, greaterThan(n.pai!.raio));
     }
+  }
+  // Uma linha por nó (menos a raiz), sem atravessar nenhum outro nó.
+  expect(l.ligacoes, hasLength(l.nos.length - 1));
+  final cruza = cruzamentos(l);
+  if (cruza.isNotEmpty) {
+    final (lig, no) = cruza.first;
+    fail(
+      '${cruza.length} linhas cruzam nós, ex.: '
+      '${lig.pai.no.id} → ${lig.filho.no.id} passa por ${no.no.id}',
+    );
   }
   // Nenhuma caixa cruza outra (checagem por força bruta).
   for (var i = 0; i < l.nos.length; i++) {
@@ -192,42 +203,124 @@ void main() {
     verificar(arvore);
   });
 
-  test('ângulos proporcionais ao número de descendentes', () {
-    final mats = [
-      const MateriaMapa('a', 'A', 1),
-      const MateriaMapa('b', 'B', 2),
-    ];
+  test('matéria com 45 tópicos e subtópicos: círculo completo, sem cruzar', () {
+    final mats = [const MateriaMapa('m', 'Direito Constitucional', 1)];
     final tops = [
-      for (var i = 0; i < 30; i++)
+      for (var i = 0; i < 45; i++) ...[
         TopicoMapa(
-          id: 'a$i',
-          materiaId: 'a',
+          id: 't$i',
+          materiaId: 'm',
           paiId: null,
+          nome: 'Tópico $i com um nome que ocupa duas linhas',
+          visto: i.isEven,
+          ordem: i,
+        ),
+        for (var s = 0; s < (i % 7 == 0 ? 4 : (i % 5 == 0 ? 2 : 0)); s++)
+          TopicoMapa(
+            id: 't$i-s$s',
+            materiaId: 'm',
+            paiId: 't$i',
+            nome: 'Subtópico $s',
+            visto: false,
+            ordem: s,
+          ),
+      ],
+    ];
+    for (final central in [true, false]) {
+      final arvore = montarArvore(
+        rotuloRaiz: 'Guarda',
+        materias: mats,
+        topicos: tops,
+        materiaCentral: central ? 'm' : null,
+        hoje: hoje,
+      );
+      verificar(arvore);
+      final l = calcularLayout(arvore);
+      final materia = l.porId('m')!;
+      final topicos = [
+        for (final n in l.nos)
+          if (n.pai == materia) n,
+      ];
+      expect(topicos, hasLength(45));
+      // Em volta da matéria, nos quatro quadrantes (360°).
+      final quadrantes = {
+        for (final t in topicos)
+          (
+            (t.centro - materia.centro).dx >= 0,
+            (t.centro - materia.centro).dy >= 0,
+          ),
+      };
+      expect(quadrantes, hasLength(4));
+      // Os setores somam o círculo (menos o vão da linha que chega na
+      // matéria) e são proporcionais ao número de folhas de cada ramo.
+      final soma = topicos.fold<double>(0, (a, t) => a + t.setor);
+      expect(soma, lessThanOrEqualTo(2 * math.pi + 1e-9));
+      expect(soma, greaterThan(2 * math.pi * 0.9));
+      final t0 = l.porId('t0')!; // 4 subtópicos
+      final t1 = l.porId('t1')!; // nenhum
+      final t5 = l.porId('t5')!; // 2 subtópicos
+      expect(t0.setor / t1.setor, closeTo(4, 1e-6));
+      expect(t5.setor / t1.setor, closeTo(2, 1e-6));
+      // Subtópicos dentro do setor do tópico pai.
+      for (final n in l.nos) {
+        if (n.pai == null || n.pai == materia || n.pai!.pai != materia) {
+          continue;
+        }
+        final p = n.pai!;
+        var d = (n.angulo - p.angulo).abs() % (2 * math.pi);
+        if (d > math.pi) d = 2 * math.pi - d;
+        expect(d, lessThanOrEqualTo(p.setor / 2 + 1e-9));
+      }
+    }
+  });
+
+  test('ângulos proporcionais ao número de descendentes', () {
+    final mats = [const MateriaMapa('a', 'A', 1)];
+    final tops = [
+      const TopicoMapa(
+        id: 'x',
+        materiaId: 'a',
+        paiId: null,
+        nome: 'X',
+        visto: false,
+      ),
+      for (var i = 0; i < 6; i++)
+        TopicoMapa(
+          id: 'x$i',
+          materiaId: 'a',
+          paiId: 'x',
           nome: '$i',
           visto: false,
         ),
-      for (var i = 0; i < 10; i++)
+      const TopicoMapa(
+        id: 'y',
+        materiaId: 'a',
+        paiId: null,
+        nome: 'Y',
+        visto: false,
+        ordem: 1,
+      ),
+      for (var i = 0; i < 2; i++)
         TopicoMapa(
-          id: 'b$i',
-          materiaId: 'b',
-          paiId: null,
+          id: 'y$i',
+          materiaId: 'a',
+          paiId: 'y',
           nome: '$i',
           visto: false,
         ),
     ];
     final l = calcularLayout(
-      montarArvore(rotuloRaiz: 'X', materias: mats, topicos: tops, hoje: hoje),
+      montarArvore(
+        rotuloRaiz: 'X',
+        materias: mats,
+        topicos: tops,
+        materiaCentral: 'a',
+        hoje: hoje,
+      ),
     );
-    double abertura(String id) {
-      final ang = [
-        for (final n in l.nos)
-          if (n.pai?.no.id == id) n.angulo,
-      ];
-      return ang.reduce(math.max) - ang.reduce(math.min);
-    }
-
-    // 30 folhas contra 10: o leque de A é ~3× o de B.
-    expect(abertura('a') / abertura('b'), closeTo(3 * 29 / 30 / (9 / 10), 0.3));
+    // 6 folhas contra 2, no círculo inteiro (sem vão: a matéria é o centro).
+    expect(l.porId('x')!.setor, closeTo(2 * math.pi * 6 / 8, 1e-9));
+    expect(l.porId('y')!.setor, closeTo(2 * math.pi * 2 / 8, 1e-9));
   });
 
   test('situação: visto, em parte, revisão atrasada e acerto baixo', () {

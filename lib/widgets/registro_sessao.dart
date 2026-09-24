@@ -8,6 +8,7 @@ import '../screens/materia_screen.dart';
 import '../theme.dart';
 import '../util/texto.dart';
 import 'comuns.dart';
+import 'escopo.dart';
 
 /// Dados do registro de uma sessão de estudo.
 class RegistroSessao {
@@ -128,7 +129,11 @@ class _FormRegistroState extends State<FormRegistro> {
 
   void _carregarTopicos() {
     final id = r.materiaId;
-    _stream = id == null ? null : context.read<AppDatabase>().watchTopicos(id);
+    final db = context.read<AppDatabase>();
+    _stream = id == null
+        ? null
+        : escopoAtual(context)
+              .asyncExpand((e) => db.watchTopicos(id, concursoId: e));
     _stream?.first.then((l) {
       if (mounted) setState(() => _topicos = l);
     });

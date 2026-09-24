@@ -272,32 +272,50 @@ class NoPosicionado {
   final NoPosicionado? pai;
   final filhos = <NoPosicionado>[];
 
-  /// Ângulo do centro do setor (radianos) e raio do anel.
+  /// Centro do "balão" em volta do qual o nó foi posto: a matéria, para
+  /// tópicos e subtópicos; o centro do mapa, para as matérias.
+  NoPosicionado? polo;
+
+  /// Ângulo (radianos) e distância em relação ao [polo].
   double angulo = 0;
   double raio = 0;
   Offset centro = Offset.zero;
-  Size get tamanho => tamanhoDoNo(no.tipo, centro: profundidade == 0);
+  Size get tamanho =>
+      _tamanhoVao ?? tamanhoDoNo(no.tipo, centro: profundidade == 0);
   Rect get retangulo => Rect.fromCenter(
     center: centro,
     width: tamanho.width,
     height: tamanho.height,
   );
 
+  /// Largura (radianos) do setor do ramo, proporcional às folhas dele.
+  double get setor => _fatia;
+
   // Uso interno do layout.
   double _peso = 1;
   double _inicio = 0;
   double _fatia = 0;
+
+  /// Vão livre por onde passa a linha que chega ao balão (não é desenhado).
+  Size? _tamanhoVao;
+}
+
+/// Linha de um nó ao pai, como polilinha: a mesma usada para desenhar e
+/// para conferir que ela não atravessa outros nós.
+class Ligacao {
+  Ligacao(this.pai, this.filho, this.pontos);
+  final NoPosicionado pai;
+  final NoPosicionado filho;
+  final List<Offset> pontos;
 }
 
 class LayoutMapa {
-  LayoutMapa(this.nos, this.limites, this.raios);
+  LayoutMapa(this.nos, this.ligacoes, this.limites);
 
-  /// Em ordem de profundidade (raiz primeiro).
+  /// Em pré-ordem (raiz primeiro).
   final List<NoPosicionado> nos;
+  final List<Ligacao> ligacoes;
   final Rect limites;
-
-  /// Raios de cada anel (e sub-anel escalonado) por profundidade.
-  final Map<int, List<double>> raios;
 
   NoPosicionado get raiz => nos.first;
 
@@ -316,13 +334,17 @@ class LayoutMapa {
   }
 }
 
-/// Espaço mínimo entre caixas vizinhas.
-const _folga = 10.0;
+/// Espaço mínimo entre caixas vizinhas no mesmo anel: cabe uma linha
+/// passando entre elas, com folga.
+const _folga = 22.0;
 const _folgaRadial = 26.0;
 
-/// Máximo de sub-anéis escalonados num mesmo nível (quando há muitos nós,
-/// eles alternam entre raios diferentes, como tijolos).
+/// Máximo de anéis concêntricos num mesmo nível (quando os nós não cabem
+/// num anel só, eles se alternam entre raios diferentes, como tijolos).
 const _maxEscalonamento = 8;
+
+/// Folga entre uma linha e as caixas que ela não liga.
+const margemLinha = 3.0;
 
 /// Metade da projeção de uma caixa [s] na direção tangente ao ângulo [phi].
 double _meiaTangente(Size s, double phi) =>
@@ -331,30 +353,130 @@ double _meiaTangente(Size s, double phi) =>
 double _meiaDiagonal(Size s) =>
     math.sqrt(s.width * s.width + s.height * s.height) / 2;
 
-/// Layout radial: raiz no centro, cada nível num anel. O ângulo de cada ramo
-/// é proporcional ao número de folhas (descendentes) dele. Os raios crescem
-/// o quanto for preciso para as caixas não se sobreporem: entre anéis, as
-/// faixas não se tocam; dentro do anel, vizinhos são separados pela
-/// projeção na tangente (teorema do eixo separador).
+Offset _dir(double a) => Offset(math.cos(a), math.sin(a));
+
+/// Layout em "balões". Cada matéria é o centro de um balão: os tópicos
+/// ficam em volta dela, no círculo inteiro (360°), com ângulo proporcional
+/// ao número de subtópicos de cada ramo; os subtópicos ficam para fora do
+/// tópico, no mesmo setor. Quando os nós não cabem num anel, eles se
+/// alternam entre anéis concêntricos. No edital inteiro, os balões das
+/// matérias ficam em volta do centro, sem se tocar, e cada balão deixa um
+/// vão livre na direção do centro para a linha que chega nele.
+///
+/// Garantias (conferidas no fim de cada balão, que cresce até cumpri-las):
+/// nenhum nó se sobrepõe a outro e nenhuma linha atravessa um nó que não
+/// seja a origem ou o destino dela.
 LayoutMapa calcularLayout(NoMapa arvore) {
   final raiz = NoPosicionado(arvore, 0, null);
-  final porNivel = <List<NoPosicionado>>[
-    [raiz],
-  ];
   final todos = <NoPosicionado>[raiz];
-  // Montagem em pré-ordem, preservando a ordem angular em cada nível.
-  void descer(NoPosicionado p) {
+  void montar(NoPosicionado p) {
     for (final f in p.no.filhos) {
       final n = NoPosicionado(f, p.profundidade + 1, p);
       p.filhos.add(n);
-      if (porNivel.length <= n.profundidade) porNivel.add([]);
-      porNivel[n.profundidade].add(n);
       todos.add(n);
-      descer(n);
+      montar(n);
     }
   }
 
-  descer(raiz);
+  montar(raiz);
+
+  if (arvore.tipo != TipoNo.raiz || raiz.filhos.isEmpty) {
+    // Uma matéria no centro (ou só a raiz): um balão só.
+    _balao(raiz, null);
+  } else {
+    _balaoDeBaloes(raiz);
+  }
+
+  final ligacoes = [
+    for (final n in todos)
+      if (n.pai != null) _ligacao(n.pai!, n),
+  ];
+  var limites = raiz.retangulo;
+  for (final n in todos) {
+    limites = limites.expandToInclude(n.retangulo);
+  }
+  return LayoutMapa(todos, ligacoes, limites);
+}
+
+/// Matérias em volta da raiz, cada uma com o seu balão.
+void _balaoDeBaloes(NoPosicionado raiz) {
+  final ms = raiz.filhos;
+  for (final m in ms) {
+    m.polo = raiz;
+  }
+  // 1) Tamanho aproximado de cada balão para repartir o círculo.
+  final estimado = [for (final m in ms) _balao(m, math.pi / 2)];
+  final soma = estimado.fold<double>(0, (a, b) => a + b);
+  var a = -math.pi / 2 - estimado.first / soma * math.pi;
+  for (var i = 0; i < ms.length; i++) {
+    ms[i]._fatia = estimado[i] / soma * 2 * math.pi;
+    ms[i].angulo = a + ms[i]._fatia / 2;
+    a += ms[i]._fatia;
+  }
+  // 2) Balões de verdade, com o vão virado para o centro.
+  final r = [for (final m in ms) _balao(m, m.angulo + math.pi)];
+
+  // 3) Distância ao centro: balões sem se tocar, longe da raiz, e a linha
+  // do centro até uma matéria sem passar por outro balão.
+  final meiaRaiz = _meiaDiagonal(raiz.tamanho);
+  var dist = 0.0;
+  for (final ri in r) {
+    dist = math.max(dist, meiaRaiz + ri + _folgaRadial);
+  }
+  bool cabe(double d) {
+    for (var i = 0; i < ms.length; i++) {
+      for (var j = i + 1; j < ms.length; j++) {
+        var delta = (ms[i].angulo - ms[j].angulo).abs() % (2 * math.pi);
+        if (delta > math.pi) delta = 2 * math.pi - delta;
+        if (2 * d * math.sin(delta / 2) < r[i] + r[j] + _folgaRadial) {
+          return false;
+        }
+        if (delta < math.pi / 2 &&
+            d * math.sin(delta) < math.max(r[i], r[j]) + _folgaRadial) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  for (var t = 0; t < 400 && !cabe(dist); t++) {
+    dist *= 1.03;
+  }
+  // 4) Leva cada balão para o lugar.
+  for (final m in ms) {
+    m.raio = dist;
+    final c = _dir(m.angulo) * dist;
+    void mover(NoPosicionado n) {
+      n.centro += c;
+      for (final f in n.filhos) {
+        mover(f);
+      }
+    }
+
+    mover(m);
+  }
+}
+
+/// Posiciona os descendentes de [polo] em anéis em volta dele, com o polo
+/// na origem. [entrada] é a direção (radianos) por onde chega a linha do
+/// nível de cima: ali fica um vão livre. Devolve o raio do balão.
+double _balao(NoPosicionado polo, double? entrada) {
+  polo.centro = Offset.zero;
+  final niveis = <List<NoPosicionado>>[];
+  void descer(NoPosicionado p, int d) {
+    for (final f in p.filhos) {
+      f.polo = polo;
+      while (niveis.length < d) {
+        niveis.add([]);
+      }
+      niveis[d - 1].add(f);
+      descer(f, d + 1);
+    }
+  }
+
+  descer(polo, 1);
+  if (niveis.isEmpty) return _raioDoBalao([polo]);
 
   // Peso = folhas do ramo.
   double pesar(NoPosicionado n) {
@@ -366,53 +488,59 @@ LayoutMapa calcularLayout(NoMapa arvore) {
     return n._peso = s;
   }
 
-  pesar(raiz);
-  // Matéria recolhida (ou vazia) ao lado de matérias enormes ficaria com um
-  // setor minúsculo e empurraria o anel para longe: piso de 30% da média.
-  if (raiz.filhos.length > 1) {
-    final media = raiz._peso / raiz.filhos.length;
-    for (final f in raiz.filhos) {
-      f._peso = math.max(f._peso, media * 0.3);
-    }
+  var total = 0.0;
+  for (final f in polo.filhos) {
+    total += pesar(f);
   }
 
-  // Setores angulares, começando no topo e em sentido horário.
-  raiz._fatia = 2 * math.pi;
-  final primeiro = raiz.filhos.isEmpty
-      ? 0.0
-      : raiz.filhos.first._peso /
-            raiz.filhos.fold<double>(0, (s, f) => s + f._peso) *
-            2 *
-            math.pi;
-  raiz._inicio = -math.pi / 2 - primeiro / 2;
-  for (final nivel in porNivel) {
+  // Setores angulares no círculo inteiro.
+  NoPosicionado? vao;
+  if (entrada != null) {
+    vao = NoPosicionado(polo.no, 1, polo)
+      .._tamanhoVao = const Size(30, 30)
+      .._peso = math.max(1.0, total * 0.03);
+  }
+  final pesoTotal = total + (vao?._peso ?? 0);
+  double a;
+  if (vao != null) {
+    vao._fatia = vao._peso / pesoTotal * 2 * math.pi;
+    vao.angulo = entrada!;
+    a = entrada + vao._fatia / 2;
+  } else {
+    a = -math.pi / 2 - polo.filhos.first._peso / pesoTotal * math.pi;
+  }
+  for (final f in polo.filhos) {
+    f._fatia = f._peso / pesoTotal * 2 * math.pi;
+    f._inicio = a;
+    f.angulo = a + f._fatia / 2;
+    a += f._fatia;
+  }
+  for (final nivel in niveis) {
     for (final n in nivel) {
-      final total = n.filhos.fold<double>(0, (s, f) => s + f._peso);
-      var a = n._inicio;
-      for (final f in n.filhos) {
-        f._fatia = n._fatia * f._peso / total;
-        f._inicio = a;
-        f.angulo = a + f._fatia / 2;
-        a += f._fatia;
+      var b = n._inicio;
+      final soma = n.filhos.fold<double>(0, (a, c) => a + c._peso);
+      for (final c in n.filhos) {
+        c._fatia = n._fatia * c._peso / soma;
+        c._inicio = b;
+        c.angulo = b + c._fatia / 2;
+        b += c._fatia;
       }
     }
   }
 
-  // Raios por nível, com escalonamento opcional.
-  final raios = <int, List<double>>{
-    0: [0],
-  };
-  var externo = 0.0; // raio do sub-anel mais externo do nível anterior
-  for (var d = 1; d < porNivel.length; d++) {
-    final nivel = porNivel[d];
-    // Cada anel tem um só tipo de nó; usa a maior caixa por segurança.
+  // Raios: anéis que não se tocam; dentro do anel, vizinhos separados.
+  final aneis = [
+    [?vao, ...niveis.first],
+    ...niveis.skip(1),
+  ];
+  var externo = 0.0;
+  var anterior = polo.tamanho;
+  for (final nivel in aneis) {
     final tam = _maiorCaixa(nivel);
     final meiaDiag = _meiaDiagonal(tam);
-    final sepAnel =
-        _meiaDiagonal(_maiorCaixa(porNivel[d - 1])) + meiaDiag + _folgaRadial;
+    final sepAnel = _meiaDiagonal(anterior) + meiaDiag + _folgaRadial;
     final sepSub = 2 * meiaDiag + _folgaRadial;
     final minimo = externo + sepAnel;
-
     double? melhorR;
     var melhorK = 1;
     double? melhorExterno;
@@ -426,23 +554,115 @@ LayoutMapa calcularLayout(NoMapa arvore) {
         melhorK = k;
       }
     }
-    var r = melhorR!;
-    // Garantia final: se ainda houver sobreposição no anel (casos extremos
-    // com setores muito largos), afasta até resolver.
-    for (var tentativa = 0; tentativa < 40; tentativa++) {
-      _posicionar(nivel, r, melhorK, sepSub);
-      if (!temSobreposicao(nivel)) break;
-      r *= 1.08;
-    }
-    raios[d] = [for (var s = 0; s < melhorK; s++) r + s * sepSub];
-    externo = r + (melhorK - 1) * sepSub;
+    _posicionar(nivel, melhorR!, melhorK, sepSub);
+    externo = melhorExterno!;
+    anterior = tam;
   }
 
-  var limites = raiz.retangulo;
-  for (final n in todos) {
-    limites = limites.expandToInclude(n.retangulo);
+  // Conferência: se algum nó encosta em outro ou alguma linha atravessa um
+  // nó, os anéis a partir do nível do problema se afastam (os ângulos
+  // ficam; só as distâncias aumentam, o que abre espaço até resolver).
+  final reais = [polo, for (final l in niveis) ...l];
+  int nivelDe(NoPosicionado n) => n.profundidade - polo.profundidade;
+  for (var t = 0; t < 120; t++) {
+    final ligs = [
+      for (final n in reais)
+        if (n != polo) _ligacao(n.pai!, n),
+      if (entrada != null)
+        Ligacao(polo, polo, [
+          Offset.zero,
+          _dir(entrada) * (_raioDoBalao(reais) + 40),
+        ]),
+    ];
+    var desde = 1 << 30;
+    for (final (a, b) in paresSobrepostos(reais)) {
+      desde = math.min(desde, math.min(nivelDe(a), nivelDe(b)));
+    }
+    for (final (lig, no) in cruzamentosDe(ligs, reais)) {
+      final f = lig.filho == polo ? no : lig.filho;
+      desde = math.min(desde, math.min(nivelDe(no), nivelDe(f)));
+    }
+    if (desde == 1 << 30) break;
+    desde = math.max(desde, 1);
+    for (final n in reais) {
+      if (nivelDe(n) < desde) continue;
+      n.raio *= 1.06;
+      n.centro = _dir(n.angulo) * n.raio;
+    }
   }
-  return LayoutMapa(todos, limites, raios);
+  return _raioDoBalao(reais);
+}
+
+/// Distância do centro do balão ao canto mais longe de todas as caixas.
+double _raioDoBalao(List<NoPosicionado> nos) {
+  var r = 0.0;
+  for (final n in nos) {
+    final q = n.retangulo;
+    for (final c in [q.topLeft, q.topRight, q.bottomLeft, q.bottomRight]) {
+      r = math.max(r, (c - (n.polo?.centro ?? Offset.zero)).distance);
+    }
+  }
+  return r;
+}
+
+/// Linha reta do pai até o nó (a mesma que é desenhada).
+Ligacao _ligacao(NoPosicionado pai, NoPosicionado filho) =>
+    Ligacao(pai, filho, [pai.centro, filho.centro]);
+
+/// Pares (linha, nó) em que a linha atravessa um nó que não é nem a origem
+/// nem o destino dela.
+List<(Ligacao, NoPosicionado)> cruzamentos(LayoutMapa l) =>
+    cruzamentosDe(l.ligacoes, l.nos);
+
+List<(Ligacao, NoPosicionado)> cruzamentosDe(
+  List<Ligacao> ligacoes,
+  List<NoPosicionado> nos, {
+  bool parar = false,
+}) {
+  final r = <(Ligacao, NoPosicionado)>[];
+  for (final lig in ligacoes) {
+    var caixa = Rect.fromPoints(lig.pontos.first, lig.pontos.first);
+    for (final p in lig.pontos) {
+      caixa = caixa.expandToInclude(Rect.fromPoints(p, p));
+    }
+    for (final n in nos) {
+      if (identical(n, lig.pai) || identical(n, lig.filho)) continue;
+      final q = n.retangulo.inflate(margemLinha);
+      if (!q.overlaps(caixa.inflate(1))) continue;
+      for (var i = 0; i + 1 < lig.pontos.length; i++) {
+        if (_segmentoCruza(lig.pontos[i], lig.pontos[i + 1], q)) {
+          r.add((lig, n));
+          if (parar) return r;
+          break;
+        }
+      }
+    }
+  }
+  return r;
+}
+
+/// Liang–Barsky: o segmento [p]–[q] passa por dentro do retângulo [r]?
+bool _segmentoCruza(Offset p, Offset q, Rect r) {
+  var t0 = 0.0, t1 = 1.0;
+  final dx = q.dx - p.dx, dy = q.dy - p.dy;
+  bool corta(double pp, double qq) {
+    if (pp == 0) return qq >= 0;
+    final t = qq / pp;
+    if (pp < 0) {
+      if (t > t1) return false;
+      if (t > t0) t0 = t;
+    } else {
+      if (t < t0) return false;
+      if (t < t1) t1 = t;
+    }
+    return true;
+  }
+
+  return corta(-dx, p.dx - r.left) &&
+      corta(dx, r.right - p.dx) &&
+      corta(-dy, p.dy - r.top) &&
+      corta(dy, r.bottom - p.dy) &&
+      t0 <= t1;
 }
 
 Size _maiorCaixa(List<NoPosicionado> nivel) {
@@ -458,11 +678,11 @@ void _posicionar(List<NoPosicionado> nivel, double r, int k, double sepSub) {
   for (var i = 0; i < nivel.length; i++) {
     final n = nivel[i];
     n.raio = r + (i % k) * sepSub;
-    n.centro = Offset(n.raio * math.cos(n.angulo), n.raio * math.sin(n.angulo));
+    n.centro = _dir(n.angulo) * n.raio;
   }
 }
 
-/// Menor raio em que nós do mesmo sub-anel (a cada [k] nós) não se tocam.
+/// Menor raio em que nós do mesmo anel (a cada [k] nós) não se tocam.
 double _raioTangencial(
   List<NoPosicionado> nivel,
   Size tam,
@@ -481,8 +701,34 @@ double _raioTangencial(
       if (delta >= 2 * math.pi - 1e-9) continue;
       final phi = a.angulo + delta / 2;
       final precisa = 2 * _meiaTangente(tam, phi) + _folga;
-      // Sub-anéis externos têm raio maior: desconta o deslocamento.
+      // Anéis de fora têm raio maior: desconta o deslocamento.
       final rr = precisa / (2 * math.sin(delta / 2)) - s * sepSub;
+      if (rr > r) r = rr;
+    }
+  }
+  if (k == 1) return r;
+  // Linhas entre anéis: a linha que chega num nó de um anel de fora passa
+  // pelos anéis de dentro; a que sai de um nó com filhos (ou o vão da
+  // entrada) passa pelos anéis de fora. O vizinho de outro anel precisa
+  // ficar longe o bastante dessa direção.
+  final n = nivel.length;
+  for (var i = 0; i < n; i++) {
+    final a = nivel[i];
+    final si = i % k;
+    final saiParaFora = a.filhos.isNotEmpty || a._tamanhoVao != null;
+    for (var off = -(k - 1); off <= k - 1; off++) {
+      if (off == 0) continue;
+      final j = (i + off) % n < 0 ? (i + off) % n + n : (i + off) % n;
+      if (j == i) continue;
+      final sj = j % k;
+      if (sj == si) continue;
+      if (!(sj < si || saiParaFora)) continue;
+      final b = nivel[j];
+      var delta = (a.angulo - b.angulo).abs() % (2 * math.pi);
+      if (delta > math.pi) delta = 2 * math.pi - delta;
+      if (delta >= math.pi / 2 || delta < 1e-9) continue;
+      final precisa = _meiaTangente(tam, a.angulo) + margemLinha + 6;
+      final rr = precisa / math.sin(delta) - sj * sepSub;
       if (rr > r) r = rr;
     }
   }

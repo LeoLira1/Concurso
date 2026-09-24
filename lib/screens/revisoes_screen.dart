@@ -7,6 +7,7 @@ import '../theme.dart';
 import '../util/texto.dart';
 import '../widgets/assistir.dart';
 import '../widgets/comuns.dart';
+import '../widgets/escopo.dart';
 import 'cronometro_screen.dart';
 import 'flashcards_screen.dart';
 
@@ -21,76 +22,78 @@ class RevisoesScreen extends StatelessWidget {
     final ate = hoje.add(const Duration(days: 7));
     return Scaffold(
       appBar: AppBar(toolbarHeight: 72),
-      body: Assistir<List<RevisaoInfo>>(
-        chave: hoje,
-        stream: () => db.watchRevisoesPendentes(ate),
-        builder: (context, lista) {
-          final l = lista ?? const <RevisaoInfo>[];
-          final atrasadas = [
-            for (final r in l)
-              if (r.revisao.dataPrevista.isBefore(hoje)) r,
-          ];
-          final deHoje = [
-            for (final r in l)
-              if (soDia(r.revisao.dataPrevista) == hoje) r,
-          ];
-          final proximas = [
-            for (final r in l)
-              if (r.revisao.dataPrevista.isAfter(hoje)) r,
-          ];
-          final paraFazer = atrasadas.length + deHoje.length;
-          return Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 880),
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(28, 0, 28, 40),
-                children: [
-                  Text(
-                    'Revisões',
-                    style: Theme.of(context).textTheme.displaySmall,
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    paraFazer == 0
-                        ? 'Nada para revisar hoje.'
-                        : '$paraFazer para fazer hoje${atrasadas.isEmpty ? '' : ' (${atrasadas.length} atrasada${atrasadas.length == 1 ? '' : 's'})'}.',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Cores.tintaSuave,
+      body: ComEscopo(
+        builder: (context, escopo) => Assistir<List<RevisaoInfo>>(
+          chave: (hoje, escopo),
+          stream: () => db.watchRevisoesPendentes(ate, concursoId: escopo),
+          builder: (context, lista) {
+            final l = lista ?? const <RevisaoInfo>[];
+            final atrasadas = [
+              for (final r in l)
+                if (r.revisao.dataPrevista.isBefore(hoje)) r,
+            ];
+            final deHoje = [
+              for (final r in l)
+                if (soDia(r.revisao.dataPrevista) == hoje) r,
+            ];
+            final proximas = [
+              for (final r in l)
+                if (r.revisao.dataPrevista.isAfter(hoje)) r,
+            ];
+            final paraFazer = atrasadas.length + deHoje.length;
+            return Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 880),
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(28, 0, 28, 40),
+                  children: [
+                    Text(
+                      'Revisões',
+                      style: Theme.of(context).textTheme.displaySmall,
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Ao marcar um tópico como visto, o app agenda revisões em 1, 7 e 30 dias. '
-                    'Uma sessão com método "Revisão" no tópico já conta como feita.',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Cores.tintaSuave,
-                      height: 1.4,
-                    ),
-                  ),
-                  if (l.isEmpty && lista != null)
-                    const Padding(
-                      padding: EdgeInsets.only(top: 48),
-                      child: Center(
-                        child: Icon(
-                          Icons.done_all_rounded,
-                          size: 64,
-                          color: Cores.tintaFraca,
-                        ),
+                    const SizedBox(height: 6),
+                    Text(
+                      paraFazer == 0
+                          ? 'Nada para revisar hoje.'
+                          : '$paraFazer para fazer hoje${atrasadas.isEmpty ? '' : ' (${atrasadas.length} atrasada${atrasadas.length == 1 ? '' : 's'})'}.',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Cores.tintaSuave,
                       ),
                     ),
-                  const _Flashcards(),
-                  if (atrasadas.isNotEmpty)
-                    _Secao('Atrasadas', atrasadas, destaque: Cores.acento),
-                  if (deHoje.isNotEmpty) _Secao('Hoje', deHoje),
-                  if (proximas.isNotEmpty)
-                    _Secao('Próximos 7 dias', proximas, futura: true),
-                ],
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Ao marcar um tópico como visto, o app agenda revisões em 1, 7 e 30 dias. '
+                      'Uma sessão com método "Revisão" no tópico já conta como feita.',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Cores.tintaSuave,
+                        height: 1.4,
+                      ),
+                    ),
+                    if (l.isEmpty && lista != null)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 48),
+                        child: Center(
+                          child: Icon(
+                            Icons.done_all_rounded,
+                            size: 64,
+                            color: Cores.tintaFraca,
+                          ),
+                        ),
+                      ),
+                    const _Flashcards(),
+                    if (atrasadas.isNotEmpty)
+                      _Secao('Atrasadas', atrasadas, destaque: Cores.acento),
+                    if (deHoje.isNotEmpty) _Secao('Hoje', deHoje),
+                    if (proximas.isNotEmpty)
+                      _Secao('Próximos 7 dias', proximas, futura: true),
+                  ],
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
@@ -224,71 +227,74 @@ class _Flashcards extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final db = context.read<AppDatabase>();
-    return Assistir<List<CartaoInfo>>(
-      chave: 'cartoes',
-      stream: db.watchCartoesParaRevisar,
-      builder: (context, l) {
-        final n = l?.length ?? 0;
-        if (n == 0) return const SizedBox.shrink();
-        final materias = {for (final c in l!) c.materia.id: c.materia}.values
-            .toList();
-        return Container(
-          margin: const EdgeInsets.only(top: 24),
-          padding: const EdgeInsets.fromLTRB(22, 18, 18, 18),
-          decoration: BoxDecoration(
-            color: Cores.fundoLateral,
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.style_outlined, size: 30),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '$n flashcard${n == 1 ? '' : 's'} para revisar',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 4),
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 4,
-                      children: [
-                        for (final m in materias.take(4))
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Bolinha(Color(m.cor), tamanho: 9),
-                              const SizedBox(width: 5),
-                              Text(
-                                m.nome,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: Cores.tintaSuave,
+    return ComEscopo(
+      builder: (context, escopo) => Assistir<List<CartaoInfo>>(
+        chave: escopo,
+        stream: () => db.watchCartoesParaRevisar(concursoId: escopo),
+        builder: (context, l) {
+          final n = l?.length ?? 0;
+          if (n == 0) return const SizedBox.shrink();
+          final materias = {for (final c in l!) c.materia.id: c.materia}.values
+              .toList();
+          return Container(
+            margin: const EdgeInsets.only(top: 24),
+            padding: const EdgeInsets.fromLTRB(22, 18, 18, 18),
+            decoration: BoxDecoration(
+              color: Cores.fundoLateral,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.style_outlined, size: 30),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '$n flashcard${n == 1 ? '' : 's'} para revisar',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 4),
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 4,
+                        children: [
+                          for (final m in materias.take(4))
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Bolinha(Color(m.cor), tamanho: 9),
+                                const SizedBox(width: 5),
+                                Text(
+                                  m.nome,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: Cores.tintaSuave,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                      ],
-                    ),
-                  ],
+                              ],
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              FilledButton.icon(
-                onPressed: () => abrirEstudoFlashcards(
-                  context,
-                  titulo: 'Flashcards de hoje',
+                const SizedBox(width: 12),
+                FilledButton.icon(
+                  onPressed: () => abrirEstudoFlashcards(
+                    context,
+                    titulo: 'Flashcards de hoje',
+                    concursoId: escopo,
+                  ),
+                  icon: const Icon(Icons.play_arrow_rounded),
+                  label: const Text('Estudar'),
                 ),
-                icon: const Icon(Icons.play_arrow_rounded),
-                label: const Text('Estudar'),
-              ),
-            ],
-          ),
-        );
-      },
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }

@@ -40,7 +40,7 @@ class MapaMentalScreenState extends State<MapaMentalScreen>
     with SingleTickerProviderStateMixin {
   late String? _filtro = widget.materiaInicial;
   Set<String> _recolhidas = {};
-  bool _legendaAberta = true;
+  bool _legendaAberta = false;
   bool _prefsProntas = false;
 
   final _tc = TransformationController();
@@ -81,17 +81,13 @@ class MapaMentalScreenState extends State<MapaMentalScreen>
     _carregarPrefs();
   }
 
-  bool get _telaLarga {
-    final v = WidgetsBinding.instance.platformDispatcher.views.first;
-    return v.physicalSize.shortestSide / v.devicePixelRatio >= 600;
-  }
-
   Future<void> _carregarPrefs() async {
     try {
       final p = await SharedPreferences.getInstance();
       _recolhidas = (p.getStringList(_prefRecolhidas) ?? const []).toSet();
       // Em tela estreita (celular) a legenda começa recolhida.
-      _legendaAberta = p.getBool(_prefLegenda) ?? _telaLarga;
+      // A legenda começa recolhida (só o botão "Legenda").
+      _legendaAberta = p.getBool(_prefLegenda) ?? false;
     } catch (_) {
       // Sem preferências: segue com o padrão.
     }
@@ -436,14 +432,17 @@ class MapaMentalScreenState extends State<MapaMentalScreen>
             chave: 'materias',
             stream: db.watchTodasMaterias,
             builder: (context, todas) => Assistir<List<Topico>>(
-              chave: 'topicos',
-              stream: db.watchTodosTopicos,
+              chave: ('topicos', escopo),
+              stream: () => db.watchTodosTopicos(concursoId: escopo),
               builder: (context, topicos) => Assistir<List<Sessao>>(
                 chave: 'sessoes',
                 stream: db.watchTodasSessoes,
                 builder: (context, sessoes) => Assistir<List<RevisaoInfo>>(
-                  chave: 'revisoes',
-                  stream: () => db.watchRevisoesPendentes(DateTime(2100)),
+                  chave: ('revisoes', escopo),
+                  stream: () => db.watchRevisoesPendentes(
+                    DateTime(2100),
+                    concursoId: escopo,
+                  ),
                   builder: (context, revisoes) => Assistir<Map<String, int>>(
                     chave: 'cartoes',
                     stream: db.watchFlashcardsPorTopico,

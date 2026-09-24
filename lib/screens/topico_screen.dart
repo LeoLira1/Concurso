@@ -168,7 +168,113 @@ class _Cabecalho extends StatelessWidget {
             ),
           ],
         ),
+        const SizedBox(height: 20),
+        _Editais(topico: topico, materia: materia),
       ],
+    );
+  }
+}
+
+/// Em quais editais (concursos) o tópico está, com opção de pôr ou tirar.
+/// Subtópicos seguem o tópico pai: mostram os editais dele, só leitura.
+class _Editais extends StatelessWidget {
+  const _Editais({required this.topico, required this.materia});
+  final Topico topico;
+  final Materia materia;
+
+  @override
+  Widget build(BuildContext context) {
+    final db = context.read<AppDatabase>();
+    return Assistir<Topico?>(
+      chave: topico.id,
+      stream: () => Stream.fromFuture(db.raizDoTopico(topico.id)),
+      builder: (context, raiz) {
+        if (raiz == null) return const SizedBox.shrink();
+        final proprio = raiz.id == topico.id;
+        return Assistir<List<Concurso>>(
+          chave: 'concursos',
+          stream: db.watchConcursos,
+          builder: (context, concursos) => Assistir<List<Concurso>>(
+            chave: materia.id,
+            stream: () => db.watchConcursosDaMateria(materia.id),
+            builder: (context, daMateria) => Assistir<Set<String>>(
+              chave: raiz.id,
+              stream: () => db.watchVinculos(raiz.id),
+              builder: (context, vinculos) {
+                if (concursos == null ||
+                    daMateria == null ||
+                    vinculos == null) {
+                  return const SizedBox.shrink();
+                }
+                final comMateria = {for (final c in daMateria) c.id};
+                final lista = [
+                  for (final c in concursos)
+                    if (comMateria.contains(c.id) || vinculos.contains(c.id)) c,
+                ];
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      proprio
+                          ? 'NO EDITAL DE'
+                          : 'NO EDITAL DE (SEGUE O TÓPICO "${raiz.nome.toUpperCase()}")',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1,
+                        color: Cores.tintaSuave,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    if (vinculos.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.only(bottom: 10),
+                        child: Text(
+                          'Sem edital: não aparece em nenhum concurso.',
+                          style: TextStyle(color: Cores.acento),
+                        ),
+                      ),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final c in lista)
+                          FilterChip(
+                            avatar: vinculos.contains(c.id)
+                                ? const Icon(
+                                    Icons.check_rounded,
+                                    size: 18,
+                                    color: Colors.white,
+                                  )
+                                : Bolinha(Color(c.cor), tamanho: 10),
+                            label: Text(c.nome),
+                            selected: vinculos.contains(c.id),
+                            showCheckmark: false,
+                            labelStyle: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: vinculos.contains(c.id)
+                                  ? Colors.white
+                                  : Cores.tinta,
+                            ),
+                            tooltip: vinculos.contains(c.id)
+                                ? 'Tirar do edital de ${c.nome}'
+                                : 'Pôr no edital de ${c.nome}',
+                            onSelected: !proprio
+                                ? null
+                                : (v) => v
+                                      ? db.vincular(raiz.id, c.id)
+                                      : db.desvincular(raiz.id, c.id),
+                          ),
+                      ],
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 }

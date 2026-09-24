@@ -4868,6 +4868,286 @@ class FlashcardsCompanion extends UpdateCompanion<Flashcard> {
   }
 }
 
+class $TopicoConcursosTable extends TopicoConcursos
+    with TableInfo<$TopicoConcursosTable, TopicoConcurso> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TopicoConcursosTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _topicoIdMeta = const VerificationMeta(
+    'topicoId',
+  );
+  @override
+  late final GeneratedColumn<String> topicoId = GeneratedColumn<String>(
+    'topico_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES topicos (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _concursoIdMeta = const VerificationMeta(
+    'concursoId',
+  );
+  @override
+  late final GeneratedColumn<String> concursoId = GeneratedColumn<String>(
+    'concurso_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES concursos (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _atualizadoEmMeta = const VerificationMeta(
+    'atualizadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> atualizadoEm = GeneratedColumn<DateTime>(
+    'atualizado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [topicoId, concursoId, atualizadoEm];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'topico_concursos';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TopicoConcurso> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('topico_id')) {
+      context.handle(
+        _topicoIdMeta,
+        topicoId.isAcceptableOrUnknown(data['topico_id']!, _topicoIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_topicoIdMeta);
+    }
+    if (data.containsKey('concurso_id')) {
+      context.handle(
+        _concursoIdMeta,
+        concursoId.isAcceptableOrUnknown(data['concurso_id']!, _concursoIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_concursoIdMeta);
+    }
+    if (data.containsKey('atualizado_em')) {
+      context.handle(
+        _atualizadoEmMeta,
+        atualizadoEm.isAcceptableOrUnknown(
+          data['atualizado_em']!,
+          _atualizadoEmMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {topicoId, concursoId};
+  @override
+  TopicoConcurso map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TopicoConcurso(
+      topicoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}topico_id'],
+      )!,
+      concursoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}concurso_id'],
+      )!,
+      atualizadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}atualizado_em'],
+      )!,
+    );
+  }
+
+  @override
+  $TopicoConcursosTable createAlias(String alias) {
+    return $TopicoConcursosTable(attachedDatabase, alias);
+  }
+}
+
+class TopicoConcurso extends DataClass implements Insertable<TopicoConcurso> {
+  final String topicoId;
+  final String concursoId;
+  final DateTime atualizadoEm;
+  const TopicoConcurso({
+    required this.topicoId,
+    required this.concursoId,
+    required this.atualizadoEm,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['topico_id'] = Variable<String>(topicoId);
+    map['concurso_id'] = Variable<String>(concursoId);
+    map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
+    return map;
+  }
+
+  TopicoConcursosCompanion toCompanion(bool nullToAbsent) {
+    return TopicoConcursosCompanion(
+      topicoId: Value(topicoId),
+      concursoId: Value(concursoId),
+      atualizadoEm: Value(atualizadoEm),
+    );
+  }
+
+  factory TopicoConcurso.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TopicoConcurso(
+      topicoId: serializer.fromJson<String>(json['topicoId']),
+      concursoId: serializer.fromJson<String>(json['concursoId']),
+      atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'topicoId': serializer.toJson<String>(topicoId),
+      'concursoId': serializer.toJson<String>(concursoId),
+      'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
+    };
+  }
+
+  TopicoConcurso copyWith({
+    String? topicoId,
+    String? concursoId,
+    DateTime? atualizadoEm,
+  }) => TopicoConcurso(
+    topicoId: topicoId ?? this.topicoId,
+    concursoId: concursoId ?? this.concursoId,
+    atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+  );
+  TopicoConcurso copyWithCompanion(TopicoConcursosCompanion data) {
+    return TopicoConcurso(
+      topicoId: data.topicoId.present ? data.topicoId.value : this.topicoId,
+      concursoId: data.concursoId.present
+          ? data.concursoId.value
+          : this.concursoId,
+      atualizadoEm: data.atualizadoEm.present
+          ? data.atualizadoEm.value
+          : this.atualizadoEm,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TopicoConcurso(')
+          ..write('topicoId: $topicoId, ')
+          ..write('concursoId: $concursoId, ')
+          ..write('atualizadoEm: $atualizadoEm')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(topicoId, concursoId, atualizadoEm);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TopicoConcurso &&
+          other.topicoId == this.topicoId &&
+          other.concursoId == this.concursoId &&
+          other.atualizadoEm == this.atualizadoEm);
+}
+
+class TopicoConcursosCompanion extends UpdateCompanion<TopicoConcurso> {
+  final Value<String> topicoId;
+  final Value<String> concursoId;
+  final Value<DateTime> atualizadoEm;
+  final Value<int> rowid;
+  const TopicoConcursosCompanion({
+    this.topicoId = const Value.absent(),
+    this.concursoId = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TopicoConcursosCompanion.insert({
+    required String topicoId,
+    required String concursoId,
+    this.atualizadoEm = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : topicoId = Value(topicoId),
+       concursoId = Value(concursoId);
+  static Insertable<TopicoConcurso> custom({
+    Expression<String>? topicoId,
+    Expression<String>? concursoId,
+    Expression<DateTime>? atualizadoEm,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (topicoId != null) 'topico_id': topicoId,
+      if (concursoId != null) 'concurso_id': concursoId,
+      if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TopicoConcursosCompanion copyWith({
+    Value<String>? topicoId,
+    Value<String>? concursoId,
+    Value<DateTime>? atualizadoEm,
+    Value<int>? rowid,
+  }) {
+    return TopicoConcursosCompanion(
+      topicoId: topicoId ?? this.topicoId,
+      concursoId: concursoId ?? this.concursoId,
+      atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (topicoId.present) {
+      map['topico_id'] = Variable<String>(topicoId.value);
+    }
+    if (concursoId.present) {
+      map['concurso_id'] = Variable<String>(concursoId.value);
+    }
+    if (atualizadoEm.present) {
+      map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TopicoConcursosCompanion(')
+          ..write('topicoId: $topicoId, ')
+          ..write('concursoId: $concursoId, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -4882,6 +5162,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $SessoesTable sessoes = $SessoesTable(this);
   late final $AnexosTable anexos = $AnexosTable(this);
   late final $FlashcardsTable flashcards = $FlashcardsTable(this);
+  late final $TopicoConcursosTable topicoConcursos = $TopicoConcursosTable(
+    this,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -4896,6 +5179,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     sessoes,
     anexos,
     flashcards,
+    topicoConcursos,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -4969,6 +5253,20 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       ),
       result: [TableUpdate('flashcards', kind: UpdateKind.delete)],
     ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'topicos',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('topico_concursos', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'concursos',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('topico_concursos', kind: UpdateKind.delete)],
+    ),
   ]);
 }
 
@@ -5025,6 +5323,26 @@ final class $$ConcursosTableReferences
 
     final cache = $_typedResult.readTableOrNull(
       _concursoMateriasRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$TopicoConcursosTable, List<TopicoConcurso>>
+  _topicoConcursosRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.topicoConcursos,
+    aliasName: 'concursos__id__topico_concursos__concurso_id',
+  );
+
+  $$TopicoConcursosTableProcessedTableManager get topicoConcursosRefs {
+    final manager = $$TopicoConcursosTableTableManager(
+      $_db,
+      $_db.topicoConcursos,
+    ).filter((f) => f.concursoId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _topicoConcursosRefsTable($_db),
     );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -5127,6 +5445,31 @@ class $$ConcursosTableFilterComposer
           }) => $$ConcursoMateriasTableFilterComposer(
             $db: $db,
             $table: $db.concursoMaterias,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> topicoConcursosRefs(
+    Expression<bool> Function($$TopicoConcursosTableFilterComposer f) f,
+  ) {
+    final $$TopicoConcursosTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.topicoConcursos,
+      getReferencedColumn: (t) => t.concursoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TopicoConcursosTableFilterComposer(
+            $db: $db,
+            $table: $db.topicoConcursos,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -5302,6 +5645,31 @@ class $$ConcursosTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> topicoConcursosRefs<T extends Object>(
+    Expression<T> Function($$TopicoConcursosTableAnnotationComposer a) f,
+  ) {
+    final $$TopicoConcursosTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.topicoConcursos,
+      getReferencedColumn: (t) => t.concursoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TopicoConcursosTableAnnotationComposer(
+            $db: $db,
+            $table: $db.topicoConcursos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$ConcursosTableTableManager
@@ -5317,7 +5685,10 @@ class $$ConcursosTableTableManager
           $$ConcursosTableUpdateCompanionBuilder,
           (Concurso, $$ConcursosTableReferences),
           Concurso,
-          PrefetchHooks Function({bool concursoMateriasRefs})
+          PrefetchHooks Function({
+            bool concursoMateriasRefs,
+            bool topicoConcursosRefs,
+          })
         > {
   $$ConcursosTableTableManager(_$AppDatabase db, $ConcursosTable table)
     : super(
@@ -5406,38 +5777,63 @@ class $$ConcursosTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({concursoMateriasRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [
-                if (concursoMateriasRefs) db.concursoMaterias,
-              ],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (concursoMateriasRefs)
-                    await $_getPrefetchedData<
-                      Concurso,
-                      $ConcursosTable,
-                      ConcursoMateria
-                    >(
-                      currentTable: table,
-                      referencedTable: $$ConcursosTableReferences
-                          ._concursoMateriasRefsTable(db),
-                      managerFromTypedResult: (p0) =>
-                          $$ConcursosTableReferences(
-                            db,
-                            table,
-                            p0,
-                          ).concursoMateriasRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.concursoId == item.id),
-                      typedResults: items,
-                    ),
-                ];
+          prefetchHooksCallback:
+              ({concursoMateriasRefs = false, topicoConcursosRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (concursoMateriasRefs) db.concursoMaterias,
+                    if (topicoConcursosRefs) db.topicoConcursos,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (concursoMateriasRefs)
+                        await $_getPrefetchedData<
+                          Concurso,
+                          $ConcursosTable,
+                          ConcursoMateria
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ConcursosTableReferences
+                              ._concursoMateriasRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ConcursosTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).concursoMateriasRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.concursoId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (topicoConcursosRefs)
+                        await $_getPrefetchedData<
+                          Concurso,
+                          $ConcursosTable,
+                          TopicoConcurso
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ConcursosTableReferences
+                              ._topicoConcursosRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ConcursosTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).topicoConcursosRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.concursoId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -5454,7 +5850,10 @@ typedef $$ConcursosTableProcessedTableManager =
       $$ConcursosTableUpdateCompanionBuilder,
       (Concurso, $$ConcursosTableReferences),
       Concurso,
-      PrefetchHooks Function({bool concursoMateriasRefs})
+      PrefetchHooks Function({
+        bool concursoMateriasRefs,
+        bool topicoConcursosRefs,
+      })
     >;
 typedef $$MateriasTableCreateCompanionBuilder = MateriasCompanion Function({
   Value<String> id,
@@ -6634,6 +7033,26 @@ final class $$TopicosTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$TopicoConcursosTable, List<TopicoConcurso>>
+  _topicoConcursosRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.topicoConcursos,
+    aliasName: 'topicos__id__topico_concursos__topico_id',
+  );
+
+  $$TopicoConcursosTableProcessedTableManager get topicoConcursosRefs {
+    final manager = $$TopicoConcursosTableTableManager(
+      $_db,
+      $_db.topicoConcursos,
+    ).filter((f) => f.topicoId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _topicoConcursosRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$TopicosTableFilterComposer
@@ -6812,6 +7231,31 @@ class $$TopicosTableFilterComposer
           }) => $$FlashcardsTableFilterComposer(
             $db: $db,
             $table: $db.flashcards,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> topicoConcursosRefs(
+    Expression<bool> Function($$TopicoConcursosTableFilterComposer f) f,
+  ) {
+    final $$TopicoConcursosTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.topicoConcursos,
+      getReferencedColumn: (t) => t.topicoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TopicoConcursosTableFilterComposer(
+            $db: $db,
+            $table: $db.topicoConcursos,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -7082,6 +7526,31 @@ class $$TopicosTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> topicoConcursosRefs<T extends Object>(
+    Expression<T> Function($$TopicoConcursosTableAnnotationComposer a) f,
+  ) {
+    final $$TopicoConcursosTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.topicoConcursos,
+      getReferencedColumn: (t) => t.topicoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TopicoConcursosTableAnnotationComposer(
+            $db: $db,
+            $table: $db.topicoConcursos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$TopicosTableTableManager
@@ -7104,6 +7573,7 @@ class $$TopicosTableTableManager
             bool sessoesRefs,
             bool anexosRefs,
             bool flashcardsRefs,
+            bool topicoConcursosRefs,
           })
         > {
   $$TopicosTableTableManager(_$AppDatabase db, $TopicosTable table)
@@ -7177,6 +7647,7 @@ class $$TopicosTableTableManager
                 sessoesRefs = false,
                 anexosRefs = false,
                 flashcardsRefs = false,
+                topicoConcursosRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -7185,6 +7656,7 @@ class $$TopicosTableTableManager
                     if (sessoesRefs) db.sessoes,
                     if (anexosRefs) db.anexos,
                     if (flashcardsRefs) db.flashcards,
+                    if (topicoConcursosRefs) db.topicoConcursos,
                   ],
                   addJoins:
                       <
@@ -7309,6 +7781,27 @@ class $$TopicosTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (topicoConcursosRefs)
+                        await $_getPrefetchedData<
+                          Topico,
+                          $TopicosTable,
+                          TopicoConcurso
+                        >(
+                          currentTable: table,
+                          referencedTable: $$TopicosTableReferences
+                              ._topicoConcursosRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$TopicosTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).topicoConcursosRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.topicoId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -7336,6 +7829,7 @@ typedef $$TopicosTableProcessedTableManager =
         bool sessoesRefs,
         bool anexosRefs,
         bool flashcardsRefs,
+        bool topicoConcursosRefs,
       })
     >;
 typedef $$RevisoesTableCreateCompanionBuilder = RevisoesCompanion Function({
@@ -9352,6 +9846,376 @@ typedef $$FlashcardsTableProcessedTableManager =
       Flashcard,
       PrefetchHooks Function({bool topicoId})
     >;
+typedef $$TopicoConcursosTableCreateCompanionBuilder =
+    TopicoConcursosCompanion Function({
+      required String topicoId,
+      required String concursoId,
+      Value<DateTime> atualizadoEm,
+      Value<int> rowid,
+    });
+typedef $$TopicoConcursosTableUpdateCompanionBuilder =
+    TopicoConcursosCompanion Function({
+      Value<String> topicoId,
+      Value<String> concursoId,
+      Value<DateTime> atualizadoEm,
+      Value<int> rowid,
+    });
+
+final class $$TopicoConcursosTableReferences
+    extends
+        BaseReferences<_$AppDatabase, $TopicoConcursosTable, TopicoConcurso> {
+  $$TopicoConcursosTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $TopicosTable _topicoIdTable(_$AppDatabase db) =>
+      db.topicos.createAlias('topico_concursos__topico_id__topicos__id');
+
+  $$TopicosTableProcessedTableManager get topicoId {
+    final $_column = $_itemColumn<String>('topico_id')!;
+
+    final manager = $$TopicosTableTableManager(
+      $_db,
+      $_db.topicos,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_topicoIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $ConcursosTable _concursoIdTable(_$AppDatabase db) =>
+      db.concursos.createAlias('topico_concursos__concurso_id__concursos__id');
+
+  $$ConcursosTableProcessedTableManager get concursoId {
+    final $_column = $_itemColumn<String>('concurso_id')!;
+
+    final manager = $$ConcursosTableTableManager(
+      $_db,
+      $_db.concursos,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_concursoIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$TopicoConcursosTableFilterComposer
+    extends Composer<_$AppDatabase, $TopicoConcursosTable> {
+  $$TopicoConcursosTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$TopicosTableFilterComposer get topicoId {
+    final $$TopicosTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.topicoId,
+      referencedTable: $db.topicos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TopicosTableFilterComposer(
+            $db: $db,
+            $table: $db.topicos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ConcursosTableFilterComposer get concursoId {
+    final $$ConcursosTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.concursoId,
+      referencedTable: $db.concursos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ConcursosTableFilterComposer(
+            $db: $db,
+            $table: $db.concursos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TopicoConcursosTableOrderingComposer
+    extends Composer<_$AppDatabase, $TopicoConcursosTable> {
+  $$TopicoConcursosTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$TopicosTableOrderingComposer get topicoId {
+    final $$TopicosTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.topicoId,
+      referencedTable: $db.topicos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TopicosTableOrderingComposer(
+            $db: $db,
+            $table: $db.topicos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ConcursosTableOrderingComposer get concursoId {
+    final $$ConcursosTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.concursoId,
+      referencedTable: $db.concursos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ConcursosTableOrderingComposer(
+            $db: $db,
+            $table: $db.concursos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TopicoConcursosTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TopicoConcursosTable> {
+  $$TopicoConcursosTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => column,
+  );
+
+  $$TopicosTableAnnotationComposer get topicoId {
+    final $$TopicosTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.topicoId,
+      referencedTable: $db.topicos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TopicosTableAnnotationComposer(
+            $db: $db,
+            $table: $db.topicos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ConcursosTableAnnotationComposer get concursoId {
+    final $$ConcursosTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.concursoId,
+      referencedTable: $db.concursos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ConcursosTableAnnotationComposer(
+            $db: $db,
+            $table: $db.concursos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TopicoConcursosTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TopicoConcursosTable,
+          TopicoConcurso,
+          $$TopicoConcursosTableFilterComposer,
+          $$TopicoConcursosTableOrderingComposer,
+          $$TopicoConcursosTableAnnotationComposer,
+          $$TopicoConcursosTableCreateCompanionBuilder,
+          $$TopicoConcursosTableUpdateCompanionBuilder,
+          (TopicoConcurso, $$TopicoConcursosTableReferences),
+          TopicoConcurso,
+          PrefetchHooks Function({bool topicoId, bool concursoId})
+        > {
+  $$TopicoConcursosTableTableManager(
+    _$AppDatabase db,
+    $TopicoConcursosTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TopicoConcursosTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TopicoConcursosTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TopicoConcursosTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> topicoId = const Value.absent(),
+                Value<String> concursoId = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TopicoConcursosCompanion(
+                topicoId: topicoId,
+                concursoId: concursoId,
+                atualizadoEm: atualizadoEm,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String topicoId,
+                required String concursoId,
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TopicoConcursosCompanion.insert(
+                topicoId: topicoId,
+                concursoId: concursoId,
+                atualizadoEm: atualizadoEm,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$TopicoConcursosTable, TopicoConcurso>(table),
+                  $$TopicoConcursosTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({topicoId = false, concursoId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (topicoId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.topicoId,
+                        referencedTable: $$TopicoConcursosTableReferences
+                            ._topicoIdTable(db),
+                        referencedColumn: $$TopicoConcursosTableReferences
+                            ._topicoIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+                    if (concursoId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.concursoId,
+                        referencedTable: $$TopicoConcursosTableReferences
+                            ._concursoIdTable(db),
+                        referencedColumn: $$TopicoConcursosTableReferences
+                            ._concursoIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$TopicoConcursosTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TopicoConcursosTable,
+      TopicoConcurso,
+      $$TopicoConcursosTableFilterComposer,
+      $$TopicoConcursosTableOrderingComposer,
+      $$TopicoConcursosTableAnnotationComposer,
+      $$TopicoConcursosTableCreateCompanionBuilder,
+      $$TopicoConcursosTableUpdateCompanionBuilder,
+      (TopicoConcurso, $$TopicoConcursosTableReferences),
+      TopicoConcurso,
+      PrefetchHooks Function({bool topicoId, bool concursoId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -9374,4 +10238,6 @@ class $AppDatabaseManager {
       $$AnexosTableTableManager(_db, _db.anexos);
   $$FlashcardsTableTableManager get flashcards =>
       $$FlashcardsTableTableManager(_db, _db.flashcards);
+  $$TopicoConcursosTableTableManager get topicoConcursos =>
+      $$TopicoConcursosTableTableManager(_db, _db.topicoConcursos);
 }

@@ -23,6 +23,7 @@ const tabelasSincronizadas = [
   TabelaSinc('materias', ['id']),
   TabelaSinc('concurso_materias', ['concurso_id', 'materia_id']),
   TabelaSinc('topicos', ['id']),
+  TabelaSinc('topico_concursos', ['topico_id', 'concurso_id']),
   TabelaSinc('revisoes', ['id']),
   TabelaSinc('questoes', ['id']),
   TabelaSinc('sessoes', ['id']),
