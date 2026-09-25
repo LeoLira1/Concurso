@@ -168,9 +168,10 @@ NoMapa montarArvore({
       folhas = 1;
       vistas = t.visto ? 1 : 0;
     }
+    // Estudado (tempo registrado) mas ainda não marcado conta como "em parte".
     final visto = t.visto || (folhas > 0 && vistas == folhas)
         ? Visto.sim
-        : vistas > 0
+        : vistas > 0 || soma.minutos > 0
         ? Visto.parte
         : Visto.nao;
     final propria = info[t.id]?.proximaRevisao;

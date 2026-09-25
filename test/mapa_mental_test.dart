@@ -391,4 +391,34 @@ void main() {
     expect(m.progresso, closeTo(2 / 4, 1e-9)); // p1, q de p1, p2, q, r
     expect(m.folhas, 4);
   });
+
+  test('tópico com tempo estudado e não marcado fica "em parte"', () {
+    final arvore = montarArvore(
+      rotuloRaiz: 'X',
+      materias: const [MateriaMapa('m', 'M', 0xFF3F51B5)],
+      topicos: const [
+        TopicoMapa(
+          id: 'a',
+          materiaId: 'm',
+          paiId: null,
+          nome: 'A',
+          visto: false,
+        ),
+        TopicoMapa(
+          id: 'b',
+          materiaId: 'm',
+          paiId: null,
+          nome: 'B',
+          visto: false,
+        ),
+      ],
+      info: {'a': InfoTopico(minutos: 160)},
+      hoje: DateTime(2026, 9, 25),
+    );
+    final m = arvore.filhos.single;
+    expect(m.filhos[0].visto, Visto.parte);
+    expect(m.filhos[1].visto, Visto.nao);
+    // O progresso da matéria continua contando só os marcados como vistos.
+    expect(m.progresso, 0);
+  });
 }
