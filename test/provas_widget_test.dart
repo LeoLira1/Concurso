@@ -204,6 +204,10 @@ void main() {
     );
     await assentar(t);
     expect(find.textContaining('12:0'), findsNothing); // relógio corre
+    // O sorteio é aleatório: um enunciado longo deixa a alternativa fora da
+    // tela, e o toque erraria o alvo.
+    await t.ensureVisible(find.byKey(const ValueKey('alt-A')));
+    await t.pump();
     await t.tap(find.byKey(const ValueKey('alt-A')));
     await t.pump();
     expect(find.textContaining('Certa!'), findsNothing);
