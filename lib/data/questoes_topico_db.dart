@@ -121,6 +121,19 @@ extension QuestoesTopicoDb on AppDatabase {
     );
   }
 
+  /// Total de questões do banco por tópico (só as do próprio tópico, sem
+  /// os subtópicos), para o indicador do mapa mental.
+  Stream<Map<String, int>> watchQuestoesPorTopico() =>
+      customSelect(
+        'SELECT topico_id AS id, COUNT(*) AS n FROM questoes_topico '
+        'GROUP BY topico_id',
+        readsFrom: {questoesTopico},
+      ).watch().map(
+        (rows) => {
+          for (final r in rows) r.read<String>('id'): r.read<int>('n'),
+        },
+      );
+
   Future<List<QuestaoTopicoInfo>> _infos(List<String> ids) async {
     if (ids.isEmpty) return [];
     final qs = {

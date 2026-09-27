@@ -1,6 +1,7 @@
 // Gera capturas de tela do app com dados de exemplo.
 // Uso: flutter test tool/capturas_test.dart --update-goldens
 // As imagens vão para tool/capturas/.
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:drift/drift.dart' hide isNull, isNotNull;
@@ -901,6 +902,27 @@ NOÇÕES DE DIREITO ADMINISTRATIVO: 1 Noções de organização administrativa. 
       );
       await db.marcarVisto(tp('Pronomes').id, true);
       await db.marcarVisto(tp('Crase').id, true);
+      // Banco de questões: o número aparece no canto do nó.
+      for (final (topico, n) in [
+        ('Crase', 12),
+        ('Pronomes', 5),
+        ('Regência nominal e verbal', 3),
+      ]) {
+        await db.importarQuestoesTopico(
+          lerQuestoes(
+            jsonEncode([
+              for (var i = 0; i < n; i++)
+                {
+                  'enunciado': '$topico: questão $i',
+                  'alternativas': {'A': 'sim', 'B': 'não'},
+                  'gabarito': 'A',
+                },
+            ]),
+            materiaPadrao: 'Língua Portuguesa',
+            topicoPadrao: topico,
+          ),
+        );
+      }
     }
   }
 
@@ -961,6 +983,55 @@ NOÇÕES DE DIREITO ADMINISTRATIVO: 1 Noções de organização administrativa. 
     'mapa celular',
     (t) =>
         captura(t, '33_mapa_celular', celular, mapaPort, preparar: dadosMapa),
+  );
+  Future<void> focoAgora(WidgetTester t) =>
+      t.tap(find.byKey(const ValueKey('foco-agora')));
+  Future<void> tocarCrase(WidgetTester t) async {
+    final db = t.element(find.byType(MaterialApp)).read<AppDatabase>();
+    final port = (await t.runAsync(
+      () => db.materiaPorNome('Língua Portuguesa'),
+    ))!;
+    final crase = (await t.runAsync(() => db.watchTopicos(port.id).first))!
+        .firstWhere((x) => x.nome == 'Crase');
+    final estado = t.state<MapaMentalScreenState>(
+      find.byType(MapaMentalScreen),
+    );
+    // ignore: invalid_use_of_visible_for_testing_member
+    await t.tapAt(estado.posicaoGlobal(crase.id)!);
+  }
+
+  testWidgets(
+    'mapa foco agora paisagem',
+    (t) => captura(
+      t,
+      '45_mapa_foco_paisagem',
+      paisagem,
+      mapa,
+      preparar: dadosMapa,
+      antes: focoAgora,
+    ),
+  );
+  testWidgets(
+    'mapa foco agora celular',
+    (t) => captura(
+      t,
+      '45b_mapa_foco_celular',
+      celular,
+      mapa,
+      preparar: dadosMapa,
+      antes: focoAgora,
+    ),
+  );
+  testWidgets(
+    'mapa menu rapido paisagem',
+    (t) => captura(
+      t,
+      '46_mapa_menu_paisagem',
+      paisagem,
+      mapaPort,
+      preparar: dadosMapa,
+      antes: tocarCrase,
+    ),
   );
 
   testWidgets(

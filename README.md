@@ -124,8 +124,7 @@ Menu lateral → "Mapa mental", ou o botão **Mapa mental** no alto da tela de c
 - **Gestos:**
   - pinça para zoom e um dedo para arrastar;
   - botões + e −, **Centralizar** e **Ajustar à tela**;
-  - tocar numa matéria recolhe ou expande os tópicos dela. O "+30" no canto mostra quantos tópicos estão escondidos;
-  - tocar num tópico ou subtópico abre a tela do tópico (resumos, flashcards, "Estudar este tópico");
+  - tocar numa matéria, tópico ou subtópico abre o menu rápido (etapa 11), com recolher/expandir e abrir o tópico. O "+30" no canto mostra quantos tópicos estão escondidos;
   - segurar o dedo num nó mostra o nome completo e um resumo: horas estudadas, % de acerto, próxima revisão e nº de flashcards.
 - **Nada de tabela nova:** o mapa só lê o que já existe. As matérias recolhidas e a legenda aberta/fechada ficam nas preferências do aparelho, fora do sync do Turso.
 
@@ -276,6 +275,52 @@ Uma tela curta com as opções:
 - `lib/screens/pedir_questoes_screen.dart` é a tela. O compartilhamento usa o pacote `share_plus`.
 - Não há tabela nova.
 - Os testes estão em `test/pedido_questoes_test.dart`: nomes exatos, limites de 60/15 itens e de 120 caracteres, a seção de erros, os dados do banco e a tela.
+
+## Etapa 11: mapa mental interativo
+
+Melhorias no mapa mental da etapa 7. O layout continua o mesmo: nenhum nó fica em cima de outro e nenhuma linha cruza um nó.
+
+### Menu rápido
+
+- **Tocar num tópico ou subtópico** abre um menu embaixo da tela com:
+  - **Estudar este tópico**: abre o cronômetro;
+  - **Resolver questões**: mostra quantas são para hoje e o total. Sem nenhuma para hoje, pratica todas;
+  - **Flashcards**: mostra quantos estão para revisar;
+  - **Pedir mais questões** (etapa 10);
+  - **Abrir tópico**: é o que o toque fazia antes.
+- **Tocar numa matéria** abre as mesmas opções no nível da matéria: estudar, resolver, flashcards, pedir mais questões (para a matéria inteira) e **Abrir matéria**. Nesse menu também ficam o **Recolher/Expandir tópicos** (que antes era o toque na matéria) e **Ver só esta matéria**.
+- Segurar o dedo continua mostrando o resumo do nó.
+
+### Indicador de questões
+
+- Cada tópico mostra no canto um **número pequeno** com o total de questões do banco (etapa 8). No tópico, o número soma as questões dos subtópicos.
+- Tópico **sem nenhuma questão** fica com **contorno pontilhado**.
+- As duas coisas estão na legenda recolhível.
+- O número fica dentro da caixa do nó, então o layout não muda.
+
+### Foco agora
+
+O botão **Foco agora** fica no alto do mapa. No celular, só o ícone aparece.
+
+- Ele destaca **no máximo 3 tópicos** do concurso em foco, nesta ordem:
+  1. revisão atrasada (a mais antiga primeiro);
+  2. acerto abaixo de 60% com 10+ questões (o menor primeiro);
+  3. nunca visto (na ordem do edital).
+- Acerto baixo e nunca visto contam só as pontas (o subtópico, ou o tópico sem subtópicos), para não repetir o pai e o filho.
+- O resto do mapa fica **esmaecido**. Os destacados ganham um anel preto, e o caminho deles até a matéria continua visível.
+- O mapa **centraliza e dá zoom no primeiro**. Se ele estiver numa matéria recolhida, ela abre enquanto o foco durar, sem mudar a preferência salva.
+- Embaixo aparece o **motivo** de cada um: "revisão atrasada há 3 dias", "acerto 45%" ou "nunca visto". Tocar num item leva o mapa até ele.
+- Tocar de novo no botão (ou no ✕) volta ao normal.
+- No "Tudo junto", o foco considera só os tópicos do concurso em foco.
+
+### Por dentro
+
+- `escolherFoco` e `TopicoFoco` estão em `lib/logic/mapa_mental.dart`. É lógica pura: recebe a árvore e devolve os tópicos com o motivo.
+- `InfoTopico.questoes` guarda o total do banco. Ele vem de `watchQuestoesPorTopico` (`lib/data/questoes_topico_db.dart`).
+- O desenho do número, do pontilhado e do véu do foco está em `lib/widgets/mapa_painter.dart`.
+- Não há tabela nova.
+- Os testes estão em `test/mapa_foco_test.dart`: a escolha do Foco agora (prioridade, limite de 3, pontas, concurso em foco, textos), o indicador (soma, pontilhado, layout igual, sem sobreposição) e a tela (foco, zoom, menu, legenda).
+- Os dois testes de `test/mapa_mental_widget_test.dart` que tocavam na matéria e no tópico agora passam pelo menu.
 
 ## Colar o conteúdo programático
 
