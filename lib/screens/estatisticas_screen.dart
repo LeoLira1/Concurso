@@ -10,6 +10,7 @@ import '../util/texto.dart';
 import '../widgets/assistir.dart';
 import '../widgets/comuns.dart';
 import '../widgets/grafico_colunas.dart';
+import 'desempenho_screen.dart';
 
 const _verde = Color(0xFF1F9D55);
 
@@ -211,6 +212,15 @@ class _Corpo extends StatelessWidget {
         );
         final acerto = _Cartao(
           titulo: '% de acerto por matéria',
+          acao: TextButton.icon(
+            key: const ValueKey('abrir-desempenho'),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const DesempenhoScreen()),
+            ),
+            icon: const Icon(Icons.query_stats_rounded, size: 20),
+            label: const Text('Por tópico'),
+          ),
           child: _AcertoPorMateria(e: e, materias: materias),
         );
         final provas = _Cartao(

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../data/database.dart';
 import '../screens/ciclo_screen.dart';
 import '../screens/concursos_screen.dart';
+import '../screens/desempenho_screen.dart';
 import '../screens/estatisticas_screen.dart';
 import '../screens/lembretes_screen.dart';
 import '../screens/mapa_mental_screen.dart';
@@ -255,6 +256,19 @@ class _SidebarState extends State<Sidebar> {
                       context,
                       MaterialPageRoute(
                         builder: (_) => const EstatisticasScreen(),
+                      ),
+                    );
+                  },
+                ),
+                _Linha(
+                  icone: Icons.query_stats_rounded,
+                  rotulo: 'Desempenho por tópico',
+                  aoTocar: () {
+                    _fecharDrawer();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const DesempenhoScreen(),
                       ),
                     );
                   },

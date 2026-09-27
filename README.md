@@ -399,6 +399,61 @@ Um mapa em árvore do conteúdo de cada tópico ou subtópico: conceitos, artigo
   - telas de colar (deitado e em pé) e do mapa (detalhe e modo treino).
 - As capturas são a 47 (mapa, treino e celular) e a 48 (prévia).
 
+## Etapa 13: desempenho por tópico
+
+Um painel com o acerto de cada tópico do edital, a tendência e o que revisar primeiro.
+
+### Onde fica
+
+- No **menu lateral**, em **Desempenho por tópico**.
+- Em **Estatísticas**, no cartão "% de acerto por matéria", pelo botão **Por tópico**.
+- Segue o escopo da tela inicial (concurso em foco ou Tudo junto), com filtro por matéria no alto.
+
+### O painel
+
+- **Revise primeiro**: até 5 tópicos, do mais urgente ao menos, cada um com o motivo:
+  - **caiu**: o acerto dos últimos 30 dias ficou 10 pontos ou mais abaixo dos 30 dias anteriores ("caiu 15 pontos em 30 dias");
+  - **acerto baixo**: abaixo de 60% com 10 questões ou mais ("acerto 45% em 20 questões");
+  - **parado**: sem estudar há 3 semanas ou mais ("parado há 25 dias").
+  
+  A ordem é em camadas: primeiro o motivo mais grave (caiu, depois acerto baixo, depois parado), então quem caiu nunca perde a vaga para quem só tem acerto baixo. Depois vem quem tem mais motivos, e por último a gravidade (tamanho da queda, quão baixo está o acerto, há quanto tempo está parado). Tópico nunca estudado fica de fora; ele já aparece no "Foco agora" do mapa mental.
+- **Todos os tópicos**: para cada tópico, a % de acerto, a tendência, o número de questões e o último estudo. No tablet aparece também uma minilinha com o acerto das últimas 8 semanas.
+- A lista pode ser ordenada por **ordem do edital**, **pior acerto**, **maior queda** ou **mais questões**.
+- A tendência sempre vem com ícone e texto (subiu, caiu, estável, sem dados), nunca só com cor.
+- A tendência só é calculada quando as duas janelas de 30 dias têm pelo menos 5 questões cada. O limite de 10 pontos usa a diferença exata: 9,5 pontos é "estável", mesmo aparecendo arredondado como 10.
+
+### O detalhe do tópico
+
+Toque num tópico, ou numa sugestão, para ver:
+
+- o acerto total, o dos últimos 30 dias e o dos 30 dias anteriores;
+- os botões **Resolver questões**, **Estudar** (cronômetro) e **Abrir tópico**;
+- o **acerto por semana** das últimas 12 semanas, em colunas, com a linha de 60% tracejada. Toque ou arraste sobre as colunas para ver a semana e o placar ("Semana de 20/09: 42% (5 de 12)"). O gráfico começa na última semana que teve questões. Há também uma visão em **tabela**;
+- os **subtópicos**, cada um com o seu acerto e a sua tendência.
+
+### De onde vêm os números
+
+- Das sessões de estudo, as mesmas das Estatísticas: o registro manual, o "Resolver questões" do banco (etapa 8) e as respostas das provas (Treino e Simulado), sem contar nada duas vezes.
+- Os subtópicos somam no tópico de cima.
+- Uma sessão só com tempo, sem questões, conta como "último estudo".
+- Não há tabela nova e nada muda no sync.
+
+### Por dentro
+
+- `lib/logic/desempenho.dart`: as contas (janelas, tendência, semanas, sugestões e ordenação). É lógica pura.
+- `lib/screens/desempenho_screen.dart`: o painel, o detalhe, a minilinha e o gráfico semanal.
+- Os testes estão em `test/desempenho_test.dart`:
+  - janelas de 30 dias e seus limites;
+  - subiu, caiu, estável e sem dados;
+  - soma dos subtópicos;
+  - último estudo;
+  - as 12 semanas;
+  - a ordem e os motivos do "Revise primeiro";
+  - a ordenação;
+  - as telas no tablet deitado e no celular (filtro, detalhe e tabela);
+  - o toque nas colunas.
+- As capturas são a 49 (painel no tablet e no celular) e a 50 (detalhe).
+
 ## Colar o conteúdo programático
 
 No edital do concurso, toque em **"Colar edital"**. Com o edital vazio, também aparece um card com esse atalho.
