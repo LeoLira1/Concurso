@@ -416,11 +416,11 @@ Um painel com o acerto de cada tópico do edital, a tendência e o que revisar p
   - **acerto baixo**: abaixo de 60% com 10 questões ou mais ("acerto 45% em 20 questões");
   - **parado**: sem estudar há 3 semanas ou mais ("parado há 25 dias").
   
-  Caiu pesa mais que acerto baixo, e acerto baixo pesa mais que parado. Um tópico com dois motivos soma os dois. Tópico nunca estudado fica de fora; ele já aparece no "Foco agora" do mapa mental.
+  A ordem é em camadas: primeiro o motivo mais grave (caiu, depois acerto baixo, depois parado), então quem caiu nunca perde a vaga para quem só tem acerto baixo. Depois vem quem tem mais motivos, e por último a gravidade (tamanho da queda, quão baixo está o acerto, há quanto tempo está parado). Tópico nunca estudado fica de fora; ele já aparece no "Foco agora" do mapa mental.
 - **Todos os tópicos**: para cada tópico, a % de acerto, a tendência, o número de questões e o último estudo. No tablet aparece também uma minilinha com o acerto das últimas 8 semanas.
 - A lista pode ser ordenada por **ordem do edital**, **pior acerto**, **maior queda** ou **mais questões**.
 - A tendência sempre vem com ícone e texto (subiu, caiu, estável, sem dados), nunca só com cor.
-- A tendência só é calculada quando as duas janelas de 30 dias têm pelo menos 5 questões cada.
+- A tendência só é calculada quando as duas janelas de 30 dias têm pelo menos 5 questões cada. O limite de 10 pontos usa a diferença exata: 9,5 pontos é "estável", mesmo aparecendo arredondado como 10.
 
 ### O detalhe do tópico
 

@@ -82,6 +82,14 @@ void main() {
       expect(pouco.tendencia, Tendencia.semDados);
     });
 
+    test('o limite de 10 pontos usa a diferença exata, não a arredondada', () {
+      // 4/6 (66,7%) → 4/7 (57,1%): 9,52 pontos, arredonda para 10.
+      final d = um([reg('a', 1, 7, 4), reg('a', 40, 6, 4)]);
+      expect(d.variacao, -10); // o texto mostra arredondado
+      expect(d.tendencia, Tendencia.estavel);
+      expect(sugerirRevisao([d]), isEmpty);
+    });
+
     test('subtópicos somam no tópico de cima', () {
       final l = calcularDesempenho(
         [top('p'), top('f1', pai: 'p'), top('f2', pai: 'f1'), top('q')],
@@ -182,6 +190,23 @@ void main() {
       expect(s.first.texto, 'acerto 20% em 10 questões · parado há 31 dias');
       expect(s.map((x) => x.desempenho.topico.id), isNot(contains('t7')));
       expect(s.first.texto, contains(' · '));
+    });
+
+    test('quem caiu nunca perde a vaga para quem só tem acerto baixo', () {
+      // Cinco tópicos a 0% (acerto baixo) e um que caiu exatamente 10
+      // pontos (90% → 80%, acerto bom): o que caiu entra, em 1º.
+      final l = calcularDesempenho(
+        [for (var i = 0; i < 5; i++) top('zero$i'), top('caiu')],
+        [
+          for (var i = 0; i < 5; i++) reg('zero$i', 1, 20, 0),
+          reg('caiu', 1, 10, 8),
+          reg('caiu', 40, 10, 9),
+        ],
+        hoje: hoje,
+      );
+      final s = sugerirRevisao(l);
+      expect(s, hasLength(maximoSugestoes));
+      expect(s.first.desempenho.topico.id, 'caiu');
     });
 
     test('acerto baixo precisa de 10 questões', () {

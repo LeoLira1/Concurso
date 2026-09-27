@@ -113,18 +113,25 @@ class Desempenho {
 
   /// Pontos percentuais de diferença (recente − anterior), quando as duas
   /// janelas têm questões suficientes.
-  int? get variacao {
+  double? get variacaoExata {
     if (recente.feitas < minimoTendencia || anterior.feitas < minimoTendencia) {
       return null;
     }
-    return ((recente.acerto! - anterior.acerto!) * 100).round();
+    return (recente.acerto! - anterior.acerto!) * 100;
   }
 
+  /// [variacaoExata] arredondada, só para mostrar.
+  int? get variacao => variacaoExata?.round();
+
+  /// Subiu/caiu pela diferença exata: 9,52 pontos não vira 10 por causa do
+  /// arredondamento. A folga só absorve o erro do ponto flutuante (80% −
+  /// 90% dá −9,999999999999998).
   Tendencia get tendencia {
-    final v = variacao;
+    final v = variacaoExata;
     if (v == null) return Tendencia.semDados;
-    if (v >= limiarTendencia) return Tendencia.subiu;
-    if (v <= -limiarTendencia) return Tendencia.caiu;
+    const folga = 1e-9;
+    if (v >= limiarTendencia - folga) return Tendencia.subiu;
+    if (v <= -limiarTendencia + folga) return Tendencia.caiu;
     return Tendencia.estavel;
   }
 
@@ -161,7 +168,11 @@ class Desempenho {
 class Sugestao {
   const Sugestao(this.desempenho, this.motivos, this.peso);
   final Desempenho desempenho;
+
+  /// Do mais grave ao menos (a ordem de [MotivoRevisao]).
   final List<MotivoRevisao> motivos;
+
+  /// Gravidade, para desempatar tópicos com os mesmos motivos.
   final double peso;
 
   /// "caiu 15 pontos em 30 dias · acerto 45% em 20 questões".
@@ -258,11 +269,15 @@ List<Desempenho> calcularDesempenho(
   ];
 }
 
-/// "Revise primeiro": até [maximo] tópicos, do mais urgente ao menos.
-/// Caiu vale mais que acerto baixo, que vale mais que parado; dentro de
-/// cada motivo, pesa o tamanho da queda, quão baixo está o acerto e há
-/// quanto tempo está parado. Tópico nunca estudado fica de fora (é o
-/// "nunca visto" do Foco agora, no mapa mental).
+/// "Revise primeiro": até [maximo] tópicos, do mais urgente ao menos,
+/// numa ordem em camadas (antes de cortar em [maximo]):
+/// 1. o motivo mais grave do tópico: caiu > acerto baixo > parado. Quem
+///    caiu nunca perde a vaga para quem só tem acerto baixo;
+/// 2. mais motivos na frente (caiu e está fraco vem antes de só caiu);
+/// 3. a gravidade: o tamanho da queda, quão baixo está o acerto e há
+///    quanto tempo está parado.
+/// Tópico nunca estudado fica de fora (é o "nunca visto" do Foco agora,
+/// no mapa mental).
 List<Sugestao> sugerirRevisao(
   List<Desempenho> lista, {
   int maximo = maximoSugestoes,
@@ -270,22 +285,29 @@ List<Sugestao> sugerirRevisao(
   final r = <Sugestao>[];
   for (final d in lista) {
     final motivos = <MotivoRevisao>[];
-    var peso = 0.0;
+    var gravidade = 0.0;
     if (d.tendencia == Tendencia.caiu) {
       motivos.add(MotivoRevisao.caiu);
-      peso += 3 + (-d.variacao!) / 10;
+      gravidade += -d.variacaoExata! / 100;
     }
     if (d.fraco) {
       motivos.add(MotivoRevisao.fraco);
-      peso += 2 + (acertoFraco - d.acerto!) * 10;
+      gravidade += acertoFraco - d.acerto!;
     }
     if (d.parado) {
       motivos.add(MotivoRevisao.parado);
-      peso += 1 + d.diasSemEstudar! / diasParado;
+      gravidade += d.diasSemEstudar! / 365;
     }
-    if (motivos.isNotEmpty) r.add(Sugestao(d, motivos, peso));
+    if (motivos.isNotEmpty) r.add(Sugestao(d, motivos, gravidade));
   }
-  r.sort((a, b) => b.peso.compareTo(a.peso));
+  // Os motivos já estão na ordem do enum: o primeiro é o mais grave.
+  r.sort((a, b) {
+    final m = a.motivos.first.index.compareTo(b.motivos.first.index);
+    if (m != 0) return m;
+    final n = b.motivos.length.compareTo(a.motivos.length);
+    if (n != 0) return n;
+    return b.peso.compareTo(a.peso);
+  });
   return r.take(maximo).toList();
 }
 
