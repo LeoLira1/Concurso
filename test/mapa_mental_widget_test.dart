@@ -68,7 +68,7 @@ void main() {
     await fechar(t, db);
   });
 
-  testWidgets('tocar na matéria recolhe e guarda nas preferências', (t) async {
+  testWidgets('menu da matéria recolhe e guarda nas preferências', (t) async {
     final db = await abrir(t);
     final port = (await t.runAsync(
       () => db.materiaPorNome('Língua Portuguesa'),
@@ -80,6 +80,10 @@ void main() {
     final antes = estado(t).posicaoGlobal(port.id)!;
     await t.tapAt(antes);
     await assentar(t);
+    expect(find.text('Estudar esta matéria'), findsOneWidget);
+    expect(find.text('Abrir matéria'), findsOneWidget);
+    await t.tap(find.byKey(const ValueKey('menu-recolher')));
+    await assentar(t);
     expect(estado(t).posicaoGlobal(crase.id), isNull);
     // A matéria continua no mesmo lugar da tela.
     final depois = estado(t).posicaoGlobal(port.id)!;
@@ -89,11 +93,14 @@ void main() {
 
     await t.tapAt(depois);
     await assentar(t);
+    expect(find.text('Expandir tópicos'), findsOneWidget);
+    await t.tap(find.byKey(const ValueKey('menu-recolher')));
+    await assentar(t);
     expect(estado(t).posicaoGlobal(crase.id), isNotNull);
     await fechar(t, db);
   });
 
-  testWidgets('segurar mostra o resumo; tocar abre o tópico', (t) async {
+  testWidgets('segurar mostra o resumo; tocar e "Abrir tópico"', (t) async {
     final db = await abrir(t, materia: 'Língua Portuguesa');
     final port = (await t.runAsync(
       () => db.materiaPorNome('Língua Portuguesa'),
@@ -130,6 +137,8 @@ void main() {
     expect(find.text('Horas estudadas'), findsNothing);
 
     await t.tapAt(estado(t).posicaoGlobal(crase.id)!);
+    await assentar(t);
+    await t.tap(find.byKey(const ValueKey('menu-abrir')));
     await assentar(t);
     expect(find.byType(TopicoScreen), findsOneWidget);
     await fechar(t, db);

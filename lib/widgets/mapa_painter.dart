@@ -9,6 +9,12 @@ import '../theme.dart';
 /// Laranja do alerta de % de acerto baixa.
 const corAcertoBaixo = Color(0xFFF08C00);
 
+/// Contorno pontilhado dos tópicos sem nenhuma questão no banco.
+const corSemQuestoes = Color(0xFF8A8A8A);
+
+/// Anel dos tópicos destacados pelo "Foco agora".
+const corFoco = Cores.tinta;
+
 /// Cinza claro dos tópicos ainda não vistos.
 const corNaoVisto = Color(0xFFF0F0F0);
 
@@ -69,6 +75,30 @@ class CacheMapa {
   final ligacoes = <(int, int), Path>{};
   final _textos = <NoPosicionado, TextPainter>{};
   final _porcentagens = <NoPosicionado, TextPainter>{};
+  final _contagens = <NoPosicionado, TextPainter>{};
+  final _tracejados = <NoPosicionado, Path>{};
+
+  /// Número pequeno com o total de questões do banco (tópico + subtópicos).
+  TextPainter contagem(NoPosicionado n) => _contagens.putIfAbsent(
+    n,
+    () => TextPainter(
+      text: TextSpan(
+        text: textoContagem(n.no.info.questoes),
+        style: const TextStyle(
+          fontFamily: 'Roboto',
+          fontSize: 9.5,
+          height: 1,
+          fontWeight: FontWeight.w800,
+          color: Colors.white,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout(),
+  );
+
+  /// Contorno pontilhado do nó (ver [tracejar]).
+  Path tracejado(NoPosicionado n, RRect rr) =>
+      _tracejados.putIfAbsent(n, () => tracejar(Path()..addRRect(rr)));
 
   TextPainter texto(NoPosicionado n, double largura, Color cor, int linhas) {
     return _textos.putIfAbsent(n, () {
@@ -120,19 +150,60 @@ class CacheMapa {
     for (final t in _porcentagens.values) {
       t.dispose();
     }
+    for (final t in _contagens.values) {
+      t.dispose();
+    }
     _textos.clear();
     _porcentagens.clear();
+    _contagens.clear();
+    _tracejados.clear();
   }
 }
 
+/// "12", "99+".
+String textoContagem(int n) => n > 99 ? '99+' : '$n';
+
+/// Traços de [comprimento] com [vao] entre eles, ao longo de [p].
+Path tracejar(Path p, {double comprimento = 4, double vao = 3}) {
+  final out = Path();
+  for (final m in p.computeMetrics()) {
+    for (var d = 0.0; d < m.length; d += comprimento + vao) {
+      out.addPath(
+        m.extractPath(d, math.min(d + comprimento, m.length)),
+        Offset.zero,
+      );
+    }
+  }
+  return out;
+}
+
+/// Tópicos destacados pelo "Foco agora" e o caminho deles até o centro.
+class DestaqueMapa {
+  DestaqueMapa(LayoutMapa layout, Iterable<String> ids) : ids = ids.toSet() {
+    for (final id in this.ids) {
+      for (NoPosicionado? n = layout.porId(id); n != null; n = n.pai) {
+        caminho.add(n);
+      }
+    }
+  }
+
+  final Set<String> ids;
+
+  /// Os destacados e os nós acima deles (ficam sem esmaecer).
+  final caminho = <NoPosicionado>{};
+}
+
 class MapaPainter extends CustomPainter {
-  MapaPainter({required this.cache, required this.limite})
+  MapaPainter({required this.cache, required this.limite, this.destaque})
     : super(repaint: limite);
 
   final CacheMapa cache;
 
   /// Menor fonte desenhada (ver [limiteFonte]).
   final ValueListenable<double> limite;
+
+  /// "Foco agora": o resto do mapa fica esmaecido.
+  final DestaqueMapa? destaque;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -155,6 +226,39 @@ class MapaPainter extends CustomPainter {
     final minFonte = limite.value;
     for (final n in cache.layout.nos) {
       _no(canvas, n, n.retangulo.shift(origem), fonteDoNo(n) >= minFonte);
+    }
+
+    final d = destaque;
+    if (d == null) return;
+    // Véu branco sobre tudo; depois, o caminho dos destacados por cima.
+    canvas.drawRect(
+      Offset.zero & size,
+      Paint()..color = Cores.fundo.withValues(alpha: 0.78),
+    );
+    for (final l in cache.layout.ligacoes) {
+      if (!d.caminho.contains(l.filho)) continue;
+      final path = Path()
+        ..addPolygon([for (final p in l.pontos) p + origem], false);
+      canvas.drawPath(
+        path,
+        linha
+          ..color = Color(l.filho.no.cor).withValues(alpha: 0.9)
+          ..strokeWidth = l.filho.profundidade <= 1 ? 3.5 : 2.4,
+      );
+    }
+    for (final n in cache.layout.nos) {
+      if (!d.caminho.contains(n)) continue;
+      final r = n.retangulo.shift(origem);
+      _no(canvas, n, r, fonteDoNo(n) >= minFonte);
+      if (d.ids.contains(n.no.id)) {
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(r.inflate(6), const Radius.circular(20)),
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 3
+            ..color = corFoco,
+        );
+      }
     }
   }
 
@@ -257,7 +361,7 @@ class MapaPainter extends CustomPainter {
           ..color = corAcertoBaixo
           ..strokeWidth = 3.5,
       );
-    } else if (no.visto == Visto.nao) {
+    } else if (no.visto == Visto.nao && no.info.questoes > 0) {
       canvas.drawRRect(
         rr,
         borda
@@ -265,7 +369,39 @@ class MapaPainter extends CustomPainter {
           ..strokeWidth = 1,
       );
     }
-    if (comTexto) _texto(canvas, n, r.deflate(8), tinta, 2);
+    // Sem nenhuma questão no banco: contorno pontilhado; com questões, o
+    // número no canto (dentro da caixa, para não mexer no layout).
+    if (no.info.questoes == 0) {
+      canvas.drawPath(
+        cache.tracejado(n, rr),
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5
+          ..color = corSemQuestoes,
+      );
+      if (comTexto) _texto(canvas, n, r.deflate(8), tinta, 2);
+      return;
+    }
+    if (!comTexto) return;
+    final tp = cache.contagem(n);
+    final pilula = Rect.fromLTWH(
+      r.right - 5 - math.max(15, tp.width + 8),
+      r.top + 4,
+      math.max(15, tp.width + 8),
+      14,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(pilula, const Radius.circular(7)),
+      Paint()..color = Cores.tinta.withValues(alpha: 0.72),
+    );
+    tp.paint(canvas, pilula.center - Offset(tp.width / 2, tp.height / 2));
+    _texto(
+      canvas,
+      n,
+      Rect.fromLTRB(r.left + 8, r.top + 8, pilula.left - 2, r.bottom - 8),
+      tinta,
+      2,
+    );
   }
 
   void _texto(
@@ -312,7 +448,7 @@ class MapaPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(MapaPainter old) =>
-      old.cache != cache || old.limite != limite;
+      old.cache != cache || old.limite != limite || old.destaque != destaque;
 }
 
 /// Com o mapa afastado, o texto das matérias fica pequeno demais e some.

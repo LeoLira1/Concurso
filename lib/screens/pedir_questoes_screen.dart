@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../data/database.dart';
 import '../data/pedido_db.dart';
+import '../logic/mapa_conteudo.dart' show limiteNos;
 import '../logic/pedido_questoes.dart';
 import '../theme.dart';
 
@@ -74,10 +75,14 @@ class _PedirQuestoesScreenState extends State<PedirQuestoesScreen> {
     await Clipboard.setData(ClipboardData(text: _texto.text));
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
+      SnackBar(
         content: Text(
           'Pedido copiado. Cole no chat do Claude e traga a resposta em '
-          '"Colar questões".',
+          '"${switch (_tipo) {
+            TipoPedido.mapa => 'Colar mapa',
+            TipoPedido.flashcards => 'Colar flashcards',
+            _ => 'Colar questões',
+          }}".',
         ),
       ),
     );
@@ -145,31 +150,48 @@ class _PedirQuestoesScreenState extends State<PedirQuestoesScreen> {
           style: const TextStyle(fontSize: 15, color: Cores.tintaSuave),
         ),
         const SizedBox(height: 18),
-        _grupo<int>(
-          'Quantidade',
-          [for (final n in quantidadesPedido) (n, '$n')],
-          _quantidade,
-          (v) => _quantidade = v,
-        ),
         _grupo<TipoPedido>(
           'O que pedir',
-          const [
+          [
             (TipoPedido.questoes, 'Questões'),
             (TipoPedido.flashcards, 'Flashcards'),
             (TipoPedido.ambos, 'Os dois'),
+            // Um mapa por tópico: só no pedido do tópico.
+            if (widget.topico != null) (TipoPedido.mapa, 'Mapa do conteúdo'),
           ],
           _tipo,
           (v) => _tipo = v,
         ),
-        _grupo<FocoPedido>(
-          'Foco',
-          const [
-            (FocoPedido.equilibrado, 'Equilibrado'),
-            (FocoPedido.erros, 'Reforçar meus erros'),
-          ],
-          _foco,
-          (v) => _foco = v,
-        ),
+        if (_tipo == TipoPedido.mapa)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 18),
+            child: Text(
+              _contexto?.mapaAtual == null
+                  ? 'Pede um mapa novo (até $limiteNos nós). A resposta vai '
+                        'em "Colar mapa".'
+                  : 'O tópico já tem mapa: o pedido lista os nós atuais e '
+                        'pede para ampliar sem repetir. A resposta vai em '
+                        '"Colar mapa" e substitui o atual.',
+              style: const TextStyle(fontSize: 14, color: Cores.tintaSuave),
+            ),
+          )
+        else ...[
+          _grupo<int>(
+            'Quantidade',
+            [for (final n in quantidadesPedido) (n, '$n')],
+            _quantidade,
+            (v) => _quantidade = v,
+          ),
+          _grupo<FocoPedido>(
+            'Foco',
+            const [
+              (FocoPedido.equilibrado, 'Equilibrado'),
+              (FocoPedido.erros, 'Reforçar meus erros'),
+            ],
+            _foco,
+            (v) => _foco = v,
+          ),
+        ],
         const Text(
           'Mudar uma opção refaz o texto.',
           style: TextStyle(fontSize: 13, color: Cores.tintaSuave),

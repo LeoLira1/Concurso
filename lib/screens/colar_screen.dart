@@ -229,7 +229,7 @@ class _ColarScreenState<T extends ItemColado> extends State<ColarScreen<T>> {
       body: LayoutBuilder(
         builder: (context, box) {
           final deitado = box.maxWidth >= 900 && box.maxWidth > box.maxHeight;
-          final entrada = _Entrada(
+          final entrada = EntradaColagem(
             tipo: _tipo,
             controller: _texto,
             aoColar: _colar,
@@ -242,7 +242,7 @@ class _ColarScreenState<T extends ItemColado> extends State<ColarScreen<T>> {
             expandir: deitado,
           );
           final previa = l == null
-              ? _SemPrevia(tipo: _tipo)
+              ? SemPreviaColagem(tipo: _tipo)
               : _Previa<T>(tipo: _tipo, leitura: l, destinos: _destinos);
           if (deitado) {
             return Row(
@@ -273,8 +273,9 @@ class _ColarScreenState<T extends ItemColado> extends State<ColarScreen<T>> {
   }
 }
 
-class _Entrada extends StatelessWidget {
-  const _Entrada({
+class EntradaColagem extends StatelessWidget {
+  const EntradaColagem({
+    super.key,
     required this.tipo,
     required this.controller,
     required this.aoColar,
@@ -344,8 +345,8 @@ class _Entrada extends StatelessWidget {
   }
 }
 
-class _SemPrevia extends StatelessWidget {
-  const _SemPrevia({required this.tipo});
+class SemPreviaColagem extends StatelessWidget {
+  const SemPreviaColagem({super.key, required this.tipo});
   final TipoColagem tipo;
 
   @override
@@ -494,38 +495,7 @@ class _Grupo<T extends ItemColado> extends StatelessWidget {
             subtopico.isEmpty ? topico : '$topico › $subtopico',
             style: Theme.of(context).textTheme.titleMedium,
           ),
-          if (d != null &&
-              (d.materiaNova ||
-                  d.topicoNovo ||
-                  d.subtopicoNovo ||
-                  d.entraNoEdital)) ...[
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                if (d.materiaNova) const Selo('Matéria nova', cor: corAviso),
-                if (d.topicoNovo)
-                  const Selo(
-                    'Tópico novo no edital',
-                    cor: corAviso,
-                    icone: Icons.add_rounded,
-                  ),
-                if (d.subtopicoNovo)
-                  const Selo(
-                    'Subtópico novo',
-                    cor: corAviso,
-                    icone: Icons.add_rounded,
-                  ),
-                if (d.entraNoEdital)
-                  const Selo(
-                    'Entra no edital do concurso',
-                    cor: corAviso,
-                    icone: Icons.link_rounded,
-                  ),
-              ],
-            ),
-          ],
+          if (d != null) SelosDestino(d),
           const SizedBox(height: 10),
           for (final q in itens) _Linha<T>(tipo: tipo, item: q),
         ],
@@ -578,6 +548,52 @@ class _Linha<T extends ItemColado> extends StatelessWidget {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Selos do destino na prévia: matéria nova, tópico novo, subtópico novo,
+/// entra no edital.
+class SelosDestino extends StatelessWidget {
+  const SelosDestino(this.destino, {super.key});
+  final DestinoColagem destino;
+
+  @override
+  Widget build(BuildContext context) {
+    final d = destino;
+    if (!(d.materiaNova ||
+        d.topicoNovo ||
+        d.subtopicoNovo ||
+        d.entraNoEdital)) {
+      return const SizedBox.shrink();
+    }
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          if (d.materiaNova) const Selo('Matéria nova', cor: corAviso),
+          if (d.topicoNovo)
+            const Selo(
+              'Tópico novo no edital',
+              cor: corAviso,
+              icone: Icons.add_rounded,
+            ),
+          if (d.subtopicoNovo)
+            const Selo(
+              'Subtópico novo',
+              cor: corAviso,
+              icone: Icons.add_rounded,
+            ),
+          if (d.entraNoEdital)
+            const Selo(
+              'Entra no edital do concurso',
+              cor: corAviso,
+              icone: Icons.link_rounded,
+            ),
         ],
       ),
     );

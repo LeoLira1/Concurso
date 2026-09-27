@@ -7,6 +7,7 @@ import '../widgets/assistir.dart';
 import '../widgets/comuns.dart';
 import '../widgets/questoes_topico.dart';
 import 'colar_flashcards_screen.dart';
+import 'colar_mapa_screen.dart';
 import 'flashcards_screen.dart';
 import 'mapa_mental_screen.dart';
 import 'topico_screen.dart';
@@ -91,7 +92,7 @@ class MateriaScreen extends StatelessWidget {
               final folhas = [for (final t in raiz) ...arvore.folhas(t)];
               final vistos = folhas.where((t) => t.visto).length;
               final p = folhas.isEmpty ? 0.0 : vistos / folhas.length;
-              return Assistir<Map<String, (int, int)>>(
+              return Assistir<Map<String, (int, int, bool)>>(
                 chave: materiaId,
                 stream: () => db.watchContagemExtras(materiaId),
                 builder: (context, extras) => Center(
@@ -292,8 +293,8 @@ class _NoTopico extends StatelessWidget {
   final int nivel;
   final int? indiceRaiz;
 
-  /// (anexos, flashcards) por tópico.
-  final Map<String, (int, int)> extras;
+  /// (anexos, flashcards, tem mapa do conteúdo) por tópico.
+  final Map<String, (int, int, bool)> extras;
 
   static const _maxNivel = 2;
 
@@ -329,7 +330,7 @@ class _NoTopico extends StatelessWidget {
       }
     }
 
-    final (nAnexos, nCartoes) = extras[topico.id] ?? (0, 0);
+    final (nAnexos, nCartoes, temMapa) = extras[topico.id] ?? (0, 0, false);
     final linha = InkWell(
       onTap: () => Navigator.push(
         context,
@@ -365,6 +366,19 @@ class _NoTopico extends StatelessWidget {
             ),
             if (nAnexos > 0) _Contagem(Icons.attach_file_rounded, nAnexos),
             if (nCartoes > 0) _Contagem(Icons.style_outlined, nCartoes),
+            if (temMapa)
+              const Padding(
+                padding: EdgeInsets.only(left: 10),
+                child: Tooltip(
+                  message: 'Tem mapa do conteúdo',
+                  child: Icon(
+                    Icons.account_tree_outlined,
+                    key: ValueKey('tem-mapa'),
+                    size: 17,
+                    color: Cores.tintaSuave,
+                  ),
+                ),
+              ),
             if (filhos.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(left: 8),
@@ -550,6 +564,16 @@ class _AtalhoFlashcards extends StatelessWidget {
                 icone: Icons.content_paste_rounded,
                 rotulo: 'Colar flashcards',
                 aoTocar: () => abrirColarFlashcards(
+                  context,
+                  materia: materia,
+                  concursoId: concursoId,
+                ),
+              ),
+              Pilula(
+                key: const ValueKey('colar-mapa'),
+                icone: Icons.account_tree_outlined,
+                rotulo: 'Colar mapa',
+                aoTocar: () => abrirColarMapa(
                   context,
                   materia: materia,
                   concursoId: concursoId,

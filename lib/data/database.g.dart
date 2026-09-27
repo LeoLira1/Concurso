@@ -8889,6 +8889,416 @@ class QuestoesTopicoCompanion extends UpdateCompanion<QuestaoTopico> {
   }
 }
 
+class $MapasConteudoTable extends MapasConteudo
+    with TableInfo<$MapasConteudoTable, MapaConteudo> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MapasConteudoTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    clientDefault: novoId,
+  );
+  static const VerificationMeta _atualizadoEmMeta = const VerificationMeta(
+    'atualizadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> atualizadoEm = GeneratedColumn<DateTime>(
+    'atualizado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _topicoIdMeta = const VerificationMeta(
+    'topicoId',
+  );
+  @override
+  late final GeneratedColumn<String> topicoId = GeneratedColumn<String>(
+    'topico_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES topicos (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _tituloMeta = const VerificationMeta('titulo');
+  @override
+  late final GeneratedColumn<String> titulo = GeneratedColumn<String>(
+    'titulo',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nosMeta = const VerificationMeta('nos');
+  @override
+  late final GeneratedColumn<String> nos = GeneratedColumn<String>(
+    'nos',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _criadoEmMeta = const VerificationMeta(
+    'criadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> criadoEm = GeneratedColumn<DateTime>(
+    'criado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    atualizadoEm,
+    topicoId,
+    titulo,
+    nos,
+    criadoEm,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'mapas_conteudo';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<MapaConteudo> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('atualizado_em')) {
+      context.handle(
+        _atualizadoEmMeta,
+        atualizadoEm.isAcceptableOrUnknown(
+          data['atualizado_em']!,
+          _atualizadoEmMeta,
+        ),
+      );
+    }
+    if (data.containsKey('topico_id')) {
+      context.handle(
+        _topicoIdMeta,
+        topicoId.isAcceptableOrUnknown(data['topico_id']!, _topicoIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_topicoIdMeta);
+    }
+    if (data.containsKey('titulo')) {
+      context.handle(
+        _tituloMeta,
+        titulo.isAcceptableOrUnknown(data['titulo']!, _tituloMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_tituloMeta);
+    }
+    if (data.containsKey('nos')) {
+      context.handle(
+        _nosMeta,
+        nos.isAcceptableOrUnknown(data['nos']!, _nosMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nosMeta);
+    }
+    if (data.containsKey('criado_em')) {
+      context.handle(
+        _criadoEmMeta,
+        criadoEm.isAcceptableOrUnknown(data['criado_em']!, _criadoEmMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  MapaConteudo map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return MapaConteudo(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      atualizadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}atualizado_em'],
+      )!,
+      topicoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}topico_id'],
+      )!,
+      titulo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}titulo'],
+      )!,
+      nos: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}nos'],
+      )!,
+      criadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}criado_em'],
+      )!,
+    );
+  }
+
+  @override
+  $MapasConteudoTable createAlias(String alias) {
+    return $MapasConteudoTable(attachedDatabase, alias);
+  }
+}
+
+class MapaConteudo extends DataClass implements Insertable<MapaConteudo> {
+  final String id;
+  final DateTime atualizadoEm;
+  final String topicoId;
+  final String titulo;
+
+  /// Árvore dos nós em JSON (texto, detalhe, tipo, filhos).
+  final String nos;
+  final DateTime criadoEm;
+  const MapaConteudo({
+    required this.id,
+    required this.atualizadoEm,
+    required this.topicoId,
+    required this.titulo,
+    required this.nos,
+    required this.criadoEm,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
+    map['topico_id'] = Variable<String>(topicoId);
+    map['titulo'] = Variable<String>(titulo);
+    map['nos'] = Variable<String>(nos);
+    map['criado_em'] = Variable<DateTime>(criadoEm);
+    return map;
+  }
+
+  MapasConteudoCompanion toCompanion(bool nullToAbsent) {
+    return MapasConteudoCompanion(
+      id: Value(id),
+      atualizadoEm: Value(atualizadoEm),
+      topicoId: Value(topicoId),
+      titulo: Value(titulo),
+      nos: Value(nos),
+      criadoEm: Value(criadoEm),
+    );
+  }
+
+  factory MapaConteudo.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return MapaConteudo(
+      id: serializer.fromJson<String>(json['id']),
+      atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
+      topicoId: serializer.fromJson<String>(json['topicoId']),
+      titulo: serializer.fromJson<String>(json['titulo']),
+      nos: serializer.fromJson<String>(json['nos']),
+      criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
+      'topicoId': serializer.toJson<String>(topicoId),
+      'titulo': serializer.toJson<String>(titulo),
+      'nos': serializer.toJson<String>(nos),
+      'criadoEm': serializer.toJson<DateTime>(criadoEm),
+    };
+  }
+
+  MapaConteudo copyWith({
+    String? id,
+    DateTime? atualizadoEm,
+    String? topicoId,
+    String? titulo,
+    String? nos,
+    DateTime? criadoEm,
+  }) => MapaConteudo(
+    id: id ?? this.id,
+    atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+    topicoId: topicoId ?? this.topicoId,
+    titulo: titulo ?? this.titulo,
+    nos: nos ?? this.nos,
+    criadoEm: criadoEm ?? this.criadoEm,
+  );
+  MapaConteudo copyWithCompanion(MapasConteudoCompanion data) {
+    return MapaConteudo(
+      id: data.id.present ? data.id.value : this.id,
+      atualizadoEm: data.atualizadoEm.present
+          ? data.atualizadoEm.value
+          : this.atualizadoEm,
+      topicoId: data.topicoId.present ? data.topicoId.value : this.topicoId,
+      titulo: data.titulo.present ? data.titulo.value : this.titulo,
+      nos: data.nos.present ? data.nos.value : this.nos,
+      criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MapaConteudo(')
+          ..write('id: $id, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('topicoId: $topicoId, ')
+          ..write('titulo: $titulo, ')
+          ..write('nos: $nos, ')
+          ..write('criadoEm: $criadoEm')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, atualizadoEm, topicoId, titulo, nos, criadoEm);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is MapaConteudo &&
+          other.id == this.id &&
+          other.atualizadoEm == this.atualizadoEm &&
+          other.topicoId == this.topicoId &&
+          other.titulo == this.titulo &&
+          other.nos == this.nos &&
+          other.criadoEm == this.criadoEm);
+}
+
+class MapasConteudoCompanion extends UpdateCompanion<MapaConteudo> {
+  final Value<String> id;
+  final Value<DateTime> atualizadoEm;
+  final Value<String> topicoId;
+  final Value<String> titulo;
+  final Value<String> nos;
+  final Value<DateTime> criadoEm;
+  final Value<int> rowid;
+  const MapasConteudoCompanion({
+    this.id = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.topicoId = const Value.absent(),
+    this.titulo = const Value.absent(),
+    this.nos = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  MapasConteudoCompanion.insert({
+    this.id = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    required String topicoId,
+    required String titulo,
+    required String nos,
+    this.criadoEm = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : topicoId = Value(topicoId),
+       titulo = Value(titulo),
+       nos = Value(nos);
+  static Insertable<MapaConteudo> custom({
+    Expression<String>? id,
+    Expression<DateTime>? atualizadoEm,
+    Expression<String>? topicoId,
+    Expression<String>? titulo,
+    Expression<String>? nos,
+    Expression<DateTime>? criadoEm,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
+      if (topicoId != null) 'topico_id': topicoId,
+      if (titulo != null) 'titulo': titulo,
+      if (nos != null) 'nos': nos,
+      if (criadoEm != null) 'criado_em': criadoEm,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  MapasConteudoCompanion copyWith({
+    Value<String>? id,
+    Value<DateTime>? atualizadoEm,
+    Value<String>? topicoId,
+    Value<String>? titulo,
+    Value<String>? nos,
+    Value<DateTime>? criadoEm,
+    Value<int>? rowid,
+  }) {
+    return MapasConteudoCompanion(
+      id: id ?? this.id,
+      atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+      topicoId: topicoId ?? this.topicoId,
+      titulo: titulo ?? this.titulo,
+      nos: nos ?? this.nos,
+      criadoEm: criadoEm ?? this.criadoEm,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (atualizadoEm.present) {
+      map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
+    }
+    if (topicoId.present) {
+      map['topico_id'] = Variable<String>(topicoId.value);
+    }
+    if (titulo.present) {
+      map['titulo'] = Variable<String>(titulo.value);
+    }
+    if (nos.present) {
+      map['nos'] = Variable<String>(nos.value);
+    }
+    if (criadoEm.present) {
+      map['criado_em'] = Variable<DateTime>(criadoEm.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MapasConteudoCompanion(')
+          ..write('id: $id, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('topicoId: $topicoId, ')
+          ..write('titulo: $titulo, ')
+          ..write('nos: $nos, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -8912,6 +9322,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $RespostasTable respostas = $RespostasTable(this);
   late final $PrintsQuestaoTable printsQuestao = $PrintsQuestaoTable(this);
   late final $QuestoesTopicoTable questoesTopico = $QuestoesTopicoTable(this);
+  late final $MapasConteudoTable mapasConteudo = $MapasConteudoTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -8933,6 +9344,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     respostas,
     printsQuestao,
     questoesTopico,
+    mapasConteudo,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -9075,6 +9487,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('questoes_topico', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'topicos',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('mapas_conteudo', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -10991,6 +11410,24 @@ final class $$TopicosTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$MapasConteudoTable, List<MapaConteudo>>
+  _mapasConteudoRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.mapasConteudo,
+    aliasName: 'topicos__id__mapas_conteudo__topico_id',
+  );
+
+  $$MapasConteudoTableProcessedTableManager get mapasConteudoRefs {
+    final manager = $$MapasConteudoTableTableManager(
+      $_db,
+      $_db.mapasConteudo,
+    ).filter((f) => f.topicoId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_mapasConteudoRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$TopicosTableFilterComposer
@@ -11244,6 +11681,31 @@ class $$TopicosTableFilterComposer
           }) => $$QuestoesTopicoTableFilterComposer(
             $db: $db,
             $table: $db.questoesTopico,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> mapasConteudoRefs(
+    Expression<bool> Function($$MapasConteudoTableFilterComposer f) f,
+  ) {
+    final $$MapasConteudoTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.mapasConteudo,
+      getReferencedColumn: (t) => t.topicoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MapasConteudoTableFilterComposer(
+            $db: $db,
+            $table: $db.mapasConteudo,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -11589,6 +12051,31 @@ class $$TopicosTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> mapasConteudoRefs<T extends Object>(
+    Expression<T> Function($$MapasConteudoTableAnnotationComposer a) f,
+  ) {
+    final $$MapasConteudoTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.mapasConteudo,
+      getReferencedColumn: (t) => t.topicoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MapasConteudoTableAnnotationComposer(
+            $db: $db,
+            $table: $db.mapasConteudo,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$TopicosTableTableManager
@@ -11614,6 +12101,7 @@ class $$TopicosTableTableManager
             bool topicoConcursosRefs,
             bool questoesProvaRefs,
             bool questoesTopicoRefs,
+            bool mapasConteudoRefs,
           })
         > {
   $$TopicosTableTableManager(_$AppDatabase db, $TopicosTable table)
@@ -11690,6 +12178,7 @@ class $$TopicosTableTableManager
                 topicoConcursosRefs = false,
                 questoesProvaRefs = false,
                 questoesTopicoRefs = false,
+                mapasConteudoRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -11701,6 +12190,7 @@ class $$TopicosTableTableManager
                     if (topicoConcursosRefs) db.topicoConcursos,
                     if (questoesProvaRefs) db.questoesProva,
                     if (questoesTopicoRefs) db.questoesTopico,
+                    if (mapasConteudoRefs) db.mapasConteudo,
                   ],
                   addJoins:
                       <
@@ -11888,6 +12378,27 @@ class $$TopicosTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (mapasConteudoRefs)
+                        await $_getPrefetchedData<
+                          Topico,
+                          $TopicosTable,
+                          MapaConteudo
+                        >(
+                          currentTable: table,
+                          referencedTable: $$TopicosTableReferences
+                              ._mapasConteudoRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$TopicosTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).mapasConteudoRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.topicoId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -11918,6 +12429,7 @@ typedef $$TopicosTableProcessedTableManager =
         bool topicoConcursosRefs,
         bool questoesProvaRefs,
         bool questoesTopicoRefs,
+        bool mapasConteudoRefs,
       })
     >;
 typedef $$RevisoesTableCreateCompanionBuilder = RevisoesCompanion Function({
@@ -17456,6 +17968,346 @@ typedef $$QuestoesTopicoTableProcessedTableManager =
       QuestaoTopico,
       PrefetchHooks Function({bool topicoId})
     >;
+typedef $$MapasConteudoTableCreateCompanionBuilder =
+    MapasConteudoCompanion Function({
+      Value<String> id,
+      Value<DateTime> atualizadoEm,
+      required String topicoId,
+      required String titulo,
+      required String nos,
+      Value<DateTime> criadoEm,
+      Value<int> rowid,
+    });
+typedef $$MapasConteudoTableUpdateCompanionBuilder =
+    MapasConteudoCompanion Function({
+      Value<String> id,
+      Value<DateTime> atualizadoEm,
+      Value<String> topicoId,
+      Value<String> titulo,
+      Value<String> nos,
+      Value<DateTime> criadoEm,
+      Value<int> rowid,
+    });
+
+final class $$MapasConteudoTableReferences
+    extends BaseReferences<_$AppDatabase, $MapasConteudoTable, MapaConteudo> {
+  $$MapasConteudoTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $TopicosTable _topicoIdTable(_$AppDatabase db) =>
+      db.topicos.createAlias('mapas_conteudo__topico_id__topicos__id');
+
+  $$TopicosTableProcessedTableManager get topicoId {
+    final $_column = $_itemColumn<String>('topico_id')!;
+
+    final manager = $$TopicosTableTableManager(
+      $_db,
+      $_db.topicos,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_topicoIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$MapasConteudoTableFilterComposer
+    extends Composer<_$AppDatabase, $MapasConteudoTable> {
+  $$MapasConteudoTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get titulo => $composableBuilder(
+    column: $table.titulo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nos => $composableBuilder(
+    column: $table.nos,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$TopicosTableFilterComposer get topicoId {
+    final $$TopicosTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.topicoId,
+      referencedTable: $db.topicos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TopicosTableFilterComposer(
+            $db: $db,
+            $table: $db.topicos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$MapasConteudoTableOrderingComposer
+    extends Composer<_$AppDatabase, $MapasConteudoTable> {
+  $$MapasConteudoTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get titulo => $composableBuilder(
+    column: $table.titulo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nos => $composableBuilder(
+    column: $table.nos,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$TopicosTableOrderingComposer get topicoId {
+    final $$TopicosTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.topicoId,
+      referencedTable: $db.topicos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TopicosTableOrderingComposer(
+            $db: $db,
+            $table: $db.topicos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$MapasConteudoTableAnnotationComposer
+    extends Composer<_$AppDatabase, $MapasConteudoTable> {
+  $$MapasConteudoTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get titulo =>
+      $composableBuilder(column: $table.titulo, builder: (column) => column);
+
+  GeneratedColumn<String> get nos =>
+      $composableBuilder(column: $table.nos, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get criadoEm =>
+      $composableBuilder(column: $table.criadoEm, builder: (column) => column);
+
+  $$TopicosTableAnnotationComposer get topicoId {
+    final $$TopicosTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.topicoId,
+      referencedTable: $db.topicos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TopicosTableAnnotationComposer(
+            $db: $db,
+            $table: $db.topicos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$MapasConteudoTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $MapasConteudoTable,
+          MapaConteudo,
+          $$MapasConteudoTableFilterComposer,
+          $$MapasConteudoTableOrderingComposer,
+          $$MapasConteudoTableAnnotationComposer,
+          $$MapasConteudoTableCreateCompanionBuilder,
+          $$MapasConteudoTableUpdateCompanionBuilder,
+          (MapaConteudo, $$MapasConteudoTableReferences),
+          MapaConteudo,
+          PrefetchHooks Function({bool topicoId})
+        > {
+  $$MapasConteudoTableTableManager(_$AppDatabase db, $MapasConteudoTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$MapasConteudoTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$MapasConteudoTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$MapasConteudoTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<String> topicoId = const Value.absent(),
+                Value<String> titulo = const Value.absent(),
+                Value<String> nos = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => MapasConteudoCompanion(
+                id: id,
+                atualizadoEm: atualizadoEm,
+                topicoId: topicoId,
+                titulo: titulo,
+                nos: nos,
+                criadoEm: criadoEm,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                required String topicoId,
+                required String titulo,
+                required String nos,
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => MapasConteudoCompanion.insert(
+                id: id,
+                atualizadoEm: atualizadoEm,
+                topicoId: topicoId,
+                titulo: titulo,
+                nos: nos,
+                criadoEm: criadoEm,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$MapasConteudoTable, MapaConteudo>(table),
+                  $$MapasConteudoTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({topicoId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (topicoId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.topicoId,
+                        referencedTable: $$MapasConteudoTableReferences
+                            ._topicoIdTable(db),
+                        referencedColumn: $$MapasConteudoTableReferences
+                            ._topicoIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$MapasConteudoTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $MapasConteudoTable,
+      MapaConteudo,
+      $$MapasConteudoTableFilterComposer,
+      $$MapasConteudoTableOrderingComposer,
+      $$MapasConteudoTableAnnotationComposer,
+      $$MapasConteudoTableCreateCompanionBuilder,
+      $$MapasConteudoTableUpdateCompanionBuilder,
+      (MapaConteudo, $$MapasConteudoTableReferences),
+      MapaConteudo,
+      PrefetchHooks Function({bool topicoId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -17492,4 +18344,6 @@ class $AppDatabaseManager {
       $$PrintsQuestaoTableTableManager(_db, _db.printsQuestao);
   $$QuestoesTopicoTableTableManager get questoesTopico =>
       $$QuestoesTopicoTableTableManager(_db, _db.questoesTopico);
+  $$MapasConteudoTableTableManager get mapasConteudo =>
+      $$MapasConteudoTableTableManager(_db, _db.mapasConteudo);
 }

@@ -1,5 +1,6 @@
 import '../logic/pedido_questoes.dart';
 import 'database.dart';
+import 'mapa_conteudo_db.dart';
 import 'questoes_topico_db.dart';
 
 extension PedidoDb on AppDatabase {
@@ -95,7 +96,10 @@ extension PedidoDb on AppDatabase {
       );
     }
 
+    final mapa = topico == null ? null : await mapaDoTopico(topico.id);
+
     return ContextoPedido(
+      mapaAtual: mapa == null ? null : (titulo: mapa.titulo, nos: mapa.nos),
       concurso: concurso?.nome,
       banca: concurso?.banca,
       materia: materia.nome,

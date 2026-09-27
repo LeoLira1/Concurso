@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/database.dart';
 import '../data/provas_db.dart';
+import '../data/questoes_topico_db.dart';
 import '../logic/mapa_mental.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
@@ -14,6 +15,12 @@ import '../util/texto.dart';
 import '../widgets/assistir.dart';
 import '../widgets/comuns.dart';
 import '../widgets/mapa_painter.dart';
+import '../widgets/questoes_topico.dart' show ResumoQuestoes;
+import 'cronometro_screen.dart';
+import 'flashcards_screen.dart';
+import 'materia_screen.dart';
+import 'pedir_questoes_screen.dart';
+import 'resolver_topico_screen.dart';
 import 'topico_screen.dart';
 
 /// Chaves das preferências locais (fora do sync do Turso).
@@ -70,6 +77,23 @@ class MapaMentalScreenState extends State<MapaMentalScreen>
 
   _Detalhe? _detalhe;
   final _pilha = GlobalKey();
+
+  /// Concurso do escopo atual (nulo = "Tudo junto") e todas as matérias.
+  String? _escopo;
+  Map<String, Materia> _materiasDb = {};
+
+  /// Árvore sem filtro nem matérias recolhidas (para o "Foco agora").
+  NoMapa Function()? _arvoreCompleta;
+
+  /// Tópicos do concurso em foco (no "Tudo junto"; nulo = os do mapa).
+  Set<String>? _topicosDoFoco;
+
+  /// "Foco agora" ligado: os tópicos escolhidos (pode ser vazio).
+  List<TopicoFoco>? _foco;
+  DestaqueMapa? _destaque;
+
+  /// Nó para centralizar com zoom depois do próximo layout.
+  String? _focarPendente;
 
   @override
   void initState() {
@@ -129,10 +153,18 @@ class MapaMentalScreenState extends State<MapaMentalScreen>
     required List<Sessao> sessoes,
     required List<RevisaoInfo> revisoes,
     required Map<String, int> cartoes,
+    required Map<String, int> questoes,
   }) {
     final filtro = _filtro != null && todas.any((m) => m.id == _filtro)
         ? _filtro
         : null;
+    // No "Foco agora", as matérias dos destacados ficam abertas.
+    final focoMaterias = {
+      for (final f in _foco ?? const <TopicoFoco>[]) ?f.no.materiaId,
+    };
+    final recolhidas = focoMaterias.isEmpty
+        ? _recolhidas
+        : _recolhidas.difference(focoMaterias);
     final chave = <Object?>[
       rotuloRaiz,
       escopo,
@@ -141,8 +173,9 @@ class MapaMentalScreenState extends State<MapaMentalScreen>
       sessoes,
       revisoes,
       cartoes,
+      questoes,
       filtro,
-      _recolhidas,
+      recolhidas,
     ];
     if (_chave.length == chave.length &&
         Iterable.generate(chave.length).every(
@@ -176,6 +209,7 @@ class MapaMentalScreenState extends State<MapaMentalScreen>
       }
     }
     cartoes.forEach((id, n) => (info[id] ??= InfoTopico()).flashcards = n);
+    questoes.forEach((id, n) => (info[id] ??= InfoTopico()).questoes = n);
 
     final lista = [
       for (final m in escopo)
@@ -189,22 +223,34 @@ class MapaMentalScreenState extends State<MapaMentalScreen>
     _materias = {for (final m in lista) m.id: m};
     _porMateria = porMateria;
 
+    final topicosMapa = [
+      for (final t in topicos)
+        TopicoMapa(
+          id: t.id,
+          materiaId: t.materiaId,
+          paiId: t.paiId,
+          nome: t.nome,
+          visto: t.visto,
+          ordem: t.ordem,
+        ),
+    ];
+    final escopoLista = [
+      for (final m in escopo)
+        MateriaMapa(m.materia.id, m.materia.nome, m.materia.cor),
+    ];
+    _arvoreCompleta = () => montarArvore(
+      rotuloRaiz: rotuloRaiz,
+      materias: escopoLista,
+      topicos: topicosMapa,
+      info: info,
+      hoje: DateTime.now(),
+    );
     final arvore = montarArvore(
       rotuloRaiz: rotuloRaiz,
       materias: lista,
-      topicos: [
-        for (final t in topicos)
-          TopicoMapa(
-            id: t.id,
-            materiaId: t.materiaId,
-            paiId: t.paiId,
-            nome: t.nome,
-            visto: t.visto,
-            ordem: t.ordem,
-          ),
-      ],
+      topicos: topicosMapa,
       info: info,
-      recolhidas: _recolhidas,
+      recolhidas: recolhidas,
       materiaCentral: filtro,
       hoje: DateTime.now(),
     );
@@ -213,12 +259,15 @@ class MapaMentalScreenState extends State<MapaMentalScreen>
     _cache?.descartar();
     _cache = CacheMapa(layout, origem);
     _arvore = arvore;
+    _destaque = _foco == null
+        ? null
+        : DestaqueMapa(layout, [for (final f in _foco!) f.id]);
     _tamanhoCanvas = layout.limites.size + const Offset(_margem, _margem) * 2;
 
     final escopoAtual = '$rotuloRaiz|$filtro';
     if (escopoAtual != _escopoAjustado) {
       _escopoAjustado = escopoAtual;
-      _ajustarPendente = true;
+      _ajustarPendente = _focarPendente == null;
       _detalhe = null;
     }
   }
@@ -306,11 +355,35 @@ class MapaMentalScreenState extends State<MapaMentalScreen>
     return caixa.localToGlobal(_naTela(n.centro + c.origem));
   }
 
+  /// Tópicos do "Foco agora" (nulo = desligado), para os testes.
+  @visibleForTesting
+  List<TopicoFoco>? get foco => _foco;
+
   /// Escala atual do mapa, para os testes.
   @visibleForTesting
   double get escala => _escala;
 
+  /// Centraliza o nó [id] num zoom de leitura.
+  void _focarNo(String id, {bool animado = true}) {
+    final c = _cache;
+    final n = c?.layout.porId(id);
+    if (c == null || n == null || _viewport.isEmpty) return;
+    final leitura = _viewport.width < 600 ? 1.0 : 1.3;
+    final e = math.max(_escala, leitura).clamp(_escalaMin, _escalaMax);
+    // Um pouco acima do meio: embaixo fica o painel com os motivos.
+    final alvo = _viewport.center(Offset.zero) - const Offset(0, 60);
+    _irPara(_matriz(e, n.centro + c.origem, alvo), animado: animado);
+  }
+
   void _depoisDoLayout() {
+    final focar = _focarPendente;
+    if (focar != null && _cache != null && !_viewport.isEmpty) {
+      _focarPendente = null;
+      _ajustarPendente = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _focarNo(focar);
+      });
+    }
     if (_ajustarPendente && _cache != null && !_viewport.isEmpty) {
       _ajustarPendente = false;
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -350,13 +423,131 @@ class MapaMentalScreenState extends State<MapaMentalScreen>
     final n = _noEm(canvas);
     if (n == null) return;
     switch (n.no.tipo) {
-      case TipoNo.materia when n.profundidade > 0:
-        _alternar(n);
-      case TipoNo.topico || TipoNo.subtopico:
-        _abrirTopico(n.no.id);
+      case TipoNo.materia || TipoNo.topico || TipoNo.subtopico:
+        _menuRapido(n);
       default:
         break;
     }
+  }
+
+  /// Menu rápido do nó: estudar, resolver, flashcards, pedir mais
+  /// questões e abrir (o que o toque fazia antes).
+  Future<void> _menuRapido(NoPosicionado n) async {
+    final db = context.read<AppDatabase>();
+    final materia = _materiasDb[n.no.materiaId];
+    if (materia == null) return;
+    final ehMateria = n.no.tipo == TipoNo.materia;
+    final topico = ehMateria ? null : await db.topico(n.no.id);
+    if (!mounted || (!ehMateria && topico == null)) return;
+    HapticFeedback.selectionClick();
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      constraints: const BoxConstraints(maxWidth: 640),
+      builder: (folha) {
+        void ir(VoidCallback acao) {
+          Navigator.pop(folha);
+          acao();
+        }
+
+        return _MenuRapido(
+          no: n.no,
+          materia: materia,
+          topico: topico,
+          concursoId: _escopo,
+          aoEstudar: () => ir(
+            () => abrirCronometro(
+              context,
+              materiaId: materia.id,
+              topicoId: topico?.id,
+            ),
+          ),
+          aoResolver: (todas) => ir(
+            () => abrirResolverQuestoes(
+              context,
+              titulo: n.no.rotulo,
+              topicoId: topico?.id,
+              materiaId: topico == null ? materia.id : null,
+              concursoId: topico == null ? _escopo : null,
+              todas: todas,
+            ),
+          ),
+          aoFlashcards: (todos) => ir(
+            () => abrirEstudoFlashcards(
+              context,
+              titulo: n.no.rotulo,
+              topicoId: topico?.id,
+              materiaId: topico == null ? materia.id : null,
+              concursoId: topico == null ? _escopo : null,
+              todos: todos,
+            ),
+          ),
+          aoPedir: () => ir(
+            () => abrirPedirQuestoes(
+              context,
+              materia: materia,
+              topico: topico,
+              concursoId: _escopo,
+            ),
+          ),
+          aoAbrir: () => ir(
+            () => ehMateria ? _abrirMateria(materia.id) : _abrirTopico(n.no.id),
+          ),
+          aoAlternar: ehMateria && n.profundidade > 0
+              ? () => ir(() => _alternar(n))
+              : null,
+          aoFiltrar: ehMateria
+              ? () => ir(() => _filtrar(n.profundidade == 0 ? null : n.no.id))
+              : null,
+          central: n.profundidade == 0,
+        );
+      },
+    );
+  }
+
+  void _abrirMateria(String id) {
+    setState(() => _detalhe = null);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MateriaScreen(materiaId: id, concursoId: _escopo),
+      ),
+    );
+  }
+
+  /// Liga ou desliga o "Foco agora".
+  void _alternarFoco() {
+    if (_foco != null) {
+      setState(() {
+        _foco = null;
+        _destaque = null;
+        _ajustarPendente = true;
+        _chave = const [];
+      });
+      return;
+    }
+    final completa = _arvoreCompleta?.call();
+    if (completa == null) return;
+    final escolhidos = escolherFoco(
+      completa,
+      hoje: DateTime.now(),
+      permitidos: _topicosDoFoco,
+    );
+    setState(() {
+      _foco = escolhidos;
+      _detalhe = null;
+      _chave = const [];
+      if (escolhidos.isNotEmpty) {
+        // Com uma matéria no centro, volta ao edital inteiro se algum
+        // destacado for de outra matéria.
+        if (_filtro != null &&
+            escolhidos.any((f) => f.no.materiaId != _filtro)) {
+          _filtro = null;
+        }
+        _focarPendente = escolhidos.first.id;
+      }
+    });
   }
 
   void _alternar(NoPosicionado n) {
@@ -426,6 +617,7 @@ class MapaMentalScreenState extends State<MapaMentalScreen>
         );
         final escopo = estado.verTudo ? null : foco.id;
         final rotuloRaiz = estado.verTudo ? 'Todos' : foco.nome;
+        _escopo = escopo;
         return Assistir<List<MateriaInfo>>(
           chave: escopo,
           stream: () => db.watchMaterias(escopo),
@@ -447,31 +639,46 @@ class MapaMentalScreenState extends State<MapaMentalScreen>
                   builder: (context, revisoes) => Assistir<Map<String, int>>(
                     chave: 'cartoes',
                     stream: db.watchFlashcardsPorTopico,
-                    builder: (context, cartoes) {
-                      if (mats == null ||
-                          todas == null ||
-                          topicos == null ||
-                          sessoes == null ||
-                          revisoes == null ||
-                          cartoes == null) {
-                        return _vazia();
-                      }
-                      _atualizarLayout(
-                        rotuloRaiz: rotuloRaiz,
-                        escopo: mats,
-                        todas: todas,
-                        topicos: topicos,
-                        sessoes: sessoes,
-                        revisoes: revisoes,
-                        cartoes: cartoes,
-                      );
-                      return _tela(
-                        subtitulo: estado.verTudo
-                            ? 'Todos os concursos'
-                            : foco.nome,
-                        materias: mats,
-                      );
-                    },
+                    builder: (context, cartoes) => Assistir<Map<String, int>>(
+                      chave: 'questoes',
+                      stream: db.watchQuestoesPorTopico,
+                      builder: (context, questoes) => Assistir<List<Topico>>(
+                        // "Foco agora" no "Tudo junto": só o concurso em foco.
+                        chave: ('topicos-foco', foco.id),
+                        stream: () => db.watchTodosTopicos(concursoId: foco.id),
+                        builder: (context, doFoco) {
+                          if (mats == null ||
+                              todas == null ||
+                              topicos == null ||
+                              sessoes == null ||
+                              revisoes == null ||
+                              cartoes == null ||
+                              questoes == null) {
+                            return _vazia();
+                          }
+                          _materiasDb = {for (final m in todas) m.id: m};
+                          _topicosDoFoco = estado.verTudo && doFoco != null
+                              ? {for (final t in doFoco) t.id}
+                              : null;
+                          _atualizarLayout(
+                            rotuloRaiz: rotuloRaiz,
+                            escopo: mats,
+                            todas: todas,
+                            topicos: topicos,
+                            sessoes: sessoes,
+                            revisoes: revisoes,
+                            cartoes: cartoes,
+                            questoes: questoes,
+                          );
+                          return _tela(
+                            subtitulo: estado.verTudo
+                                ? 'Todos os concursos'
+                                : foco.nome,
+                            materias: mats,
+                          );
+                        },
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -513,6 +720,8 @@ class MapaMentalScreenState extends State<MapaMentalScreen>
           ],
         ),
         actions: [
+          _BotaoFoco(ligado: _foco != null, aoTocar: _alternarFoco),
+          const SizedBox(width: 8),
           _SeletorFiltro(
             materias: materias,
             extra:
@@ -572,7 +781,11 @@ class MapaMentalScreenState extends State<MapaMentalScreen>
                       child: RepaintBoundary(
                         child: CustomPaint(
                           size: _tamanhoCanvas,
-                          painter: MapaPainter(cache: cache, limite: _limite),
+                          painter: MapaPainter(
+                            cache: cache,
+                            limite: _limite,
+                            destaque: _destaque,
+                          ),
                         ),
                       ),
                     ),
@@ -601,19 +814,37 @@ class MapaMentalScreenState extends State<MapaMentalScreen>
                     style: TextStyle(color: Cores.tintaSuave, fontSize: 15),
                   ),
                 ),
-              Positioned(
-                left: 16,
-                bottom: 16,
-                child: SafeArea(
-                  child: _Legenda(
-                    aberta: _legendaAberta,
-                    aoAlternar: () {
-                      setState(() => _legendaAberta = !_legendaAberta);
-                      _salvarPrefs();
-                    },
+              if (_foco case final foco?)
+                Positioned(
+                  left: 16,
+                  right: 84,
+                  bottom: 16,
+                  child: SafeArea(
+                    child: Align(
+                      alignment: Alignment.bottomLeft,
+                      child: _PainelFoco(
+                        foco: foco,
+                        materias: _materias,
+                        aoTocar: (f) => _focarNo(f.id),
+                        aoFechar: _alternarFoco,
+                      ),
+                    ),
+                  ),
+                )
+              else
+                Positioned(
+                  left: 16,
+                  bottom: 16,
+                  child: SafeArea(
+                    child: _Legenda(
+                      aberta: _legendaAberta,
+                      aoAlternar: () {
+                        setState(() => _legendaAberta = !_legendaAberta);
+                        _salvarPrefs();
+                      },
+                    ),
                   ),
                 ),
-              ),
               Positioned(
                 right: 16,
                 bottom: 16,
@@ -1119,7 +1350,10 @@ class _Legenda extends StatelessWidget {
                 if (aberta) ...[
                   const SizedBox(height: 6),
                   item(caixa(corNaoVisto), 'Não visto'),
-                  item(caixa(corEmParte(exemplo)), 'Em estudo / visto em parte'),
+                  item(
+                    caixa(corEmParte(exemplo)),
+                    'Em estudo / visto em parte',
+                  ),
                   item(caixa(exemplo), 'Visto (cor da matéria)'),
                   item(caixa(exemplo, borda: Cores.acento), 'Revisão atrasada'),
                   item(
@@ -1141,9 +1375,36 @@ class _Legenda extends StatelessWidget {
                     ),
                     'Matéria: % de tópicos vistos',
                   ),
+                  item(
+                    Container(
+                      height: 14,
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      decoration: BoxDecoration(
+                        color: Cores.tinta.withValues(alpha: 0.72),
+                        borderRadius: BorderRadius.circular(7),
+                      ),
+                      child: const Text(
+                        '12',
+                        style: TextStyle(
+                          fontSize: 9.5,
+                          height: 1.4,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    'Nº de questões no banco do tópico',
+                  ),
+                  item(
+                    const CustomPaint(
+                      size: Size(32, 18),
+                      painter: _AmostraPontilhada(),
+                    ),
+                    'Pontilhado: nenhuma questão ainda',
+                  ),
                   const SizedBox(height: 6),
                   const Text(
-                    'Toque na matéria para recolher.\n'
+                    'Toque num nó para ver as ações.\n'
                     'Segure o dedo para ver detalhes.',
                     style: TextStyle(fontSize: 12.5, color: Cores.tintaSuave),
                   ),
@@ -1151,6 +1412,407 @@ class _Legenda extends StatelessWidget {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Amostra da legenda: caixa com contorno pontilhado.
+class _AmostraPontilhada extends CustomPainter {
+  const _AmostraPontilhada();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rr = RRect.fromRectAndRadius(
+      (Offset.zero & size).deflate(1),
+      const Radius.circular(7),
+    );
+    canvas.drawRRect(rr, Paint()..color = corNaoVisto);
+    canvas.drawPath(
+      tracejar(Path()..addRRect(rr)),
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5
+        ..color = corSemQuestoes,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_AmostraPontilhada old) => false;
+}
+
+/// Botão "Foco agora" do alto do mapa (liga e desliga).
+class _BotaoFoco extends StatelessWidget {
+  const _BotaoFoco({required this.ligado, required this.aoTocar});
+  final bool ligado;
+  final VoidCallback aoTocar;
+
+  @override
+  Widget build(BuildContext context) {
+    final largo = MediaQuery.sizeOf(context).width >= 600;
+    final cor = ligado ? Colors.white : Cores.tinta;
+    return Tooltip(
+      message: ligado ? 'Voltar ao mapa normal' : 'Foco agora',
+      child: Material(
+        color: ligado ? Cores.tinta : Cores.fundo,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: const BorderSide(color: Cores.tinta, width: 1.5),
+        ),
+        child: InkWell(
+          key: const ValueKey('foco-agora'),
+          borderRadius: BorderRadius.circular(14),
+          onTap: aoTocar,
+          child: Container(
+            height: 48,
+            constraints: const BoxConstraints(minWidth: 48),
+            padding: EdgeInsets.symmetric(horizontal: largo ? 14 : 12),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.my_location_rounded, size: 20, color: cor),
+                if (largo) ...[
+                  const SizedBox(width: 8),
+                  Text(
+                    'Foco agora',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: cor,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Motivo de cada tópico do "Foco agora", embaixo do mapa.
+class _PainelFoco extends StatelessWidget {
+  const _PainelFoco({
+    required this.foco,
+    required this.materias,
+    required this.aoTocar,
+    required this.aoFechar,
+  });
+
+  final List<TopicoFoco> foco;
+  final Map<String, MateriaMapa> materias;
+  final ValueChanged<TopicoFoco> aoTocar;
+  final VoidCallback aoFechar;
+
+  @override
+  Widget build(BuildContext context) => ConstrainedBox(
+    constraints: const BoxConstraints(maxWidth: 460),
+    child: Material(
+      key: const ValueKey('painel-foco'),
+      color: Cores.fundo,
+      elevation: 6,
+      shadowColor: const Color(0x33000000),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: const BorderSide(color: Cores.linha, width: 1.5),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(18, 8, 6, 10),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.my_location_rounded, size: 18),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Text(
+                    'Foco agora',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Voltar ao mapa normal',
+                  onPressed: aoFechar,
+                  icon: const Icon(Icons.close_rounded),
+                ),
+              ],
+            ),
+            if (foco.isEmpty)
+              const Padding(
+                padding: EdgeInsets.only(right: 12, bottom: 4),
+                child: Text(
+                  'Nada urgente: nenhuma revisão atrasada, acerto baixo ou '
+                  'tópico nunca visto.',
+                  style: TextStyle(fontSize: 14, color: Cores.tintaSuave),
+                ),
+              ),
+            for (final (i, f) in foco.indexed)
+              InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () => aoTocar(f),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 48),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 24,
+                        height: 24,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: Color(f.no.cor),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Text(
+                          '${i + 1}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: tintaSobre(Color(f.no.cor)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              f.no.rotulo,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Text(
+                              // O motivo primeiro: é o que não pode cortar.
+                              [
+                                f.texto,
+                                ?materias[f.no.materiaId]?.nome,
+                              ].join(' · '),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: switch (f.motivo) {
+                                  MotivoFoco.revisaoAtrasada => Cores.acento,
+                                  MotivoFoco.acertoBaixo => corAcertoBaixo,
+                                  MotivoFoco.nuncaVisto => Cores.tintaSuave,
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+/// Menu rápido ao tocar num nó (tópico, subtópico ou matéria).
+class _MenuRapido extends StatelessWidget {
+  const _MenuRapido({
+    required this.no,
+    required this.materia,
+    required this.topico,
+    required this.concursoId,
+    required this.aoEstudar,
+    required this.aoResolver,
+    required this.aoFlashcards,
+    required this.aoPedir,
+    required this.aoAbrir,
+    required this.aoAlternar,
+    required this.aoFiltrar,
+    required this.central,
+  });
+
+  final NoMapa no;
+  final Materia materia;
+
+  /// Nulo = menu da matéria.
+  final Topico? topico;
+  final String? concursoId;
+  final VoidCallback aoEstudar;
+  final ValueChanged<bool> aoResolver;
+  final ValueChanged<bool> aoFlashcards;
+  final VoidCallback aoPedir;
+  final VoidCallback aoAbrir;
+  final VoidCallback? aoAlternar;
+  final VoidCallback? aoFiltrar;
+  final bool central;
+
+  @override
+  Widget build(BuildContext context) {
+    final db = context.read<AppDatabase>();
+    final t = topico;
+    final ehMateria = t == null;
+    Widget acao(
+      String chave,
+      IconData icone,
+      String titulo,
+      String? sub,
+      VoidCallback aoTocar,
+    ) => ListTile(
+      key: ValueKey('menu-$chave'),
+      minTileHeight: 56,
+      leading: Icon(icone),
+      title: Text(
+        titulo,
+        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+      ),
+      subtitle: sub == null ? null : Text(sub),
+      onTap: aoTocar,
+    );
+
+    final questoes = Assistir<List<QuestaoTopicoInfo>>(
+      chave: ('menu-questoes', t?.id, materia.id, concursoId),
+      stream: () => ehMateria
+          ? db.watchQuestoesTopico(
+              materiaId: materia.id,
+              concursoId: concursoId,
+            )
+          : db.watchQuestoesTopico(topicoId: t.id),
+      builder: (context, l) {
+        final r = ResumoQuestoes(l ?? const []);
+        return acao(
+          'resolver',
+          Icons.quiz_outlined,
+          'Resolver questões',
+          l == null
+              ? null
+              : r.total == 0
+              ? 'Nenhuma questão ainda'
+              : '${r.paraHoje} para hoje · ${r.total} no total',
+          () => aoResolver(r.paraHoje == 0 && r.total > 0),
+        );
+      },
+    );
+    final flashcards = Assistir<List<CartaoInfo>>(
+      chave: ('menu-cartoes', t?.id, materia.id, concursoId),
+      stream: () => db.watchCartoesParaRevisar(
+        topicoId: t?.id,
+        materiaId: ehMateria ? materia.id : null,
+        concursoId: ehMateria ? concursoId : null,
+      ),
+      builder: (context, l) {
+        final n = l?.length ?? 0;
+        return acao(
+          'flashcards',
+          Icons.style_outlined,
+          'Flashcards',
+          l == null
+              ? null
+              : n > 0
+              ? '$n para revisar'
+              : no.info.flashcards > 0
+              ? 'Nada para revisar hoje · praticar todos'
+              : 'Nenhum cartão ainda',
+          () => aoFlashcards(n == 0),
+        );
+      },
+    );
+
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(8, 0, 8, 12),
+        child: Column(
+          key: const ValueKey('menu-rapido'),
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Bolinha(Color(materia.cor), tamanho: 10),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          ehMateria ? 'MATÉRIA' : materia.nome.toUpperCase(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1,
+                            color: Cores.tintaSuave,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    no.rotulo,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      height: 1.2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            acao(
+              'estudar',
+              Icons.play_arrow_rounded,
+              ehMateria ? 'Estudar esta matéria' : 'Estudar este tópico',
+              'Abre o cronômetro',
+              aoEstudar,
+            ),
+            questoes,
+            flashcards,
+            acao(
+              'pedir',
+              Icons.auto_awesome_outlined,
+              'Pedir mais questões',
+              ehMateria
+                  ? 'Pedido para a matéria inteira'
+                  : 'Texto para colar no chat do Claude',
+              aoPedir,
+            ),
+            acao(
+              'abrir',
+              Icons.open_in_new_rounded,
+              ehMateria ? 'Abrir matéria' : 'Abrir tópico',
+              null,
+              aoAbrir,
+            ),
+            if (aoAlternar != null)
+              acao(
+                'recolher',
+                no.ocultos > 0
+                    ? Icons.unfold_more_rounded
+                    : Icons.unfold_less_rounded,
+                no.ocultos > 0 ? 'Expandir tópicos' : 'Recolher tópicos',
+                null,
+                aoAlternar!,
+              ),
+            if (aoFiltrar != null)
+              acao(
+                'filtrar',
+                Icons.filter_center_focus_rounded,
+                central ? 'Ver edital inteiro' : 'Ver só esta matéria',
+                null,
+                aoFiltrar!,
+              ),
+          ],
         ),
       ),
     );

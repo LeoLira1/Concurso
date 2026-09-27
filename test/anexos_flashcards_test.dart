@@ -94,7 +94,7 @@ void main() {
         expect(todos, hasLength(2));
 
         final extras = await db.watchContagemExtras(materia).first;
-        expect(extras[topico], (0, 2));
+        expect(extras[topico], (0, 2, false));
       },
     );
 

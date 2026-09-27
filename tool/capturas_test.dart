@@ -1,6 +1,7 @@
 // Gera capturas de tela do app com dados de exemplo.
 // Uso: flutter test tool/capturas_test.dart --update-goldens
 // As imagens vão para tool/capturas/.
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:drift/drift.dart' hide isNull, isNotNull;
@@ -14,6 +15,10 @@ import 'package:edital/screens/cronometro_screen.dart';
 import 'package:edital/screens/edital_screen.dart';
 import 'package:edital/screens/home_screen.dart';
 import 'package:edital/screens/mapa_mental_screen.dart';
+import 'package:edital/screens/mapa_conteudo_screen.dart';
+import 'package:edital/screens/colar_mapa_screen.dart';
+import 'package:edital/data/mapa_conteudo_db.dart';
+import 'package:edital/logic/mapa_conteudo.dart';
 import 'package:edital/screens/materia_screen.dart';
 import 'package:edital/state/app_state.dart';
 import 'package:edital/state/sessao_ativa.dart';
@@ -901,8 +906,169 @@ NOÇÕES DE DIREITO ADMINISTRATIVO: 1 Noções de organização administrativa. 
       );
       await db.marcarVisto(tp('Pronomes').id, true);
       await db.marcarVisto(tp('Crase').id, true);
+      // Banco de questões: o número aparece no canto do nó.
+      for (final (topico, n) in [
+        ('Crase', 12),
+        ('Pronomes', 5),
+        ('Regência nominal e verbal', 3),
+      ]) {
+        await db.importarQuestoesTopico(
+          lerQuestoes(
+            jsonEncode([
+              for (var i = 0; i < n; i++)
+                {
+                  'enunciado': '$topico: questão $i',
+                  'alternativas': {'A': 'sim', 'B': 'não'},
+                  'gabarito': 'A',
+                },
+            ]),
+            materiaPadrao: 'Língua Portuguesa',
+            topicoPadrao: topico,
+          ),
+        );
+      }
     }
   }
+
+  // ---------------------------------------------------------------------------
+  // Etapa 12: mapa do conteúdo
+  // ---------------------------------------------------------------------------
+
+  final mapaCrase = jsonEncode({
+    'formato': 'edital-mapa-v1',
+    'materia': 'Língua Portuguesa',
+    'topico': 'Crase',
+    'titulo': 'Crase',
+    'nos': [
+      {
+        'texto': 'Regra geral: a + a',
+        'detalhe': 'Preposição "a" exigida pelo termo regente + artigo "a" do termo regido.',
+        'filhos': [
+          {'texto': 'Vou à escola (ir a + a escola)', 'tipo': 'exemplo'},
+          {'texto': 'Troque por masculino: vou ao colégio', 'tipo': 'dica'},
+        ],
+      },
+      {
+        'texto': 'Casos obrigatórios',
+        'filhos': [
+          {
+            'texto': 'Horas exatas',
+            'filhos': [
+              {'texto': 'Chegou às 8h', 'tipo': 'exemplo'},
+            ],
+          },
+          {'texto': 'À moda de / à maneira de', 'tipo': 'conceito'},
+          {'texto': 'Locuções femininas: às pressas, à noite'},
+        ],
+      },
+      {
+        'texto': 'Proibida',
+        'filhos': [
+          {'texto': 'Antes de verbo', 'tipo': 'conceito'},
+          {'texto': 'Antes de palavra masculina', 'tipo': 'conceito'},
+          {
+            'texto': 'Entre palavras repetidas: cara a cara',
+            'tipo': 'pegadinha',
+          },
+          {'texto': 'Antes de "uma" (artigo)', 'tipo': 'pegadinha'},
+        ],
+      },
+      {
+        'texto': 'Facultativa',
+        'filhos': [
+          {'texto': 'Antes de pronome possessivo feminino'},
+          {'texto': 'Depois de "até"', 'tipo': 'dica'},
+          {
+            'texto': 'Nomes próprios femininos',
+            'tipo': 'pegadinha',
+            'detalhe': 'Só se houver intimidade (uso do artigo).',
+          },
+        ],
+      },
+      {
+        'texto': 'Terra e casa: só se especificadas',
+        'tipo': 'pegadinha',
+        'filhos': [
+          {'texto': 'Voltou à casa dos pais', 'tipo': 'exemplo'},
+          {'texto': 'Voltou a casa (a própria)', 'tipo': 'exemplo'},
+        ],
+      },
+      {'texto': 'Acordo Ortográfico não mudou a crase', 'tipo': 'artigo'},
+    ],
+  });
+
+  Future<void> dadosMapaConteudo(AppDatabase db) async {
+    final foco = (await db.watchFoco().first)!;
+    await db.importarMapas(lerMapas(mapaCrase), concursoId: foco.id);
+  }
+
+  Widget telaMapaConteudo(AppDatabase db) => app(
+    db,
+    FutureBuilder(
+      future: db.watchTopicosComMapa().first,
+      builder: (_, s) => s.data == null || s.data!.isEmpty
+          ? const SizedBox()
+          : MapaConteudoScreen(topicoId: s.data!.first),
+    ),
+  );
+
+  testWidgets(
+    'mapa do conteudo paisagem',
+    (t) => captura(
+      t,
+      '47_mapa_conteudo_paisagem',
+      paisagem,
+      telaMapaConteudo,
+      preparar: dadosMapaConteudo,
+      antes: (t) async {
+        final e = t.state<MapaConteudoScreenState>(
+          find.byType(MapaConteudoScreen),
+        );
+        // ignore: invalid_use_of_visible_for_testing_member
+        await t.tapAt(e.posicaoGlobal('2')!);
+      },
+    ),
+  );
+  testWidgets(
+    'mapa do conteudo treino',
+    (t) => captura(
+      t,
+      '47b_mapa_conteudo_treino_paisagem',
+      paisagem,
+      telaMapaConteudo,
+      preparar: dadosMapaConteudo,
+      antes: (t) async {
+        await t.tap(find.byKey(const ValueKey('modo-treino')));
+        await t.pumpAndSettle();
+        final e = t.state<MapaConteudoScreenState>(
+          find.byType(MapaConteudoScreen),
+        );
+        // ignore: invalid_use_of_visible_for_testing_member
+        await t.tapAt(e.posicaoGlobal('2.2')!);
+      },
+    ),
+  );
+  testWidgets(
+    'mapa do conteudo celular',
+    (t) => captura(
+      t,
+      '47c_mapa_conteudo_celular',
+      celular,
+      telaMapaConteudo,
+      preparar: dadosMapaConteudo,
+    ),
+  );
+  testWidgets(
+    'colar mapa paisagem',
+    (t) => captura(
+      t,
+      '48_colar_mapa_paisagem',
+      paisagem,
+      (db) => app(db, ColarMapaScreen(textoInicial: mapaCrase)),
+      preparar: dadosMapaConteudo,
+      antes: (t) => t.tap(find.byKey(const ValueKey('conferir-mapa'))),
+    ),
+  );
 
   Widget mapa(AppDatabase db) => app(db, const MapaMentalScreen());
   Widget mapaPort(AppDatabase db) => app(
@@ -961,6 +1127,55 @@ NOÇÕES DE DIREITO ADMINISTRATIVO: 1 Noções de organização administrativa. 
     'mapa celular',
     (t) =>
         captura(t, '33_mapa_celular', celular, mapaPort, preparar: dadosMapa),
+  );
+  Future<void> focoAgora(WidgetTester t) =>
+      t.tap(find.byKey(const ValueKey('foco-agora')));
+  Future<void> tocarCrase(WidgetTester t) async {
+    final db = t.element(find.byType(MaterialApp)).read<AppDatabase>();
+    final port = (await t.runAsync(
+      () => db.materiaPorNome('Língua Portuguesa'),
+    ))!;
+    final crase = (await t.runAsync(() => db.watchTopicos(port.id).first))!
+        .firstWhere((x) => x.nome == 'Crase');
+    final estado = t.state<MapaMentalScreenState>(
+      find.byType(MapaMentalScreen),
+    );
+    // ignore: invalid_use_of_visible_for_testing_member
+    await t.tapAt(estado.posicaoGlobal(crase.id)!);
+  }
+
+  testWidgets(
+    'mapa foco agora paisagem',
+    (t) => captura(
+      t,
+      '45_mapa_foco_paisagem',
+      paisagem,
+      mapa,
+      preparar: dadosMapa,
+      antes: focoAgora,
+    ),
+  );
+  testWidgets(
+    'mapa foco agora celular',
+    (t) => captura(
+      t,
+      '45b_mapa_foco_celular',
+      celular,
+      mapa,
+      preparar: dadosMapa,
+      antes: focoAgora,
+    ),
+  );
+  testWidgets(
+    'mapa menu rapido paisagem',
+    (t) => captura(
+      t,
+      '46_mapa_menu_paisagem',
+      paisagem,
+      mapaPort,
+      preparar: dadosMapa,
+      antes: tocarCrase,
+    ),
   );
 
   testWidgets(

@@ -6,8 +6,17 @@ library;
 
 import 'dart:convert';
 
+import 'mapa_conteudo.dart';
+
 /// O que pedir.
-enum TipoPedido { questoes, flashcards, ambos }
+enum TipoPedido {
+  questoes,
+  flashcards,
+  ambos,
+
+  /// Mapa do conteúdo (etapa 12): só no pedido de um tópico.
+  mapa,
+}
 
 /// "equilibrado" ou "reforçar meus erros" (metade vai para os erros).
 enum FocoPedido { equilibrado, erros }
@@ -86,6 +95,7 @@ class ContextoPedido {
     this.banca,
     this.materiaInteira = false,
     this.subtopicoAberto,
+    this.mapaAtual,
   });
 
   /// Nome do concurso em foco (nulo = "Tudo junto").
@@ -99,6 +109,9 @@ class ContextoPedido {
 
   /// A tela aberta era um subtópico: as questões vão para ele.
   final String? subtopicoAberto;
+
+  /// Mapa do conteúdo que o tópico aberto já tem (etapa 12).
+  final ({String titulo, List<NoConteudo> nos})? mapaAtual;
 }
 
 /// Enunciado numa linha, com no máximo [max] caracteres (com "…").
@@ -151,6 +164,7 @@ String montarPedido(
   TipoPedido tipo = TipoPedido.questoes,
   FocoPedido foco = FocoPedido.equilibrado,
 }) {
+  if (tipo == TipoPedido.mapa) return montarPedidoMapa(c);
   final comQuestoes = tipo != TipoPedido.flashcards;
   final comFlashcards = tipo != TipoPedido.questoes;
   final n = quantidade;
@@ -246,48 +260,7 @@ String montarPedido(
   );
   linha();
 
-  // b) Contexto ----------------------------------------------------------------
-  linha('CONTEXTO');
-  final banca = (c.banca ?? '').trim();
-  linha(
-    c.concurso == null
-        ? 'Concurso: nenhum em foco (vale para todos os meus concursos)'
-        : 'Concurso em foco: ${c.concurso}',
-  );
-  linha(
-    banca.isEmpty
-        ? 'Banca: não informada'
-        : 'Banca: $banca (siga o estilo de cobrança dessa banca)',
-  );
-  linha();
-
-  // c) Nomes exatos -------------------------------------------------------------
-  linha('NOMES EXATOS (copie assim)');
-  linha('Matéria: ${c.materia}');
-  if (c.materiaInteira) {
-    linha('Tópicos do edital:');
-    for (final t in c.topicos) {
-      linha('- ${t.nome}');
-      for (final s in t.subtopicos) {
-        linha('  - subtópico: $s');
-      }
-    }
-    if (c.topicos.isEmpty) linha('- (nenhum tópico no edital)');
-  } else if (t0 != null) {
-    linha('Tópico: ${t0.nome}');
-    if (t0.subtopicos.isEmpty) {
-      linha('Subtópicos existentes: nenhum (use só o tópico)');
-    } else {
-      linha('Subtópicos existentes:');
-      for (final s in t0.subtopicos) {
-        linha('- $s');
-      }
-    }
-    if (c.subtopicoAberto case final s?) {
-      linha('Todos os itens devem usar o subtópico: $s');
-    }
-  }
-  linha();
+  _contextoENomes(o, c, t0);
 
   // d) Situação -----------------------------------------------------------------
   final todasQuestoes = [for (final t in c.topicos) ...t.questoes];
@@ -404,6 +377,158 @@ String montarPedido(
       linha(
         'Foco em reforçar meus erros: pelo menos $oQueMetade devem ir para '
         'esses conceitos.',
+      );
+    }
+  }
+  return o.toString().trimRight();
+}
+
+/// b) Contexto e c) nomes exatos (também usados no pedido do mapa).
+void _contextoENomes(StringBuffer o, ContextoPedido c, TopicoPedido? t0) {
+  void linha([String s = '']) => o.writeln(s);
+
+  // b) Contexto ----------------------------------------------------------------
+  linha('CONTEXTO');
+  final banca = (c.banca ?? '').trim();
+  linha(
+    c.concurso == null
+        ? 'Concurso: nenhum em foco (vale para todos os meus concursos)'
+        : 'Concurso em foco: ${c.concurso}',
+  );
+  linha(
+    banca.isEmpty
+        ? 'Banca: não informada'
+        : 'Banca: $banca (siga o estilo de cobrança dessa banca)',
+  );
+  linha();
+
+  // c) Nomes exatos -------------------------------------------------------------
+  linha('NOMES EXATOS (copie assim)');
+  linha('Matéria: ${c.materia}');
+  if (c.materiaInteira) {
+    linha('Tópicos do edital:');
+    for (final t in c.topicos) {
+      linha('- ${t.nome}');
+      for (final s in t.subtopicos) {
+        linha('  - subtópico: $s');
+      }
+    }
+    if (c.topicos.isEmpty) linha('- (nenhum tópico no edital)');
+  } else if (t0 != null) {
+    linha('Tópico: ${t0.nome}');
+    if (t0.subtopicos.isEmpty) {
+      linha('Subtópicos existentes: nenhum (use só o tópico)');
+    } else {
+      linha('Subtópicos existentes:');
+      for (final s in t0.subtopicos) {
+        linha('- $s');
+      }
+    }
+    if (c.subtopicoAberto case final s?) {
+      linha('Todos os itens devem usar o subtópico: $s');
+    }
+  }
+  linha();
+}
+
+/// Pedido do mapa do conteúdo (formato edital-mapa-v1): regras e limites,
+/// contexto, nomes exatos, o mapa atual (para ampliar sem repetir) e os
+/// conceitos em que eu mais erro.
+String montarPedidoMapa(ContextoPedido c) {
+  final o = StringBuffer();
+  void linha([String s = '']) => o.writeln(s);
+  final t0 = c.topicos.isEmpty ? null : c.topicos.first;
+  final sub = c.subtopicoAberto;
+  final alvo = sub == null ? t0?.nome ?? '' : '$sub (${t0?.nome})';
+  final atual = c.mapaAtual;
+  final exemplo = jsonEncode({
+    'formato': formatoMapa,
+    'materia': c.materia,
+    'topico': t0?.nome ?? '',
+    'subtopico': sub ?? '',
+    'titulo': '...',
+    'nos': [
+      {
+        'texto': '...',
+        'detalhe': '...',
+        'tipo': 'conceito',
+        'filhos': [
+          {'texto': '...', 'tipo': 'exemplo', 'filhos': []},
+        ],
+      },
+    ],
+  });
+
+  linha(
+    atual == null
+        ? 'Monte o mapa do conteúdo de "$alvo" para o meu estudo para '
+              'concurso, no formato $formatoMapa.'
+        : 'Amplie o mapa do conteúdo de "$alvo" que já tenho, no formato '
+              '$formatoMapa.',
+  );
+  linha();
+  linha('REGRAS');
+  linha(
+    '- Responda só com o JSON, dentro de um bloco de código ```json, sem '
+    'texto antes ou depois.',
+  );
+  linha('- Formato exato (mesmas chaves):');
+  linha('  $exemplo');
+  linha(
+    '- "tipo" de cada nó: conceito, artigo, exemplo, pegadinha ou dica '
+    '(sem tipo = conceito). Use "pegadinha" para o que a banca costuma '
+    'trocar e "artigo" para dispositivos de lei.',
+  );
+  linha(
+    '- "texto" com no máximo $limiteTextoNo caracteres, curto como num mapa '
+    'mental. A explicação vai em "detalhe" (opcional, 1 ou 2 frases).',
+  );
+  linha(
+    '- No máximo $limiteNiveis níveis abaixo do título e $limiteNos nós no '
+    'total. "filhos" pode ficar vazio.',
+  );
+  linha(
+    '- Use os nomes de matéria, tópico e subtópico EXATAMENTE como estão '
+    'escritos neste pedido (mesmas letras, acentos e maiúsculas). Não '
+    'invente tópicos nem subtópicos.',
+  );
+  if (atual != null) {
+    linha(
+      '- O app troca o mapa atual pelo que você mandar. Então devolva o mapa '
+      'inteiro: mantenha os nós atuais (mesmos textos, lista "Mapa atual") e '
+      'acrescente nós novos, sem repetir o que já está lá, dentro do limite '
+      'de $limiteNos nós.',
+    );
+  }
+  linha();
+
+  _contextoENomes(o, c, t0);
+
+  if (atual != null) {
+    final total = percorrer(atual.nos).length;
+    linha('MAPA ATUAL ("${atual.titulo}", $total nós; não repita, amplie)');
+    for (final (n, nivel) in percorrer(atual.nos)) {
+      linha(
+        '${'  ' * (nivel - 1)}- [${n.tipo.chave}] ${n.texto}'
+        '${n.detalhe.isEmpty ? '' : ' (detalhe: ${resumir(n.detalhe)})'}',
+      );
+    }
+    linha();
+  }
+
+  final erradas = questoesComMaisErros(c.topicos);
+  linha('ONDE EU MAIS ERRO');
+  if (erradas.isEmpty) {
+    linha('Nenhuma questão com mais erros que acertos ainda.');
+  } else {
+    linha(
+      'Questões em que errei mais do que acertei. Cubra esses conceitos no '
+      'mapa, de preferência com nós "pegadinha" ou "dica":',
+    );
+    for (final (i, (_, q)) in erradas.indexed) {
+      linha(
+        '${i + 1}. ${resumir(q.enunciado)} Resposta certa: ${q.gabarito}) '
+        '${resumir(q.respostaCerta, 80)}',
       );
     }
   }

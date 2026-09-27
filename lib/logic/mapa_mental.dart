@@ -19,6 +19,7 @@ class InfoTopico {
     this.acertos = 0,
     this.proximaRevisao,
     this.flashcards = 0,
+    this.questoes = 0,
   });
 
   int minutos;
@@ -28,6 +29,9 @@ class InfoTopico {
   /// Revisão pendente mais antiga (pode estar no passado = atrasada).
   DateTime? proximaRevisao;
   int flashcards;
+
+  /// Questões do banco por tópico (etapa 8).
+  int questoes;
 
   double? get acerto => feitas == 0 ? null : acertos / feitas;
 
@@ -39,6 +43,7 @@ class InfoTopico {
     feitas += o.feitas;
     acertos += o.acertos;
     flashcards += o.flashcards;
+    questoes += o.questoes;
     final r = o.proximaRevisao;
     if (r != null && (proximaRevisao == null || r.isBefore(proximaRevisao!))) {
       proximaRevisao = r;
@@ -56,6 +61,7 @@ class NoMapa {
     List<NoMapa>? filhos,
     this.visto = Visto.nao,
     this.atrasada = false,
+    this.revisao,
     this.acertoBaixo = false,
     this.progresso = 0,
     this.folhasVistas = 0,
@@ -77,6 +83,9 @@ class NoMapa {
 
   /// Revisão do próprio tópico vencida antes de hoje.
   final bool atrasada;
+
+  /// Revisão pendente mais antiga do próprio tópico (sem os filhos).
+  final DateTime? revisao;
   final bool acertoBaixo;
 
   /// Matéria: fração de tópicos-folha vistos.
@@ -185,6 +194,7 @@ NoMapa montarArvore({
         filhos: filhos,
         visto: visto,
         atrasada: propria != null && propria.isBefore(hojeDia),
+        revisao: propria,
         acertoBaixo: soma.acertoBaixo,
         folhas: folhas,
         folhasVistas: vistas,
@@ -248,6 +258,89 @@ NoMapa montarArvore({
     folhasVistas: vistas,
     info: soma,
   );
+}
+
+// -----------------------------------------------------------------------------
+// Foco agora
+// -----------------------------------------------------------------------------
+
+/// Por que um tópico entrou no "Foco agora", na ordem de prioridade.
+enum MotivoFoco { revisaoAtrasada, acertoBaixo, nuncaVisto }
+
+/// Um tópico destacado pelo "Foco agora".
+class TopicoFoco {
+  const TopicoFoco(this.no, this.motivo, {this.dias = 0});
+  final NoMapa no;
+  final MotivoFoco motivo;
+
+  /// Revisão atrasada: há quantos dias.
+  final int dias;
+
+  String get id => no.id;
+
+  /// "revisão atrasada há 3 dias", "acerto 45%", "nunca visto".
+  String get texto => switch (motivo) {
+    MotivoFoco.revisaoAtrasada =>
+      'revisão atrasada há $dias ${dias == 1 ? 'dia' : 'dias'}',
+    MotivoFoco.acertoBaixo =>
+      'acerto ${((no.info.acerto ?? 0) * 100).round()}%',
+    MotivoFoco.nuncaVisto => 'nunca visto',
+  };
+}
+
+/// Até [maximo] tópicos para estudar agora, nesta prioridade: revisão
+/// atrasada (a mais antiga primeiro), acerto abaixo de 60% com 10+
+/// questões (o menor primeiro) e nunca visto (na ordem do edital). Acerto
+/// baixo e nunca visto olham só as pontas (tópico sem subtópicos ou o
+/// subtópico), para não repetir o pai e o filho. Com [permitidos], só
+/// esses tópicos entram (os do concurso em foco).
+List<TopicoFoco> escolherFoco(
+  NoMapa arvore, {
+  required DateTime hoje,
+  Set<String>? permitidos,
+  int maximo = 3,
+}) {
+  final dia = DateTime(hoje.year, hoje.month, hoje.day);
+  final atrasadas = <TopicoFoco>[];
+  final baixas = <TopicoFoco>[];
+  final nunca = <TopicoFoco>[];
+  void visitar(NoMapa n) {
+    final ehTopico = n.tipo == TipoNo.topico || n.tipo == TipoNo.subtopico;
+    if (ehTopico && (permitidos == null || permitidos.contains(n.id))) {
+      final ponta = n.filhos.isEmpty;
+      if (n.atrasada && n.revisao != null) {
+        final r = n.revisao!;
+        final dias = dia.difference(DateTime(r.year, r.month, r.day)).inDays;
+        atrasadas.add(
+          TopicoFoco(n, MotivoFoco.revisaoAtrasada, dias: math.max(1, dias)),
+        );
+      } else if (ponta && n.acertoBaixo) {
+        baixas.add(TopicoFoco(n, MotivoFoco.acertoBaixo));
+      } else if (ponta && n.visto == Visto.nao) {
+        nunca.add(TopicoFoco(n, MotivoFoco.nuncaVisto));
+      }
+    }
+    for (final f in n.filhos) {
+      visitar(f);
+    }
+  }
+
+  visitar(arvore);
+  // Ordenação estável: empates ficam na ordem do edital.
+  _ordenar(atrasadas, (a, b) => b.dias.compareTo(a.dias));
+  _ordenar(
+    baixas,
+    (a, b) => (a.no.info.acerto ?? 0).compareTo(b.no.info.acerto ?? 0),
+  );
+  return [...atrasadas, ...baixas, ...nunca].take(maximo).toList();
+}
+
+void _ordenar<T>(List<T> l, int Function(T, T) cmp) {
+  final idx = {for (final (i, x) in l.indexed) x: i};
+  l.sort((a, b) {
+    final c = cmp(a, b);
+    return c != 0 ? c : idx[a]!.compareTo(idx[b]!);
+  });
 }
 
 // -----------------------------------------------------------------------------
