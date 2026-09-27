@@ -29,7 +29,10 @@ import 'package:edital/screens/importar_screen.dart';
 import 'package:edital/data/provas_db.dart';
 import 'package:edital/data/questoes_topico_db.dart';
 import 'package:edital/logic/questoes_topico.dart';
+import 'package:edital/screens/colar_flashcards_screen.dart';
 import 'package:edital/screens/colar_questoes_screen.dart';
+import 'package:edital/data/flashcards_colagem_db.dart';
+import 'package:edital/logic/flashcards_colados.dart';
 import 'package:edital/screens/resolver_topico_screen.dart';
 import 'package:edital/logic/provas.dart';
 import 'package:edital/screens/colar_prova_screen.dart';
@@ -1237,6 +1240,30 @@ NOÇÕES DE DIREITO ADMINISTRATIVO: 1 Noções de organização administrativa. 
       },
     ),
   );
+
+  // --- Etapa 9: colar flashcards ---
+  testWidgets(
+    'colar flashcards prévia',
+    (t) => captura(
+      t,
+      '44_colar_flashcards_paisagem',
+      paisagem,
+      (db) =>
+          app(db, const ColarFlashcardsScreen(textoInicial: flashcardsJson)),
+      preparar: (db) async {
+        final foco = (await db.watchFoco().first)!;
+        // O primeiro já existe (fica de fora).
+        final l = lerFlashcards(flashcardsJson);
+        await db.importarFlashcards(
+          LeituraFlashcards([l.itens.first]),
+          concursoId: foco.id,
+        );
+      },
+      antes: (t) async {
+        await t.tap(find.byKey(const ValueKey('conferir-flashcards')));
+      },
+    ),
+  );
 }
 
 const questoesTopicoJson = r'''[
@@ -1416,3 +1443,15 @@ Estatuto da Criança e do Adolescente (Lei 8.069/1990)
 Lei Maria da Penha (Lei 11.340/2006) — medidas protetivas e crime de descumprimento
 Estatuto do Desarmamento (Lei 10.826/2003)
 ''';
+
+const flashcardsJson = r'''Claro! Aqui estão os cartões:
+```json
+[
+{"materia":"Língua Portuguesa","topico":"Concordância nominal e verbal","subtopico":"Verbo haver","frente":"Quando o verbo haver fica no singular?","verso":"Quando significa existir ou indica tempo decorrido. Ex.: Havia muitos candidatos."},
+{"materia":"Língua Portuguesa","topico":"Concordância nominal e verbal","subtopico":"Verbo fazer","frente":"\"Fazem dois anos\" ou \"Faz dois anos\"?","verso":"Faz dois anos: indicando tempo, o verbo fazer é impessoal."},
+{"materia":"Língua Portuguesa","topico":"Concordância nominal e verbal","frente":"\"É proibido entrada\" está certo?","verso":"Sim, sem artigo. Com artigo: \"É proibida a entrada\"."},
+{"materia":"Direito Constitucional","topico":"Direitos fundamentais","frente":"Remédio constitucional para proteger a liberdade de locomoção?","verso":"Habeas corpus (art. 5º, LXVIII)."},
+{"materia":"Língua Portuguesa","topico":"Crase","frente":"Crase antes de verbo?"}
+]
+```
+Bons estudos!''';

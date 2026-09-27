@@ -16,6 +16,7 @@ import '../widgets/assistir.dart';
 import '../widgets/comuns.dart';
 import '../widgets/escopo.dart';
 import '../widgets/questoes_topico.dart';
+import 'colar_flashcards_screen.dart';
 import 'cronometro_screen.dart';
 import 'flashcards_screen.dart';
 
@@ -664,6 +665,21 @@ class _CartaoFlashcards extends StatelessWidget {
               icone: Icons.add_rounded,
               rotulo: 'Novo cartão',
               aoTocar: () => editarFlashcard(context, topicoId: topico.id),
+            ),
+            Pilula(
+              key: const ValueKey('colar-flashcards'),
+              icone: Icons.content_paste_rounded,
+              rotulo: 'Colar flashcards',
+              aoTocar: () async {
+                final escopo = await escopoAtual(context).first;
+                if (!context.mounted) return;
+                await abrirColarFlashcards(
+                  context,
+                  materia: materia,
+                  topico: topico,
+                  concursoId: escopo,
+                );
+              },
             ),
           ],
           child: cartoes.isEmpty

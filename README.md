@@ -103,6 +103,7 @@ Menu lateral → "Estatísticas". A tela segue o mesmo escopo da tela inicial: c
   - O estudo é em cartão grande: toque para ver a resposta, depois **Errei** ou **Acertei**.
   - Repetição espaçada (caixas de Leitner): acertou, o cartão volta em 1, 3, 7, 14 e 30 dias; errou, volta para o fim da fila da sessão.
   - Atalhos: "Flashcards · N para revisar" na matéria e o card de flashcards do dia na tela de Revisões.
+  - Para cadastrar muitos de uma vez, veja **Colar flashcards** (etapa 9).
 - Na lista de tópicos, ícones mostram quantos anexos e cartões cada tópico tem.
 
 ## Etapa 7: mapa mental
@@ -130,7 +131,7 @@ Menu lateral → "Mapa mental", ou o botão **Mapa mental** no alto da tela de c
 
 Como funciona: `lib/logic/mapa_mental.dart` monta a árvore e calcula o layout em balões. Em volta de cada matéria, o ângulo de cada tópico é proporcional ao número de subtópicos do ramo, no círculo inteiro. Fica só um vão na direção do centro, por onde chega a linha da matéria. O raio de cada anel cresce até as caixas vizinhas não se tocarem e até sobrar espaço para as linhas passarem entre elas. Com muitos nós, eles se alternam entre anéis, como tijolos. No fim, o layout confere cada linha contra cada nó; se algo ainda encostar, os anéis daquele nível se afastam até resolver. Os balões das matérias ficam em volta do centro sem se tocar. O desenho é um `CustomPainter` dentro de um `InteractiveViewer`, sem pacote novo. Textos e ligações ficam em cache, e o texto some quando fica pequeno demais para ler. Um edital com 8 matérias × 30 tópicos × 3 subtópicos (969 nós) calcula em poucas dezenas de milissegundos, e os testes conferem que nenhum nó se sobrepõe e nenhuma linha cruza um nó (inclusive numa matéria com 45 tópicos).
 
-## Etapa 7: banco de questões por tópico
+## Etapa 8: banco de questões por tópico
 
 Questões avulsas, ligadas ao tópico ou subtópico do edital. Vale a mesma lógica das matérias compartilhadas: uma questão de Português aparece em todos os concursos que têm Português. (As questões de **Provas**, mais abaixo, continuam separadas, com o Treino e o Simulado delas.)
 
@@ -188,6 +189,51 @@ A fila de cada dia começa pelas vencidas (as de caixa mais baixa, ou seja, as q
 ### Dados e sync
 
 A tabela nova é `questoes_topico`: tópico, enunciado normalizado (`chave`), dificuldade, alternativas, gabarito, explicação, caixa, próxima revisão, acertos, erros e `suspeito`. Ela entra no sync do Turso com gatilhos em `sync_pendentes`, inclusive nas exclusões. Excluir o tópico apaga as questões dele. As sessões criadas pelo "Resolver" têm `origem = 'questoes_topico'`. Veja `lib/logic/questoes_topico.dart` (leitura do JSON e fila) e `lib/data/questoes_topico_db.dart` (importação, Leitner e sessão). Os testes estão em `test/questoes_topico_test.dart` e `test/questoes_topico_widget_test.dart`; o de tela roda com o tablet deitado e em pé.
+
+## Etapa 9: colar flashcards
+
+Funciona como o **Colar questões** da etapa 8: mesmo campo, mesma prévia e mesma regra de tópicos, só que para flashcards.
+
+### Onde fica
+
+- No cartão **Flashcards** da tela do tópico, ao lado de **Novo cartão**.
+- No alto da **tela da matéria**, ao lado de "Flashcards · N para revisar".
+
+### O formato
+
+```json
+[{"materia":"Língua Portuguesa","topico":"Concordância nominal e verbal","subtopico":"Verbo haver","frente":"Quando o verbo haver fica no singular?","verso":"Quando significa existir ou indica tempo decorrido. Ex.: Havia muitos candidatos."}]
+```
+
+- O `subtopico` é opcional.
+- Na tela do tópico, se faltar `materia` ou `topico`, o cartão vai para o tópico aberto. Num subtópico, vai para ele.
+- O JSON pode vir cercado de ```` ``` ```` ou de texto copiado do chat. O app pega só a lista.
+
+### A prévia
+
+Tem o mesmo visual do Colar questões: lado a lado no tablet deitado, embaixo do campo em pé.
+
+- Os cartões aparecem agrupados por matéria › tópico › subtópico, com a frente e o começo do verso.
+- Selos: **Tópico novo no edital**, **Subtópico novo**, **Matéria nova** e **Entra no edital do concurso**.
+- No alto, a contagem de novos, de **já existentes** e de **com erro**. Cada erro diz o motivo, por exemplo: "Cartão 3: falta o verso".
+- Só os cartões novos e sem erro entram.
+
+### Regras
+
+- **Tópico que não existe é criado**, como no Colar questões. Ele entra no edital do concurso em foco; em "Tudo junto", em todos os concursos que têm a matéria. Um tópico que já existe só em outro edital ganha o vínculo. Uma matéria nova entra no concurso em foco.
+- **Sem duplicar**: o app compara a frente ignorando acento, maiúscula, pontuação e espaços. A comparação vale contra todos os flashcards, inclusive os digitados à mão. Colar a mesma lista de novo não duplica nada.
+- **Leitner**: os cartões importados entram na caixa 0, com revisão para hoje, no fim da lista do tópico. Já aparecem em "Revisar" e no card de flashcards do dia.
+- **Sync**: são flashcards comuns (tabela `flashcards`), então sincronizam com o Turso como os outros. Não há tabela nova.
+
+### Por dentro
+
+A leitura e a importação são as mesmas das questões:
+
+- `lib/logic/colagem.dart` recorta o JSON, lê matéria › tópico › subtópico, aplica o tópico aberto e marca os repetidos;
+- `lib/data/colagem_db.dart` monta a prévia do destino e acha ou cria a matéria, o tópico e o subtópico;
+- `lib/screens/colar_screen.dart` é a tela genérica com a prévia.
+
+Cada tipo só descreve o que muda: `lib/logic/flashcards_colados.dart` + `lib/data/flashcards_colagem_db.dart` + `lib/screens/colar_flashcards_screen.dart`, e o equivalente para as questões. Os testes estão em `test/flashcards_colagem_test.dart` e `test/flashcards_colagem_widget_test.dart`; o de tela roda com o tablet deitado e em pé.
 
 ## Colar o conteúdo programático
 
@@ -312,7 +358,7 @@ Toque no ícone de **nuvem** ao lado do logo e siga os passos. Você só configu
 - **Automática**: sincroniza ao abrir o app, ao voltar para ele, alguns segundos depois de cada alteração e a cada 5 minutos. Offline, as alterações ficam guardadas e vão depois.
 - **Primeira conexão**: se a nuvem e o aparelho já têm dados, você escolhe **Juntar** ou **Usar só os da nuvem**. A segunda opção apaga os dados do aparelho; é boa para o segundo aparelho, se ele só tiver o exemplo.
 - **Conflitos**: vale a alteração mais recente. Matérias com o mesmo nome criadas nos dois aparelhos viram uma só, com os tópicos e sessões dos dois.
-- **O que sincroniza**: concursos, edital (inclusive em quais concursos cada tópico está), progresso, ciclo, sessões, revisões, flashcards, provas, questões e respostas, e o banco de questões por tópico (com caixas do Leitner e gabaritos suspeitos).
+- **O que sincroniza**: concursos, edital (inclusive em quais concursos cada tópico está), progresso, ciclo, sessões, revisões, flashcards, provas, questões e respostas, o banco de questões por tópico (com caixas do Leitner e gabaritos suspeitos) e os flashcards colados.
 - **O que não sincroniza**: fotos e PDFs anexados (e os prints das questões) ficam no aparelho onde foram adicionados. Lembretes e pomodoro são configurados em cada aparelho.
 
 Como funciona: gatilhos do SQLite anotam cada mudança local, inclusive exclusões, em `sync_pendentes`. O app envia essas linhas para uma tabela genérica `registros` no Turso, pela API HTTP (Hrana, `/v2/pipeline`). Cada gravação recebe uma `versao` crescente, e cada aparelho baixa só o que veio depois da última versão que já viu. Veja `lib/data/sync/`.
