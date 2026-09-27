@@ -235,6 +235,48 @@ A leitura e a importação são as mesmas das questões:
 
 Cada tipo só descreve o que muda: `lib/logic/flashcards_colados.dart` + `lib/data/flashcards_colagem_db.dart` + `lib/screens/colar_flashcards_screen.dart`, e o equivalente para as questões. Os testes estão em `test/flashcards_colagem_test.dart` e `test/flashcards_colagem_widget_test.dart`; o de tela roda com o tablet deitado e em pé.
 
+## Etapa 10: pedir mais questões
+
+O botão **Pedir mais questões** monta um pedido em texto, pronto para colar no chat do Claude. O Claude devolve questões novas no formato do **Colar questões** (etapa 8) e, se você pedir, flashcards no formato do **Colar flashcards** (etapa 9). Não usa API: o app só monta o texto e copia.
+
+### Onde fica
+
+- No cartão **Questões** da tela do tópico, ao lado de "Colar questões". Num subtópico, o pedido é do tópico de cima, e os itens vão para o subtópico aberto.
+- No alto da **tela da matéria**. Aí o pedido é para a matéria inteira.
+
+### Antes de copiar
+
+Uma tela curta com as opções:
+
+- **Quantidade**: 10, 20 ou 30.
+- **O que pedir**: questões, flashcards ou os dois. Com os dois, o Claude responde em dois blocos: um para o Colar questões e outro para o Colar flashcards.
+- **Foco**: "Equilibrado" ou "Reforçar meus erros".
+- O **texto do pedido**, que dá para editar. Mudar uma opção refaz o texto.
+- **Copiar** e **Compartilhar**. O Compartilhar abre a folha de compartilhamento do Android, para mandar direto para o app do Claude.
+
+### O que vai no texto (nesta ordem)
+
+1. **Regras**: gerar N questões inéditas com 5 alternativas, gabarito, explicação curta e dificuldade de 1 a 5 bem distribuída. O Claude deve responder só com a lista JSON, num bloco de código, no formato exato da etapa 8 (e da etapa 9 para flashcards). O exemplo do formato já vem com os nomes de verdade. O Claude deve usar os nomes de matéria, tópico e subtópico **exatamente** como escritos, sem inventar tópicos, e não repetir o conceito das questões que já existem, mesmo reescritas.
+2. **Contexto**: o concurso em foco e a banca.
+3. **Nomes exatos**: matéria, tópico e subtópicos existentes.
+4. **Situação do tópico**: total de questões, % de acerto e quantas estão marcadas como gabarito suspeito.
+5. **Já existem**: as questões do tópico, cada uma com o enunciado resumido em até 120 caracteres. São no máximo 60, as mais recentes primeiro. Pedindo flashcards, as frentes dos cartões entram também.
+6. **Onde eu mais erro**: até 10 questões com mais erros que acertos, com o enunciado completo e a resposta certa. O pedido é de questões novas que cobram o mesmo conceito de outro jeito. No foco "Reforçar meus erros", metade do que você pedir vai para esses conceitos.
+
+### Pedido da matéria inteira
+
+- O pedido lista **todos os tópicos do edital** do concurso em foco (com os subtópicos), cada um com o número de questões e a % de acerto.
+- Ele pede para distribuir as questões priorizando os tópicos com **menos questões** e os de **menor acerto**.
+- A lista "Já existem" vai só com 15 questões por tópico, para o texto não ficar gigante.
+
+### Por dentro
+
+- `lib/logic/pedido_questoes.dart` monta o texto. É lógica pura, sem banco.
+- `lib/data/pedido_db.dart` junta o concurso, os nomes e as questões e flashcards que já existem.
+- `lib/screens/pedir_questoes_screen.dart` é a tela. O compartilhamento usa o pacote `share_plus`.
+- Não há tabela nova.
+- Os testes estão em `test/pedido_questoes_test.dart`: nomes exatos, limites de 60/15 itens e de 120 caracteres, a seção de erros, os dados do banco e a tela.
+
 ## Colar o conteúdo programático
 
 No edital do concurso, toque em **"Colar edital"**. Com o edital vazio, também aparece um card com esse atalho.

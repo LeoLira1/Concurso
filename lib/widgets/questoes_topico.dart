@@ -5,6 +5,7 @@ import '../data/database.dart';
 import '../data/questoes_topico_db.dart';
 import '../screens/banco_questoes_screen.dart';
 import '../screens/colar_questoes_screen.dart';
+import '../screens/pedir_questoes_screen.dart';
 import '../screens/resolver_topico_screen.dart';
 import '../theme.dart';
 import '../util/texto.dart';
@@ -117,7 +118,8 @@ class AtalhoQuestoesMateria extends StatelessWidget {
   }
 }
 
-/// Resolver · Colar questões · Ver questões · Gabarito suspeito.
+/// Resolver · Colar questões · Pedir mais questões · Ver questões ·
+/// Gabarito suspeito.
 class BotoesQuestoes extends StatelessWidget {
   const BotoesQuestoes({
     super.key,
@@ -182,6 +184,17 @@ class BotoesQuestoes extends StatelessWidget {
           icone: Icons.content_paste_rounded,
           rotulo: 'Colar questões',
           aoTocar: () => abrirColarQuestoes(
+            context,
+            materia: materia,
+            topico: topico,
+            concursoId: concursoId,
+          ),
+        ),
+        Pilula(
+          key: const ValueKey('pedir-questoes'),
+          icone: Icons.auto_awesome_outlined,
+          rotulo: 'Pedir mais questões',
+          aoTocar: () => abrirPedirQuestoes(
             context,
             materia: materia,
             topico: topico,
