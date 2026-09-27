@@ -27,6 +27,10 @@ import 'package:edital/screens/flashcards_screen.dart';
 import 'package:edital/screens/topico_screen.dart';
 import 'package:edital/screens/importar_screen.dart';
 import 'package:edital/data/provas_db.dart';
+import 'package:edital/data/questoes_topico_db.dart';
+import 'package:edital/logic/questoes_topico.dart';
+import 'package:edital/screens/colar_questoes_screen.dart';
+import 'package:edital/screens/resolver_topico_screen.dart';
 import 'package:edital/logic/provas.dart';
 import 'package:edital/screens/colar_prova_screen.dart';
 import 'package:edital/screens/estatisticas_provas_screen.dart';
@@ -367,6 +371,8 @@ void main() {
     );
     depois?.call();
     await tester.pumpWidget(const SizedBox());
+    // Telas que gravam ao fechar (ex.: sessão de questões) terminam antes.
+    await assentar(tester, settle: false);
     await tester.runAsync(db.close);
   }
 
@@ -1122,7 +1128,132 @@ NOÇÕES DE DIREITO ADMINISTRATIVO: 1 Noções de organização administrativa. 
       preparar: dadosProvas,
     ),
   );
+  // --- Etapa 7: banco de questões por tópico ---
+  Future<void> dadosQuestoesTopico(AppDatabase db) async {
+    final foco = (await db.watchFoco().first)!;
+    await db.importarQuestoesTopico(
+      lerQuestoes(questoesTopicoJson),
+      concursoId: foco.id,
+    );
+  }
+
+  Widget resolverTopico(AppDatabase db) => app(
+    db,
+    FutureBuilder(
+      future: db.filaQuestoesTopico(),
+      builder: (_, s) => s.data == null
+          ? const SizedBox()
+          : ResolverTopicoScreen(titulo: 'Conjunções', fila: s.data!),
+    ),
+  );
+
+  Future<void> errarTopico(WidgetTester t) async {
+    await t.tap(find.byKey(const ValueKey('alt-B')));
+    await t.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 100)),
+    );
+    await t.pump(const Duration(milliseconds: 300));
+  }
+
+  testWidgets(
+    'resolver tópico paisagem',
+    (t) => captura(
+      t,
+      '41_resolver_topico_paisagem',
+      paisagem,
+      resolverTopico,
+      preparar: dadosQuestoesTopico,
+      antes: errarTopico,
+    ),
+  );
+  testWidgets(
+    'resolver tópico retrato',
+    (t) => captura(
+      t,
+      '41b_resolver_topico_retrato',
+      retrato,
+      resolverTopico,
+      preparar: dadosQuestoesTopico,
+      antes: errarTopico,
+    ),
+  );
+  testWidgets(
+    'resolver tópico celular',
+    (t) => captura(
+      t,
+      '41c_resolver_topico_celular',
+      celular,
+      resolverTopico,
+      preparar: dadosQuestoesTopico,
+    ),
+  );
+  testWidgets(
+    'colar questões prévia',
+    (t) => captura(
+      t,
+      '42_colar_questoes_paisagem',
+      paisagem,
+      (db) => app(
+        db,
+        ColarQuestoesScreen(
+          textoInicial: questoesTopicoJson,
+          materiaPadrao: 'Língua Portuguesa',
+        ),
+      ),
+      preparar: (db) async {
+        final foco = (await db.watchFoco().first)!;
+        // Uma já existe (fica de fora) e "Conclusivas" é subtópico novo.
+        final l = lerQuestoes(questoesTopicoJson);
+        l.questoes.removeWhere((q) => q.subtopico == 'Conclusivas');
+        await db.importarQuestoesTopico(
+          LeituraQuestoes([l.questoes.first]),
+          concursoId: foco.id,
+        );
+      },
+      antes: (t) async {
+        await t.tap(find.byKey(const ValueKey('conferir-questoes')));
+      },
+    ),
+  );
+  testWidgets(
+    'tópico com questões',
+    (t) => captura(
+      t,
+      '43_topico_questoes_retrato',
+      retrato,
+      (db) => app(
+        db,
+        FutureBuilder(
+          future: db.watchQuestoesTopico().first,
+          builder: (_, s) => s.data == null || s.data!.isEmpty
+              ? const SizedBox()
+              : TopicoScreen(topicoId: s.data!.first.pai!.id),
+        ),
+      ),
+      preparar: (db) async {
+        await dadosQuestoesTopico(db);
+        final q = (await db.watchQuestoesTopico().first).last;
+        await db.marcarSuspeito(q.id, true);
+      },
+    ),
+  );
 }
+
+const questoesTopicoJson = r'''[
+{"materia":"Língua Portuguesa","topico":"Conjunções","subtopico":"Adversativas","dificuldade":2,
+ "enunciado":"Leia a frase: \"O candidato estudou durante meses, mas não conseguiu a aprovação na primeira tentativa.\" A conjunção \"mas\" estabelece, entre as orações, uma relação de:",
+ "alternativas":{"A":"adição, somando as duas informações","B":"conclusão, pois a reprovação decorre do estudo","C":"oposição, contrariando a expectativa criada pela primeira oração","D":"explicação, justificando o esforço do candidato","E":"alternância, indicando que um fato exclui o outro"},
+ "gabarito":"C","explicacao":"\"Mas\" é conjunção coordenativa adversativa: a segunda oração quebra a expectativa criada pela primeira (estudou, então se esperava a aprovação)."},
+{"materia":"Língua Portuguesa","topico":"Conjunções","subtopico":"Conclusivas","dificuldade":3,
+ "enunciado":"Em \"Revisou todo o edital; portanto, sente-se preparado\", a palavra \"portanto\" é:",
+ "alternativas":{"A":"conclusiva","B":"adversativa","C":"aditiva","D":"explicativa","E":"alternativa"},
+ "gabarito":"A","explicacao":"Introduz a conclusão do que foi dito antes."},
+{"materia":"Língua Portuguesa","topico":"Conjunções","subtopico":"Adversativas","dificuldade":4,
+ "enunciado":"Assinale a alternativa em que \"contudo\" pode ser trocado por \"no entanto\" sem mudar o sentido.",
+ "alternativas":{"A":"Choveu, contudo o jogo seguiu.","B":"Contudo que chova, sairei.","C":"Saiu contudo pressa.","D":"Contudo, portanto e logo.","E":"Nenhuma delas."},
+ "gabarito":"A","explicacao":"As duas são adversativas."},
+{"materia":"Língua Portuguesa","dificuldade":2,"enunciado":"Questão sem tópico","alternativas":{"A":"1","B":"2"},"gabarito":"Z"}
+]''';
 
 const _estruturado = '''
 LÍNGUA PORTUGUESA:

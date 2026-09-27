@@ -8025,6 +8025,870 @@ class PrintsQuestaoCompanion extends UpdateCompanion<PrintQuestao> {
   }
 }
 
+class $QuestoesTopicoTable extends QuestoesTopico
+    with TableInfo<$QuestoesTopicoTable, QuestaoTopico> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $QuestoesTopicoTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    clientDefault: novoId,
+  );
+  static const VerificationMeta _atualizadoEmMeta = const VerificationMeta(
+    'atualizadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> atualizadoEm = GeneratedColumn<DateTime>(
+    'atualizado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  static const VerificationMeta _topicoIdMeta = const VerificationMeta(
+    'topicoId',
+  );
+  @override
+  late final GeneratedColumn<String> topicoId = GeneratedColumn<String>(
+    'topico_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES topicos (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _chaveMeta = const VerificationMeta('chave');
+  @override
+  late final GeneratedColumn<String> chave = GeneratedColumn<String>(
+    'chave',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _dificuldadeMeta = const VerificationMeta(
+    'dificuldade',
+  );
+  @override
+  late final GeneratedColumn<int> dificuldade = GeneratedColumn<int>(
+    'dificuldade',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(3),
+  );
+  static const VerificationMeta _enunciadoMeta = const VerificationMeta(
+    'enunciado',
+  );
+  @override
+  late final GeneratedColumn<String> enunciado = GeneratedColumn<String>(
+    'enunciado',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _alternativasMeta = const VerificationMeta(
+    'alternativas',
+  );
+  @override
+  late final GeneratedColumn<String> alternativas = GeneratedColumn<String>(
+    'alternativas',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _gabaritoMeta = const VerificationMeta(
+    'gabarito',
+  );
+  @override
+  late final GeneratedColumn<String> gabarito = GeneratedColumn<String>(
+    'gabarito',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _explicacaoMeta = const VerificationMeta(
+    'explicacao',
+  );
+  @override
+  late final GeneratedColumn<String> explicacao = GeneratedColumn<String>(
+    'explicacao',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _caixaMeta = const VerificationMeta('caixa');
+  @override
+  late final GeneratedColumn<int> caixa = GeneratedColumn<int>(
+    'caixa',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _proximaRevisaoMeta = const VerificationMeta(
+    'proximaRevisao',
+  );
+  @override
+  late final GeneratedColumn<DateTime> proximaRevisao =
+      GeneratedColumn<DateTime>(
+        'proxima_revisao',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+        clientDefault: DateTime.now,
+      );
+  static const VerificationMeta _acertosMeta = const VerificationMeta(
+    'acertos',
+  );
+  @override
+  late final GeneratedColumn<int> acertos = GeneratedColumn<int>(
+    'acertos',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _errosMeta = const VerificationMeta('erros');
+  @override
+  late final GeneratedColumn<int> erros = GeneratedColumn<int>(
+    'erros',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _suspeitoMeta = const VerificationMeta(
+    'suspeito',
+  );
+  @override
+  late final GeneratedColumn<bool> suspeito = GeneratedColumn<bool>(
+    'suspeito',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("suspeito" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _criadoEmMeta = const VerificationMeta(
+    'criadoEm',
+  );
+  @override
+  late final GeneratedColumn<DateTime> criadoEm = GeneratedColumn<DateTime>(
+    'criado_em',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    clientDefault: DateTime.now,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    atualizadoEm,
+    topicoId,
+    chave,
+    dificuldade,
+    enunciado,
+    alternativas,
+    gabarito,
+    explicacao,
+    caixa,
+    proximaRevisao,
+    acertos,
+    erros,
+    suspeito,
+    criadoEm,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'questoes_topico';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<QuestaoTopico> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('atualizado_em')) {
+      context.handle(
+        _atualizadoEmMeta,
+        atualizadoEm.isAcceptableOrUnknown(
+          data['atualizado_em']!,
+          _atualizadoEmMeta,
+        ),
+      );
+    }
+    if (data.containsKey('topico_id')) {
+      context.handle(
+        _topicoIdMeta,
+        topicoId.isAcceptableOrUnknown(data['topico_id']!, _topicoIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_topicoIdMeta);
+    }
+    if (data.containsKey('chave')) {
+      context.handle(
+        _chaveMeta,
+        chave.isAcceptableOrUnknown(data['chave']!, _chaveMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_chaveMeta);
+    }
+    if (data.containsKey('dificuldade')) {
+      context.handle(
+        _dificuldadeMeta,
+        dificuldade.isAcceptableOrUnknown(
+          data['dificuldade']!,
+          _dificuldadeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('enunciado')) {
+      context.handle(
+        _enunciadoMeta,
+        enunciado.isAcceptableOrUnknown(data['enunciado']!, _enunciadoMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_enunciadoMeta);
+    }
+    if (data.containsKey('alternativas')) {
+      context.handle(
+        _alternativasMeta,
+        alternativas.isAcceptableOrUnknown(
+          data['alternativas']!,
+          _alternativasMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_alternativasMeta);
+    }
+    if (data.containsKey('gabarito')) {
+      context.handle(
+        _gabaritoMeta,
+        gabarito.isAcceptableOrUnknown(data['gabarito']!, _gabaritoMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_gabaritoMeta);
+    }
+    if (data.containsKey('explicacao')) {
+      context.handle(
+        _explicacaoMeta,
+        explicacao.isAcceptableOrUnknown(data['explicacao']!, _explicacaoMeta),
+      );
+    }
+    if (data.containsKey('caixa')) {
+      context.handle(
+        _caixaMeta,
+        caixa.isAcceptableOrUnknown(data['caixa']!, _caixaMeta),
+      );
+    }
+    if (data.containsKey('proxima_revisao')) {
+      context.handle(
+        _proximaRevisaoMeta,
+        proximaRevisao.isAcceptableOrUnknown(
+          data['proxima_revisao']!,
+          _proximaRevisaoMeta,
+        ),
+      );
+    }
+    if (data.containsKey('acertos')) {
+      context.handle(
+        _acertosMeta,
+        acertos.isAcceptableOrUnknown(data['acertos']!, _acertosMeta),
+      );
+    }
+    if (data.containsKey('erros')) {
+      context.handle(
+        _errosMeta,
+        erros.isAcceptableOrUnknown(data['erros']!, _errosMeta),
+      );
+    }
+    if (data.containsKey('suspeito')) {
+      context.handle(
+        _suspeitoMeta,
+        suspeito.isAcceptableOrUnknown(data['suspeito']!, _suspeitoMeta),
+      );
+    }
+    if (data.containsKey('criado_em')) {
+      context.handle(
+        _criadoEmMeta,
+        criadoEm.isAcceptableOrUnknown(data['criado_em']!, _criadoEmMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  QuestaoTopico map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return QuestaoTopico(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      atualizadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}atualizado_em'],
+      )!,
+      topicoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}topico_id'],
+      )!,
+      chave: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}chave'],
+      )!,
+      dificuldade: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}dificuldade'],
+      )!,
+      enunciado: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}enunciado'],
+      )!,
+      alternativas: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}alternativas'],
+      )!,
+      gabarito: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}gabarito'],
+      )!,
+      explicacao: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}explicacao'],
+      )!,
+      caixa: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}caixa'],
+      )!,
+      proximaRevisao: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}proxima_revisao'],
+      )!,
+      acertos: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}acertos'],
+      )!,
+      erros: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}erros'],
+      )!,
+      suspeito: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}suspeito'],
+      )!,
+      criadoEm: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}criado_em'],
+      )!,
+    );
+  }
+
+  @override
+  $QuestoesTopicoTable createAlias(String alias) {
+    return $QuestoesTopicoTable(attachedDatabase, alias);
+  }
+}
+
+class QuestaoTopico extends DataClass implements Insertable<QuestaoTopico> {
+  final String id;
+  final DateTime atualizadoEm;
+  final String topicoId;
+
+  /// Enunciado normalizado (sem acento, pontuação e espaços repetidos):
+  /// a mesma questão colada de novo não é duplicada.
+  final String chave;
+
+  /// 1 (fácil) a 5 (difícil).
+  final int dificuldade;
+  final String enunciado;
+
+  /// JSON letra → texto.
+  final String alternativas;
+  final String gabarito;
+  final String explicacao;
+
+  /// 0 = nova/errada ... 5 = bem sabida.
+  final int caixa;
+
+  /// Dia em que a questão volta a aparecer.
+  final DateTime proximaRevisao;
+  final int acertos;
+  final int erros;
+
+  /// "Gabarito suspeito": marcada para revisar depois.
+  final bool suspeito;
+  final DateTime criadoEm;
+  const QuestaoTopico({
+    required this.id,
+    required this.atualizadoEm,
+    required this.topicoId,
+    required this.chave,
+    required this.dificuldade,
+    required this.enunciado,
+    required this.alternativas,
+    required this.gabarito,
+    required this.explicacao,
+    required this.caixa,
+    required this.proximaRevisao,
+    required this.acertos,
+    required this.erros,
+    required this.suspeito,
+    required this.criadoEm,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['atualizado_em'] = Variable<DateTime>(atualizadoEm);
+    map['topico_id'] = Variable<String>(topicoId);
+    map['chave'] = Variable<String>(chave);
+    map['dificuldade'] = Variable<int>(dificuldade);
+    map['enunciado'] = Variable<String>(enunciado);
+    map['alternativas'] = Variable<String>(alternativas);
+    map['gabarito'] = Variable<String>(gabarito);
+    map['explicacao'] = Variable<String>(explicacao);
+    map['caixa'] = Variable<int>(caixa);
+    map['proxima_revisao'] = Variable<DateTime>(proximaRevisao);
+    map['acertos'] = Variable<int>(acertos);
+    map['erros'] = Variable<int>(erros);
+    map['suspeito'] = Variable<bool>(suspeito);
+    map['criado_em'] = Variable<DateTime>(criadoEm);
+    return map;
+  }
+
+  QuestoesTopicoCompanion toCompanion(bool nullToAbsent) {
+    return QuestoesTopicoCompanion(
+      id: Value(id),
+      atualizadoEm: Value(atualizadoEm),
+      topicoId: Value(topicoId),
+      chave: Value(chave),
+      dificuldade: Value(dificuldade),
+      enunciado: Value(enunciado),
+      alternativas: Value(alternativas),
+      gabarito: Value(gabarito),
+      explicacao: Value(explicacao),
+      caixa: Value(caixa),
+      proximaRevisao: Value(proximaRevisao),
+      acertos: Value(acertos),
+      erros: Value(erros),
+      suspeito: Value(suspeito),
+      criadoEm: Value(criadoEm),
+    );
+  }
+
+  factory QuestaoTopico.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return QuestaoTopico(
+      id: serializer.fromJson<String>(json['id']),
+      atualizadoEm: serializer.fromJson<DateTime>(json['atualizadoEm']),
+      topicoId: serializer.fromJson<String>(json['topicoId']),
+      chave: serializer.fromJson<String>(json['chave']),
+      dificuldade: serializer.fromJson<int>(json['dificuldade']),
+      enunciado: serializer.fromJson<String>(json['enunciado']),
+      alternativas: serializer.fromJson<String>(json['alternativas']),
+      gabarito: serializer.fromJson<String>(json['gabarito']),
+      explicacao: serializer.fromJson<String>(json['explicacao']),
+      caixa: serializer.fromJson<int>(json['caixa']),
+      proximaRevisao: serializer.fromJson<DateTime>(json['proximaRevisao']),
+      acertos: serializer.fromJson<int>(json['acertos']),
+      erros: serializer.fromJson<int>(json['erros']),
+      suspeito: serializer.fromJson<bool>(json['suspeito']),
+      criadoEm: serializer.fromJson<DateTime>(json['criadoEm']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'atualizadoEm': serializer.toJson<DateTime>(atualizadoEm),
+      'topicoId': serializer.toJson<String>(topicoId),
+      'chave': serializer.toJson<String>(chave),
+      'dificuldade': serializer.toJson<int>(dificuldade),
+      'enunciado': serializer.toJson<String>(enunciado),
+      'alternativas': serializer.toJson<String>(alternativas),
+      'gabarito': serializer.toJson<String>(gabarito),
+      'explicacao': serializer.toJson<String>(explicacao),
+      'caixa': serializer.toJson<int>(caixa),
+      'proximaRevisao': serializer.toJson<DateTime>(proximaRevisao),
+      'acertos': serializer.toJson<int>(acertos),
+      'erros': serializer.toJson<int>(erros),
+      'suspeito': serializer.toJson<bool>(suspeito),
+      'criadoEm': serializer.toJson<DateTime>(criadoEm),
+    };
+  }
+
+  QuestaoTopico copyWith({
+    String? id,
+    DateTime? atualizadoEm,
+    String? topicoId,
+    String? chave,
+    int? dificuldade,
+    String? enunciado,
+    String? alternativas,
+    String? gabarito,
+    String? explicacao,
+    int? caixa,
+    DateTime? proximaRevisao,
+    int? acertos,
+    int? erros,
+    bool? suspeito,
+    DateTime? criadoEm,
+  }) => QuestaoTopico(
+    id: id ?? this.id,
+    atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+    topicoId: topicoId ?? this.topicoId,
+    chave: chave ?? this.chave,
+    dificuldade: dificuldade ?? this.dificuldade,
+    enunciado: enunciado ?? this.enunciado,
+    alternativas: alternativas ?? this.alternativas,
+    gabarito: gabarito ?? this.gabarito,
+    explicacao: explicacao ?? this.explicacao,
+    caixa: caixa ?? this.caixa,
+    proximaRevisao: proximaRevisao ?? this.proximaRevisao,
+    acertos: acertos ?? this.acertos,
+    erros: erros ?? this.erros,
+    suspeito: suspeito ?? this.suspeito,
+    criadoEm: criadoEm ?? this.criadoEm,
+  );
+  QuestaoTopico copyWithCompanion(QuestoesTopicoCompanion data) {
+    return QuestaoTopico(
+      id: data.id.present ? data.id.value : this.id,
+      atualizadoEm: data.atualizadoEm.present
+          ? data.atualizadoEm.value
+          : this.atualizadoEm,
+      topicoId: data.topicoId.present ? data.topicoId.value : this.topicoId,
+      chave: data.chave.present ? data.chave.value : this.chave,
+      dificuldade: data.dificuldade.present
+          ? data.dificuldade.value
+          : this.dificuldade,
+      enunciado: data.enunciado.present ? data.enunciado.value : this.enunciado,
+      alternativas: data.alternativas.present
+          ? data.alternativas.value
+          : this.alternativas,
+      gabarito: data.gabarito.present ? data.gabarito.value : this.gabarito,
+      explicacao: data.explicacao.present
+          ? data.explicacao.value
+          : this.explicacao,
+      caixa: data.caixa.present ? data.caixa.value : this.caixa,
+      proximaRevisao: data.proximaRevisao.present
+          ? data.proximaRevisao.value
+          : this.proximaRevisao,
+      acertos: data.acertos.present ? data.acertos.value : this.acertos,
+      erros: data.erros.present ? data.erros.value : this.erros,
+      suspeito: data.suspeito.present ? data.suspeito.value : this.suspeito,
+      criadoEm: data.criadoEm.present ? data.criadoEm.value : this.criadoEm,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('QuestaoTopico(')
+          ..write('id: $id, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('topicoId: $topicoId, ')
+          ..write('chave: $chave, ')
+          ..write('dificuldade: $dificuldade, ')
+          ..write('enunciado: $enunciado, ')
+          ..write('alternativas: $alternativas, ')
+          ..write('gabarito: $gabarito, ')
+          ..write('explicacao: $explicacao, ')
+          ..write('caixa: $caixa, ')
+          ..write('proximaRevisao: $proximaRevisao, ')
+          ..write('acertos: $acertos, ')
+          ..write('erros: $erros, ')
+          ..write('suspeito: $suspeito, ')
+          ..write('criadoEm: $criadoEm')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    atualizadoEm,
+    topicoId,
+    chave,
+    dificuldade,
+    enunciado,
+    alternativas,
+    gabarito,
+    explicacao,
+    caixa,
+    proximaRevisao,
+    acertos,
+    erros,
+    suspeito,
+    criadoEm,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is QuestaoTopico &&
+          other.id == this.id &&
+          other.atualizadoEm == this.atualizadoEm &&
+          other.topicoId == this.topicoId &&
+          other.chave == this.chave &&
+          other.dificuldade == this.dificuldade &&
+          other.enunciado == this.enunciado &&
+          other.alternativas == this.alternativas &&
+          other.gabarito == this.gabarito &&
+          other.explicacao == this.explicacao &&
+          other.caixa == this.caixa &&
+          other.proximaRevisao == this.proximaRevisao &&
+          other.acertos == this.acertos &&
+          other.erros == this.erros &&
+          other.suspeito == this.suspeito &&
+          other.criadoEm == this.criadoEm);
+}
+
+class QuestoesTopicoCompanion extends UpdateCompanion<QuestaoTopico> {
+  final Value<String> id;
+  final Value<DateTime> atualizadoEm;
+  final Value<String> topicoId;
+  final Value<String> chave;
+  final Value<int> dificuldade;
+  final Value<String> enunciado;
+  final Value<String> alternativas;
+  final Value<String> gabarito;
+  final Value<String> explicacao;
+  final Value<int> caixa;
+  final Value<DateTime> proximaRevisao;
+  final Value<int> acertos;
+  final Value<int> erros;
+  final Value<bool> suspeito;
+  final Value<DateTime> criadoEm;
+  final Value<int> rowid;
+  const QuestoesTopicoCompanion({
+    this.id = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    this.topicoId = const Value.absent(),
+    this.chave = const Value.absent(),
+    this.dificuldade = const Value.absent(),
+    this.enunciado = const Value.absent(),
+    this.alternativas = const Value.absent(),
+    this.gabarito = const Value.absent(),
+    this.explicacao = const Value.absent(),
+    this.caixa = const Value.absent(),
+    this.proximaRevisao = const Value.absent(),
+    this.acertos = const Value.absent(),
+    this.erros = const Value.absent(),
+    this.suspeito = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  QuestoesTopicoCompanion.insert({
+    this.id = const Value.absent(),
+    this.atualizadoEm = const Value.absent(),
+    required String topicoId,
+    required String chave,
+    this.dificuldade = const Value.absent(),
+    required String enunciado,
+    required String alternativas,
+    required String gabarito,
+    this.explicacao = const Value.absent(),
+    this.caixa = const Value.absent(),
+    this.proximaRevisao = const Value.absent(),
+    this.acertos = const Value.absent(),
+    this.erros = const Value.absent(),
+    this.suspeito = const Value.absent(),
+    this.criadoEm = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : topicoId = Value(topicoId),
+       chave = Value(chave),
+       enunciado = Value(enunciado),
+       alternativas = Value(alternativas),
+       gabarito = Value(gabarito);
+  static Insertable<QuestaoTopico> custom({
+    Expression<String>? id,
+    Expression<DateTime>? atualizadoEm,
+    Expression<String>? topicoId,
+    Expression<String>? chave,
+    Expression<int>? dificuldade,
+    Expression<String>? enunciado,
+    Expression<String>? alternativas,
+    Expression<String>? gabarito,
+    Expression<String>? explicacao,
+    Expression<int>? caixa,
+    Expression<DateTime>? proximaRevisao,
+    Expression<int>? acertos,
+    Expression<int>? erros,
+    Expression<bool>? suspeito,
+    Expression<DateTime>? criadoEm,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (atualizadoEm != null) 'atualizado_em': atualizadoEm,
+      if (topicoId != null) 'topico_id': topicoId,
+      if (chave != null) 'chave': chave,
+      if (dificuldade != null) 'dificuldade': dificuldade,
+      if (enunciado != null) 'enunciado': enunciado,
+      if (alternativas != null) 'alternativas': alternativas,
+      if (gabarito != null) 'gabarito': gabarito,
+      if (explicacao != null) 'explicacao': explicacao,
+      if (caixa != null) 'caixa': caixa,
+      if (proximaRevisao != null) 'proxima_revisao': proximaRevisao,
+      if (acertos != null) 'acertos': acertos,
+      if (erros != null) 'erros': erros,
+      if (suspeito != null) 'suspeito': suspeito,
+      if (criadoEm != null) 'criado_em': criadoEm,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  QuestoesTopicoCompanion copyWith({
+    Value<String>? id,
+    Value<DateTime>? atualizadoEm,
+    Value<String>? topicoId,
+    Value<String>? chave,
+    Value<int>? dificuldade,
+    Value<String>? enunciado,
+    Value<String>? alternativas,
+    Value<String>? gabarito,
+    Value<String>? explicacao,
+    Value<int>? caixa,
+    Value<DateTime>? proximaRevisao,
+    Value<int>? acertos,
+    Value<int>? erros,
+    Value<bool>? suspeito,
+    Value<DateTime>? criadoEm,
+    Value<int>? rowid,
+  }) {
+    return QuestoesTopicoCompanion(
+      id: id ?? this.id,
+      atualizadoEm: atualizadoEm ?? this.atualizadoEm,
+      topicoId: topicoId ?? this.topicoId,
+      chave: chave ?? this.chave,
+      dificuldade: dificuldade ?? this.dificuldade,
+      enunciado: enunciado ?? this.enunciado,
+      alternativas: alternativas ?? this.alternativas,
+      gabarito: gabarito ?? this.gabarito,
+      explicacao: explicacao ?? this.explicacao,
+      caixa: caixa ?? this.caixa,
+      proximaRevisao: proximaRevisao ?? this.proximaRevisao,
+      acertos: acertos ?? this.acertos,
+      erros: erros ?? this.erros,
+      suspeito: suspeito ?? this.suspeito,
+      criadoEm: criadoEm ?? this.criadoEm,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (atualizadoEm.present) {
+      map['atualizado_em'] = Variable<DateTime>(atualizadoEm.value);
+    }
+    if (topicoId.present) {
+      map['topico_id'] = Variable<String>(topicoId.value);
+    }
+    if (chave.present) {
+      map['chave'] = Variable<String>(chave.value);
+    }
+    if (dificuldade.present) {
+      map['dificuldade'] = Variable<int>(dificuldade.value);
+    }
+    if (enunciado.present) {
+      map['enunciado'] = Variable<String>(enunciado.value);
+    }
+    if (alternativas.present) {
+      map['alternativas'] = Variable<String>(alternativas.value);
+    }
+    if (gabarito.present) {
+      map['gabarito'] = Variable<String>(gabarito.value);
+    }
+    if (explicacao.present) {
+      map['explicacao'] = Variable<String>(explicacao.value);
+    }
+    if (caixa.present) {
+      map['caixa'] = Variable<int>(caixa.value);
+    }
+    if (proximaRevisao.present) {
+      map['proxima_revisao'] = Variable<DateTime>(proximaRevisao.value);
+    }
+    if (acertos.present) {
+      map['acertos'] = Variable<int>(acertos.value);
+    }
+    if (erros.present) {
+      map['erros'] = Variable<int>(erros.value);
+    }
+    if (suspeito.present) {
+      map['suspeito'] = Variable<bool>(suspeito.value);
+    }
+    if (criadoEm.present) {
+      map['criado_em'] = Variable<DateTime>(criadoEm.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('QuestoesTopicoCompanion(')
+          ..write('id: $id, ')
+          ..write('atualizadoEm: $atualizadoEm, ')
+          ..write('topicoId: $topicoId, ')
+          ..write('chave: $chave, ')
+          ..write('dificuldade: $dificuldade, ')
+          ..write('enunciado: $enunciado, ')
+          ..write('alternativas: $alternativas, ')
+          ..write('gabarito: $gabarito, ')
+          ..write('explicacao: $explicacao, ')
+          ..write('caixa: $caixa, ')
+          ..write('proximaRevisao: $proximaRevisao, ')
+          ..write('acertos: $acertos, ')
+          ..write('erros: $erros, ')
+          ..write('suspeito: $suspeito, ')
+          ..write('criadoEm: $criadoEm, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -8047,6 +8911,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $QuestoesProvaTable questoesProva = $QuestoesProvaTable(this);
   late final $RespostasTable respostas = $RespostasTable(this);
   late final $PrintsQuestaoTable printsQuestao = $PrintsQuestaoTable(this);
+  late final $QuestoesTopicoTable questoesTopico = $QuestoesTopicoTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -8067,6 +8932,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     questoesProva,
     respostas,
     printsQuestao,
+    questoesTopico,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -8202,6 +9068,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('prints_questao', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'topicos',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('questoes_topico', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -10100,6 +10973,24 @@ final class $$TopicosTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$QuestoesTopicoTable, List<QuestaoTopico>>
+  _questoesTopicoRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.questoesTopico,
+    aliasName: 'topicos__id__questoes_topico__topico_id',
+  );
+
+  $$QuestoesTopicoTableProcessedTableManager get questoesTopicoRefs {
+    final manager = $$QuestoesTopicoTableTableManager(
+      $_db,
+      $_db.questoesTopico,
+    ).filter((f) => f.topicoId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_questoesTopicoRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$TopicosTableFilterComposer
@@ -10328,6 +11219,31 @@ class $$TopicosTableFilterComposer
           }) => $$QuestoesProvaTableFilterComposer(
             $db: $db,
             $table: $db.questoesProva,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> questoesTopicoRefs(
+    Expression<bool> Function($$QuestoesTopicoTableFilterComposer f) f,
+  ) {
+    final $$QuestoesTopicoTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.questoesTopico,
+      getReferencedColumn: (t) => t.topicoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$QuestoesTopicoTableFilterComposer(
+            $db: $db,
+            $table: $db.questoesTopico,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -10648,6 +11564,31 @@ class $$TopicosTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> questoesTopicoRefs<T extends Object>(
+    Expression<T> Function($$QuestoesTopicoTableAnnotationComposer a) f,
+  ) {
+    final $$QuestoesTopicoTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.questoesTopico,
+      getReferencedColumn: (t) => t.topicoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$QuestoesTopicoTableAnnotationComposer(
+            $db: $db,
+            $table: $db.questoesTopico,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$TopicosTableTableManager
@@ -10672,6 +11613,7 @@ class $$TopicosTableTableManager
             bool flashcardsRefs,
             bool topicoConcursosRefs,
             bool questoesProvaRefs,
+            bool questoesTopicoRefs,
           })
         > {
   $$TopicosTableTableManager(_$AppDatabase db, $TopicosTable table)
@@ -10747,6 +11689,7 @@ class $$TopicosTableTableManager
                 flashcardsRefs = false,
                 topicoConcursosRefs = false,
                 questoesProvaRefs = false,
+                questoesTopicoRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -10757,6 +11700,7 @@ class $$TopicosTableTableManager
                     if (flashcardsRefs) db.flashcards,
                     if (topicoConcursosRefs) db.topicoConcursos,
                     if (questoesProvaRefs) db.questoesProva,
+                    if (questoesTopicoRefs) db.questoesTopico,
                   ],
                   addJoins:
                       <
@@ -10923,6 +11867,27 @@ class $$TopicosTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (questoesTopicoRefs)
+                        await $_getPrefetchedData<
+                          Topico,
+                          $TopicosTable,
+                          QuestaoTopico
+                        >(
+                          currentTable: table,
+                          referencedTable: $$TopicosTableReferences
+                              ._questoesTopicoRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$TopicosTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).questoesTopicoRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.topicoId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -10952,6 +11917,7 @@ typedef $$TopicosTableProcessedTableManager =
         bool flashcardsRefs,
         bool topicoConcursosRefs,
         bool questoesProvaRefs,
+        bool questoesTopicoRefs,
       })
     >;
 typedef $$RevisoesTableCreateCompanionBuilder = RevisoesCompanion Function({
@@ -15969,6 +16935,527 @@ typedef $$PrintsQuestaoTableProcessedTableManager =
       PrintQuestao,
       PrefetchHooks Function({bool questaoId})
     >;
+typedef $$QuestoesTopicoTableCreateCompanionBuilder =
+    QuestoesTopicoCompanion Function({
+      Value<String> id,
+      Value<DateTime> atualizadoEm,
+      required String topicoId,
+      required String chave,
+      Value<int> dificuldade,
+      required String enunciado,
+      required String alternativas,
+      required String gabarito,
+      Value<String> explicacao,
+      Value<int> caixa,
+      Value<DateTime> proximaRevisao,
+      Value<int> acertos,
+      Value<int> erros,
+      Value<bool> suspeito,
+      Value<DateTime> criadoEm,
+      Value<int> rowid,
+    });
+typedef $$QuestoesTopicoTableUpdateCompanionBuilder =
+    QuestoesTopicoCompanion Function({
+      Value<String> id,
+      Value<DateTime> atualizadoEm,
+      Value<String> topicoId,
+      Value<String> chave,
+      Value<int> dificuldade,
+      Value<String> enunciado,
+      Value<String> alternativas,
+      Value<String> gabarito,
+      Value<String> explicacao,
+      Value<int> caixa,
+      Value<DateTime> proximaRevisao,
+      Value<int> acertos,
+      Value<int> erros,
+      Value<bool> suspeito,
+      Value<DateTime> criadoEm,
+      Value<int> rowid,
+    });
+
+final class $$QuestoesTopicoTableReferences
+    extends BaseReferences<_$AppDatabase, $QuestoesTopicoTable, QuestaoTopico> {
+  $$QuestoesTopicoTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $TopicosTable _topicoIdTable(_$AppDatabase db) =>
+      db.topicos.createAlias('questoes_topico__topico_id__topicos__id');
+
+  $$TopicosTableProcessedTableManager get topicoId {
+    final $_column = $_itemColumn<String>('topico_id')!;
+
+    final manager = $$TopicosTableTableManager(
+      $_db,
+      $_db.topicos,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_topicoIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$QuestoesTopicoTableFilterComposer
+    extends Composer<_$AppDatabase, $QuestoesTopicoTable> {
+  $$QuestoesTopicoTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get chave => $composableBuilder(
+    column: $table.chave,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get dificuldade => $composableBuilder(
+    column: $table.dificuldade,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get enunciado => $composableBuilder(
+    column: $table.enunciado,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get alternativas => $composableBuilder(
+    column: $table.alternativas,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get gabarito => $composableBuilder(
+    column: $table.gabarito,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get explicacao => $composableBuilder(
+    column: $table.explicacao,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get caixa => $composableBuilder(
+    column: $table.caixa,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get proximaRevisao => $composableBuilder(
+    column: $table.proximaRevisao,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get acertos => $composableBuilder(
+    column: $table.acertos,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get erros => $composableBuilder(
+    column: $table.erros,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get suspeito => $composableBuilder(
+    column: $table.suspeito,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$TopicosTableFilterComposer get topicoId {
+    final $$TopicosTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.topicoId,
+      referencedTable: $db.topicos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TopicosTableFilterComposer(
+            $db: $db,
+            $table: $db.topicos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$QuestoesTopicoTableOrderingComposer
+    extends Composer<_$AppDatabase, $QuestoesTopicoTable> {
+  $$QuestoesTopicoTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get chave => $composableBuilder(
+    column: $table.chave,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get dificuldade => $composableBuilder(
+    column: $table.dificuldade,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get enunciado => $composableBuilder(
+    column: $table.enunciado,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get alternativas => $composableBuilder(
+    column: $table.alternativas,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get gabarito => $composableBuilder(
+    column: $table.gabarito,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get explicacao => $composableBuilder(
+    column: $table.explicacao,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get caixa => $composableBuilder(
+    column: $table.caixa,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get proximaRevisao => $composableBuilder(
+    column: $table.proximaRevisao,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get acertos => $composableBuilder(
+    column: $table.acertos,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get erros => $composableBuilder(
+    column: $table.erros,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get suspeito => $composableBuilder(
+    column: $table.suspeito,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get criadoEm => $composableBuilder(
+    column: $table.criadoEm,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$TopicosTableOrderingComposer get topicoId {
+    final $$TopicosTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.topicoId,
+      referencedTable: $db.topicos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TopicosTableOrderingComposer(
+            $db: $db,
+            $table: $db.topicos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$QuestoesTopicoTableAnnotationComposer
+    extends Composer<_$AppDatabase, $QuestoesTopicoTable> {
+  $$QuestoesTopicoTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get atualizadoEm => $composableBuilder(
+    column: $table.atualizadoEm,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get chave =>
+      $composableBuilder(column: $table.chave, builder: (column) => column);
+
+  GeneratedColumn<int> get dificuldade => $composableBuilder(
+    column: $table.dificuldade,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get enunciado =>
+      $composableBuilder(column: $table.enunciado, builder: (column) => column);
+
+  GeneratedColumn<String> get alternativas => $composableBuilder(
+    column: $table.alternativas,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get gabarito =>
+      $composableBuilder(column: $table.gabarito, builder: (column) => column);
+
+  GeneratedColumn<String> get explicacao => $composableBuilder(
+    column: $table.explicacao,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get caixa =>
+      $composableBuilder(column: $table.caixa, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get proximaRevisao => $composableBuilder(
+    column: $table.proximaRevisao,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get acertos =>
+      $composableBuilder(column: $table.acertos, builder: (column) => column);
+
+  GeneratedColumn<int> get erros =>
+      $composableBuilder(column: $table.erros, builder: (column) => column);
+
+  GeneratedColumn<bool> get suspeito =>
+      $composableBuilder(column: $table.suspeito, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get criadoEm =>
+      $composableBuilder(column: $table.criadoEm, builder: (column) => column);
+
+  $$TopicosTableAnnotationComposer get topicoId {
+    final $$TopicosTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.topicoId,
+      referencedTable: $db.topicos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TopicosTableAnnotationComposer(
+            $db: $db,
+            $table: $db.topicos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$QuestoesTopicoTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $QuestoesTopicoTable,
+          QuestaoTopico,
+          $$QuestoesTopicoTableFilterComposer,
+          $$QuestoesTopicoTableOrderingComposer,
+          $$QuestoesTopicoTableAnnotationComposer,
+          $$QuestoesTopicoTableCreateCompanionBuilder,
+          $$QuestoesTopicoTableUpdateCompanionBuilder,
+          (QuestaoTopico, $$QuestoesTopicoTableReferences),
+          QuestaoTopico,
+          PrefetchHooks Function({bool topicoId})
+        > {
+  $$QuestoesTopicoTableTableManager(
+    _$AppDatabase db,
+    $QuestoesTopicoTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$QuestoesTopicoTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$QuestoesTopicoTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$QuestoesTopicoTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                Value<String> topicoId = const Value.absent(),
+                Value<String> chave = const Value.absent(),
+                Value<int> dificuldade = const Value.absent(),
+                Value<String> enunciado = const Value.absent(),
+                Value<String> alternativas = const Value.absent(),
+                Value<String> gabarito = const Value.absent(),
+                Value<String> explicacao = const Value.absent(),
+                Value<int> caixa = const Value.absent(),
+                Value<DateTime> proximaRevisao = const Value.absent(),
+                Value<int> acertos = const Value.absent(),
+                Value<int> erros = const Value.absent(),
+                Value<bool> suspeito = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => QuestoesTopicoCompanion(
+                id: id,
+                atualizadoEm: atualizadoEm,
+                topicoId: topicoId,
+                chave: chave,
+                dificuldade: dificuldade,
+                enunciado: enunciado,
+                alternativas: alternativas,
+                gabarito: gabarito,
+                explicacao: explicacao,
+                caixa: caixa,
+                proximaRevisao: proximaRevisao,
+                acertos: acertos,
+                erros: erros,
+                suspeito: suspeito,
+                criadoEm: criadoEm,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> atualizadoEm = const Value.absent(),
+                required String topicoId,
+                required String chave,
+                Value<int> dificuldade = const Value.absent(),
+                required String enunciado,
+                required String alternativas,
+                required String gabarito,
+                Value<String> explicacao = const Value.absent(),
+                Value<int> caixa = const Value.absent(),
+                Value<DateTime> proximaRevisao = const Value.absent(),
+                Value<int> acertos = const Value.absent(),
+                Value<int> erros = const Value.absent(),
+                Value<bool> suspeito = const Value.absent(),
+                Value<DateTime> criadoEm = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => QuestoesTopicoCompanion.insert(
+                id: id,
+                atualizadoEm: atualizadoEm,
+                topicoId: topicoId,
+                chave: chave,
+                dificuldade: dificuldade,
+                enunciado: enunciado,
+                alternativas: alternativas,
+                gabarito: gabarito,
+                explicacao: explicacao,
+                caixa: caixa,
+                proximaRevisao: proximaRevisao,
+                acertos: acertos,
+                erros: erros,
+                suspeito: suspeito,
+                criadoEm: criadoEm,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$QuestoesTopicoTable, QuestaoTopico>(table),
+                  $$QuestoesTopicoTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({topicoId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (topicoId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.topicoId,
+                        referencedTable: $$QuestoesTopicoTableReferences
+                            ._topicoIdTable(db),
+                        referencedColumn: $$QuestoesTopicoTableReferences
+                            ._topicoIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$QuestoesTopicoTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $QuestoesTopicoTable,
+      QuestaoTopico,
+      $$QuestoesTopicoTableFilterComposer,
+      $$QuestoesTopicoTableOrderingComposer,
+      $$QuestoesTopicoTableAnnotationComposer,
+      $$QuestoesTopicoTableCreateCompanionBuilder,
+      $$QuestoesTopicoTableUpdateCompanionBuilder,
+      (QuestaoTopico, $$QuestoesTopicoTableReferences),
+      QuestaoTopico,
+      PrefetchHooks Function({bool topicoId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -16003,4 +17490,6 @@ class $AppDatabaseManager {
       $$RespostasTableTableManager(_db, _db.respostas);
   $$PrintsQuestaoTableTableManager get printsQuestao =>
       $$PrintsQuestaoTableTableManager(_db, _db.printsQuestao);
+  $$QuestoesTopicoTableTableManager get questoesTopico =>
+      $$QuestoesTopicoTableTableManager(_db, _db.questoesTopico);
 }

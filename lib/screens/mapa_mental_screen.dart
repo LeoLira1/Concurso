@@ -1119,7 +1119,10 @@ class _Legenda extends StatelessWidget {
                 if (aberta) ...[
                   const SizedBox(height: 6),
                   item(caixa(corNaoVisto), 'Não visto'),
-                  item(caixa(corEmParte(exemplo)), 'Em estudo / visto em parte'),
+                  item(
+                    caixa(corEmParte(exemplo)),
+                    'Em estudo / visto em parte',
+                  ),
                   item(caixa(exemplo), 'Visto (cor da matéria)'),
                   item(caixa(exemplo, borda: Cores.acento), 'Revisão atrasada'),
                   item(

@@ -852,7 +852,7 @@ class _VistaQuestao extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             for (final e in alts.entries)
-              _Alternativa(
+              BotaoAlternativa(
                 letra: e.key,
                 texto: e.value,
                 marcada: marcada == e.key,
@@ -900,88 +900,6 @@ class _Veredito extends StatelessWidget {
     return Text(
       t,
       style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: c),
-    );
-  }
-}
-
-class _Alternativa extends StatelessWidget {
-  const _Alternativa({
-    required this.letra,
-    required this.texto,
-    required this.marcada,
-    required this.estado,
-    required this.aoTocar,
-  });
-  final String letra;
-  final String texto;
-  final bool marcada;
-
-  /// true = certa, false = marcada errada, nulo = neutra.
-  final bool? estado;
-  final VoidCallback? aoTocar;
-
-  @override
-  Widget build(BuildContext context) {
-    final cor = estado == true
-        ? corCerto
-        : estado == false
-        ? Cores.acento
-        : marcada
-        ? Cores.tinta
-        : Cores.linha;
-    final destaque = estado != null || marcada;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Material(
-        color: estado == true
-            ? corCerto.withValues(alpha: 0.08)
-            : estado == false
-            ? Cores.acento.withValues(alpha: 0.08)
-            : Cores.fundo,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
-          side: BorderSide(color: cor, width: destaque ? 2.5 : 1.5),
-        ),
-        child: InkWell(
-          key: ValueKey('alt-$letra'),
-          borderRadius: BorderRadius.circular(18),
-          onTap: aoTocar,
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 34,
-                  height: 34,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: destaque ? cor : Cores.fundoLateral,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Text(
-                    letra,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900,
-                      color: destaque ? Colors.white : Cores.tinta,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 5),
-                    child: Text(
-                      texto,
-                      style: const TextStyle(fontSize: 17, height: 1.4),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

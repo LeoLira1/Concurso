@@ -130,6 +130,65 @@ Menu lateral → "Mapa mental", ou o botão **Mapa mental** no alto da tela de c
 
 Como funciona: `lib/logic/mapa_mental.dart` monta a árvore e calcula o layout em balões. Em volta de cada matéria, o ângulo de cada tópico é proporcional ao número de subtópicos do ramo, no círculo inteiro. Fica só um vão na direção do centro, por onde chega a linha da matéria. O raio de cada anel cresce até as caixas vizinhas não se tocarem e até sobrar espaço para as linhas passarem entre elas. Com muitos nós, eles se alternam entre anéis, como tijolos. No fim, o layout confere cada linha contra cada nó; se algo ainda encostar, os anéis daquele nível se afastam até resolver. Os balões das matérias ficam em volta do centro sem se tocar. O desenho é um `CustomPainter` dentro de um `InteractiveViewer`, sem pacote novo. Textos e ligações ficam em cache, e o texto some quando fica pequeno demais para ler. Um edital com 8 matérias × 30 tópicos × 3 subtópicos (969 nós) calcula em poucas dezenas de milissegundos, e os testes conferem que nenhum nó se sobrepõe e nenhuma linha cruza um nó (inclusive numa matéria com 45 tópicos).
 
+## Etapa 7: banco de questões por tópico
+
+Questões avulsas, ligadas ao tópico ou subtópico do edital. Vale a mesma lógica das matérias compartilhadas: uma questão de Português aparece em todos os concursos que têm Português. (As questões de **Provas**, mais abaixo, continuam separadas, com o Treino e o Simulado delas.)
+
+### Colar questões
+
+Na **tela do tópico** (cartão **Questões**) ou no alto da **tela da matéria**, toque em **Colar questões**. O app aceita uma lista em JSON neste formato:
+
+```json
+[{"materia":"Língua Portuguesa","topico":"Conjunções","subtopico":"Adversativas","dificuldade":2,"enunciado":"...","alternativas":{"A":"...","B":"...","C":"...","D":"...","E":"..."},"gabarito":"C","explicacao":"..."}]
+```
+
+- `subtopico` e `explicacao` são opcionais. A `dificuldade` vai de 1 a 5 (sem ela, fica 3). Pode ter de 2 a 5 alternativas.
+- Na tela do tópico, se o JSON não trouxer `materia` e `topico`, a questão vai para o tópico aberto.
+- O JSON pode vir cercado de ```` ``` ```` ou de texto (copiado direto do chat): o app pega só a lista.
+- **Prévia antes de importar**, lado a lado no tablet deitado e embaixo do campo em pé. Ela mostra:
+  - as questões agrupadas por matéria › tópico › subtópico;
+  - selos **Tópico novo no edital**, **Subtópico novo**, **Matéria nova** e **Entra no edital do concurso**;
+  - quantas são novas, quantas **já existem** e quantas têm erro, com o motivo ("Questão 3: falta o gabarito", "gabarito "F" não está entre as alternativas"). Só as novas e sem erro entram.
+- **Tópico que não existe no edital é criado** (e o subtópico, embaixo dele). Ele entra no edital do concurso em foco; em "Tudo junto", entra em todos os concursos que têm a matéria. Se o tópico já existe, mas só em outro edital, ele ganha o vínculo. Uma matéria nova entra no concurso em foco.
+- **Sem duplicar**: o app compara o enunciado ignorando acento, maiúscula, pontuação e espaços. Colar a mesma lista de novo não duplica nada.
+
+### Resolver questões
+
+Botão **Resolver N** no cartão do tópico (inclui os subtópicos) ou na tela da matéria.
+
+- **Uma questão por tela**: toque na alternativa e o app corrige na hora. A certa fica verde, a sua errada fica vermelha, e a **explicação** aparece embaixo. Depois, toque em **Próxima**.
+- **Tablet deitado**: o enunciado fica à esquerda e as alternativas e a correção à direita, cada lado com a sua rolagem. **Em pé e no celular**, fica tudo numa coluna.
+- Selos na questão: dificuldade, **Nova** e **Voltou: você errou**.
+- **Encerrar** sai quando quiser. O que já foi respondido fica registrado.
+
+### Estatísticas
+
+Ao terminar (ou encerrar), o app grava uma sessão de estudo com método **"Questões"** para cada tópico resolvido, com as questões feitas, os acertos e o tempo gasto. Você não precisa preencher nada.
+
+- Isso entra na **% de acerto por matéria** (Estatísticas), na % do tópico, na folha do dia e na grade do mês.
+- Se a matéria resolvida é a etapa atual do ciclo, o ciclo avança.
+- Cada questão conta **uma vez por sessão**, pela primeira resposta. Refazer a errada na mesma sessão serve para fixar, mas não infla a %.
+- O resumo final mostra "X de Y certas (%)" e a lista das erradas, com **Refazer as erradas**.
+
+### Errou, volta mais vezes (Leitner)
+
+É a mesma lógica dos flashcards:
+
+- **acertou**: a questão sobe uma caixa e volta em 1, 3, 7, 14 e 30 dias;
+- **errou**: volta para a caixa 0. Reaparece no fim da fila da mesma sessão e continua valendo para hoje.
+
+A fila de cada dia começa pelas vencidas (as de caixa mais baixa, ou seja, as que você mais erra). Depois vêm as novas, da mais fácil para a mais difícil. Se não há nada para hoje, o app oferece **Praticar todas**.
+
+### Gabarito suspeito
+
+- Na questão, o botão com a bandeira (**Gabarito suspeito**) marca a questão para revisar depois. Toque de novo para desmarcar.
+- No cartão do tópico e na matéria aparece **"N gabaritos suspeitos"** em laranja. Ele abre a lista já filtrada.
+- Na lista (também em **Ver N**), cada questão mostra o gabarito em verde, a explicação, quantas vezes você acertou e errou e quando ela volta. Ali você pode tocar em **Gabarito está certo**, **Trocar gabarito** (que já tira a marca) ou excluir a questão.
+
+### Dados e sync
+
+A tabela nova é `questoes_topico`: tópico, enunciado normalizado (`chave`), dificuldade, alternativas, gabarito, explicação, caixa, próxima revisão, acertos, erros e `suspeito`. Ela entra no sync do Turso com gatilhos em `sync_pendentes`, inclusive nas exclusões. Excluir o tópico apaga as questões dele. As sessões criadas pelo "Resolver" têm `origem = 'questoes_topico'`. Veja `lib/logic/questoes_topico.dart` (leitura do JSON e fila) e `lib/data/questoes_topico_db.dart` (importação, Leitner e sessão). Os testes estão em `test/questoes_topico_test.dart` e `test/questoes_topico_widget_test.dart`; o de tela roda com o tablet deitado e em pé.
+
 ## Colar o conteúdo programático
 
 No edital do concurso, toque em **"Colar edital"**. Com o edital vazio, também aparece um card com esse atalho.
@@ -253,7 +312,7 @@ Toque no ícone de **nuvem** ao lado do logo e siga os passos. Você só configu
 - **Automática**: sincroniza ao abrir o app, ao voltar para ele, alguns segundos depois de cada alteração e a cada 5 minutos. Offline, as alterações ficam guardadas e vão depois.
 - **Primeira conexão**: se a nuvem e o aparelho já têm dados, você escolhe **Juntar** ou **Usar só os da nuvem**. A segunda opção apaga os dados do aparelho; é boa para o segundo aparelho, se ele só tiver o exemplo.
 - **Conflitos**: vale a alteração mais recente. Matérias com o mesmo nome criadas nos dois aparelhos viram uma só, com os tópicos e sessões dos dois.
-- **O que sincroniza**: concursos, edital (inclusive em quais concursos cada tópico está), progresso, ciclo, sessões, revisões, flashcards, provas, questões e respostas.
+- **O que sincroniza**: concursos, edital (inclusive em quais concursos cada tópico está), progresso, ciclo, sessões, revisões, flashcards, provas, questões e respostas, e o banco de questões por tópico (com caixas do Leitner e gabaritos suspeitos).
 - **O que não sincroniza**: fotos e PDFs anexados (e os prints das questões) ficam no aparelho onde foram adicionados. Lembretes e pomodoro são configurados em cada aparelho.
 
 Como funciona: gatilhos do SQLite anotam cada mudança local, inclusive exclusões, em `sync_pendentes`. O app envia essas linhas para uma tabela genérica `registros` no Turso, pela API HTTP (Hrana, `/v2/pipeline`). Cada gravação recebe uma `versao` crescente, e cada aparelho baixa só o que veio depois da última versão que já viu. Veja `lib/data/sync/`.

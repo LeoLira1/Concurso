@@ -14,6 +14,8 @@ import '../theme.dart';
 import '../util/texto.dart';
 import '../widgets/assistir.dart';
 import '../widgets/comuns.dart';
+import '../widgets/escopo.dart';
+import '../widgets/questoes_topico.dart';
 import 'cronometro_screen.dart';
 import 'flashcards_screen.dart';
 
@@ -44,6 +46,13 @@ class TopicoScreen extends StatelessWidget {
                   final largo = box.maxWidth >= 1000;
                   final anexos = _CartaoAnexos(topico: t);
                   final cartoes = _CartaoFlashcards(topico: t, materia: m);
+                  final questoes = ComEscopo(
+                    builder: (context, escopo) => CartaoQuestoesTopico(
+                      topico: t,
+                      materia: m,
+                      concursoId: escopo,
+                    ),
+                  );
                   return Center(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 1200),
@@ -71,6 +80,8 @@ class TopicoScreen extends StatelessWidget {
                             const SizedBox(height: 20),
                             cartoes,
                           ],
+                          const SizedBox(height: 20),
+                          questoes,
                         ],
                       ),
                     ),
