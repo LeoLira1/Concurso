@@ -314,3 +314,18 @@ class QuestoesTopico extends Table with Sincronizavel {
   BoolColumn get suspeito => boolean().withDefault(const Constant(false))();
   DateTimeColumn get criadoEm => dateTime().clientDefault(DateTime.now)();
 }
+
+/// Mapa do conteúdo de um tópico ou subtópico (etapa 12, v8): um por
+/// tópico. O id é o próprio id do tópico, para que dois aparelhos que
+/// colam um mapa no mesmo tópico gravem a mesma linha (vale o mais
+/// recente no sync).
+@DataClassName('MapaConteudo')
+class MapasConteudo extends Table with Sincronizavel {
+  TextColumn get topicoId =>
+      text().references(Topicos, #id, onDelete: KeyAction.cascade)();
+  TextColumn get titulo => text()();
+
+  /// Árvore dos nós em JSON (texto, detalhe, tipo, filhos).
+  TextColumn get nos => text()();
+  DateTimeColumn get criadoEm => dateTime().clientDefault(DateTime.now)();
+}

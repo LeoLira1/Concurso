@@ -166,6 +166,15 @@ extension ColagemDb on AppDatabase {
     });
   }
 
+  /// Tópico (ou subtópico) onde [q] vai parar, se já existe.
+  Future<Topico?> topicoDestino(ItemColado q) async {
+    final m = await materiaPorNome(q.materia);
+    if (m == null) return null;
+    final t = await _topicoPorNome(m.id, null, q.topico);
+    if (t == null || q.subtopico.isEmpty) return t;
+    return _topicoPorNome(m.id, t.id, q.subtopico);
+  }
+
   /// Tópico com esse nome (ignorando acento e maiúscula) sob [paiId]
   /// (nulo = primeiro nível) na matéria.
   Future<Topico?> _topicoPorNome(

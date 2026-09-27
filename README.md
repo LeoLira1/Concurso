@@ -322,6 +322,83 @@ O botão **Foco agora** fica no alto do mapa. No celular, só o ícone aparece.
 - Os testes estão em `test/mapa_foco_test.dart`: a escolha do Foco agora (prioridade, limite de 3, pontas, concurso em foco, textos), o indicador (soma, pontilhado, layout igual, sem sobreposição) e a tela (foco, zoom, menu, legenda).
 - Os dois testes de `test/mapa_mental_widget_test.dart` que tocavam na matéria e no tópico agora passam pelo menu.
 
+## Etapa 12: mapa do conteúdo por tópico
+
+Um mapa em árvore do conteúdo de cada tópico ou subtópico: conceitos, artigos, exemplos, pegadinhas e dicas. Você pede o mapa ao Claude, cola no app e estuda com o **modo treino**. Ele usa o mesmo layout em balões do mapa mental e a mesma lógica de colar e prévia do Colar questões.
+
+### Onde fica
+
+- Na **tela do tópico** (e do subtópico) há o cartão **Mapa do conteúdo**, com **Colar mapa**, **Abrir mapa** e excluir. O cartão mostra quantos nós há de cada tipo.
+- No alto da **tela da matéria** há **Colar mapa**. Por ali, o mapa vai para o tópico que está no JSON.
+- Na **lista de tópicos** da matéria, um ícone de árvore mostra quais já têm mapa.
+
+### O formato
+
+```json
+{"formato":"edital-mapa-v1","materia":"Crimes contra a Administração Pública","topico":"Peculato (arts. 312 e 313)","subtopico":"","titulo":"Peculato","nos":[{"texto":"Peculato-apropriação","detalhe":"Funcionário se apropria de bem que tem a posse em razão do cargo.","tipo":"conceito","filhos":[{"texto":"Ex.: guarda fica com celular apreendido","tipo":"exemplo","filhos":[]}]}]}
+```
+
+- **tipo**: `conceito` (azul), `artigo` (roxo), `exemplo` (verde), `pegadinha` (vermelho, com borda mais grossa) ou `dica` (laranja). Cada tipo tem um ícone. Sem tipo, vale conceito.
+- `detalhe` e `subtopico` são opcionais. `filhos` pode faltar.
+- Na tela do tópico, se faltar `materia` ou `topico`, o mapa vai para o tópico aberto.
+- O JSON pode vir cercado de ```` ``` ```` ou de texto copiado do chat.
+- **Limites**: texto com até **70 caracteres**, até **4 níveis** abaixo do título e até **80 nós**. Quem passa disso aparece como erro na prévia, com o motivo, e não entra. Por exemplo: "Nó 'Concussão…': texto com 95 caracteres (máximo 70)".
+
+### A prévia
+
+- Mostra a **árvore em lista recuada**, com o ícone de cada tipo e o detalhe.
+- Mostra o total de nós e a **contagem por tipo**.
+- Mostra os **erros** com o motivo.
+- Segue a mesma regra de tópicos do Colar questões: o nome tem que ser exato (ignorando acento e maiúscula). Se o tópico não existe, aparece o selo **Tópico novo no edital** e o tópico é criado na importação. Vale o mesmo para matéria e subtópico.
+- **Um mapa por tópico/subtópico.** Se o tópico já tem mapa, a prévia avisa **"Vai substituir o mapa atual"**, e o Importar pede confirmação.
+
+### A tela do mapa
+
+- O **título** fica no centro e os nós em balões em volta, sem sobreposição e sem linha cruzando nó.
+- Dá para usar pinça, arrastar, os botões + e − e **Ajustar à tela**. No celular, o zoom inicial mantém o texto legível e você arrasta para os lados.
+- **Tocar num nó** mostra embaixo o tipo, o texto completo e o detalhe. Sem nada selecionado, aparece a legenda dos tipos.
+- **Modo treino** (recordação ativa):
+  - os nós a partir do 2º nível ficam cobertos, em cinza, com "?";
+  - você tenta lembrar e toca para revelar um por um. A barra no alto mostra quantos faltam;
+  - **Revelar tudo** mostra todos e **Cobrir de novo** cobre de novo;
+  - ao ligar o treino, o mapa se reenquadra abaixo da barra.
+- No menu **⋮** ficam **Colar novo mapa** e **Excluir mapa**, com confirmação.
+
+### Pedir mais (etapa 10)
+
+- No pedido de um tópico, **O que pedir** ganha a opção **Mapa do conteúdo**. Ela não aparece no pedido da matéria inteira, porque o mapa é de um tópico só. Com essa opção, quantidade e foco saem da tela.
+- O texto do pedido:
+  - explica o formato `edital-mapa-v1`, com um exemplo que já traz os nomes exatos da matéria, do tópico e do subtópico;
+  - traz as regras dos tipos e dos limites (70 caracteres, 4 níveis, 80 nós), o contexto (concurso e banca) e os nomes exatos;
+  - traz as questões em que você mais erra, pedindo que virem nós de pegadinha ou dica.
+- **Se o tópico já tem mapa**, o pedido lista os nós atuais (recuados, com o tipo). Ele pede para **ampliar sem repetir**: o Claude devolve o mapa inteiro, com os nós atuais e os novos, porque o app substitui o mapa ao colar.
+
+### Dados e sync
+
+- A tabela nova é `mapas_conteudo`: tópico, título e a árvore dos nós em JSON. A versão do banco passou para a 8.
+- O **id da linha é o id do tópico**. Assim, dois aparelhos que colam um mapa no mesmo tópico gravam a mesma linha, e vale o mais recente.
+- A tabela entra no sync do Turso, com gatilhos em `sync_pendentes`, inclusive nas exclusões.
+- Excluir o tópico apaga o mapa dele.
+- A gravação não usa UPSERT. Dentro de um `ON CONFLICT DO UPDATE`, o SQLite troca o `INSERT OR REPLACE` dos gatilhos do sync por ABORT, e a substituição do mapa falhava.
+
+### Por dentro
+
+- `lib/logic/mapa_conteudo.dart`: leitura e validação do JSON (sobre `lerColagem`), limites, contagem por tipo e a árvore para o `calcularLayout` do mapa mental.
+- `lib/data/mapa_conteudo_db.dart`: gravar, substituir e excluir, e a importação sobre `importarColagem`, com a mesma regra de tópicos.
+- `lib/screens/colar_mapa_screen.dart`: a prévia. Reaproveita o campo de entrada e os selos de destino de `colar_screen.dart`.
+- `lib/screens/mapa_conteudo_screen.dart`: a tela, o modo treino e o desenho.
+- Os testes estão em `test/mapa_conteudo_test.dart`:
+  - leitura e validação;
+  - limites de 70 caracteres, 4 níveis e 80 nós;
+  - substituição;
+  - vínculo ao tópico (tópico novo, subtópico, nome sem acento);
+  - sync e exclusão;
+  - migração v7→v8;
+  - texto do pedido (mapa novo e ampliação);
+  - layout de 80 nós sem sobreposição e sem cruzamentos;
+  - telas de colar (deitado e em pé) e do mapa (detalhe e modo treino).
+- As capturas são a 47 (mapa, treino e celular) e a 48 (prévia).
+
 ## Colar o conteúdo programático
 
 No edital do concurso, toque em **"Colar edital"**. Com o edital vazio, também aparece um card com esse atalho.
@@ -445,7 +522,7 @@ Toque no ícone de **nuvem** ao lado do logo e siga os passos. Você só configu
 - **Automática**: sincroniza ao abrir o app, ao voltar para ele, alguns segundos depois de cada alteração e a cada 5 minutos. Offline, as alterações ficam guardadas e vão depois.
 - **Primeira conexão**: se a nuvem e o aparelho já têm dados, você escolhe **Juntar** ou **Usar só os da nuvem**. A segunda opção apaga os dados do aparelho; é boa para o segundo aparelho, se ele só tiver o exemplo.
 - **Conflitos**: vale a alteração mais recente. Matérias com o mesmo nome criadas nos dois aparelhos viram uma só, com os tópicos e sessões dos dois.
-- **O que sincroniza**: concursos, edital (inclusive em quais concursos cada tópico está), progresso, ciclo, sessões, revisões, flashcards, provas, questões e respostas, o banco de questões por tópico (com caixas do Leitner e gabaritos suspeitos) e os flashcards colados.
+- **O que sincroniza**: concursos, edital (inclusive em quais concursos cada tópico está), progresso, ciclo, sessões, revisões, flashcards, provas, questões e respostas, o banco de questões por tópico (com caixas do Leitner e gabaritos suspeitos), os flashcards colados e os mapas do conteúdo.
 - **O que não sincroniza**: fotos e PDFs anexados (e os prints das questões) ficam no aparelho onde foram adicionados. Lembretes e pomodoro são configurados em cada aparelho.
 
 Como funciona: gatilhos do SQLite anotam cada mudança local, inclusive exclusões, em `sync_pendentes`. O app envia essas linhas para uma tabela genérica `registros` no Turso, pela API HTTP (Hrana, `/v2/pipeline`). Cada gravação recebe uma `versao` crescente, e cada aparelho baixa só o que veio depois da última versão que já viu. Veja `lib/data/sync/`.

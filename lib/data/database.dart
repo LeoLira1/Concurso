@@ -81,6 +81,7 @@ class ProgressoConcurso {
     Respostas,
     PrintsQuestao,
     QuestoesTopico,
+    MapasConteudo,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -88,7 +89,7 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? driftDatabase(name: 'edital'));
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -133,6 +134,7 @@ class AppDatabase extends _$AppDatabase {
       }
       if (de < 6) await _criarTabelasProvas(m);
       if (de < 7) await _criarSeFaltar(m, [questoesTopico]);
+      if (de < 8) await _criarSeFaltar(m, [mapasConteudo]);
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
@@ -1016,20 +1018,25 @@ class AppDatabase extends _$AppDatabase {
   }
 
   /// Quantidade de anexos e cartões por tópico (para os ícones da lista).
-  Stream<Map<String, (int, int)>> watchContagemExtras(String materiaId) {
+  Stream<Map<String, (int, int, bool)>> watchContagemExtras(String materiaId) {
     return customSelect(
       '''
       SELECT t.id AS id,
         (SELECT COUNT(*) FROM anexos a WHERE a.topico_id = t.id) AS anexos,
-        (SELECT COUNT(*) FROM flashcards f WHERE f.topico_id = t.id) AS cartoes
+        (SELECT COUNT(*) FROM flashcards f WHERE f.topico_id = t.id) AS cartoes,
+        EXISTS (SELECT 1 FROM mapas_conteudo mc WHERE mc.topico_id = t.id) AS mapa
       FROM topicos t WHERE t.materia_id = ?
       ''',
       variables: [Variable.withString(materiaId)],
-      readsFrom: {topicos, anexos, flashcards},
+      readsFrom: {topicos, anexos, flashcards, mapasConteudo},
     ).watch().map(
       (rows) => {
         for (final r in rows)
-          r.read<String>('id'): (r.read<int>('anexos'), r.read<int>('cartoes')),
+          r.read<String>('id'): (
+            r.read<int>('anexos'),
+            r.read<int>('cartoes'),
+            r.read<int>('mapa') == 1,
+          ),
       },
     );
   }

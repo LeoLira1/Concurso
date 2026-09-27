@@ -8,7 +8,9 @@ import 'package:open_filex/open_filex.dart';
 import 'package:provider/provider.dart';
 
 import '../data/database.dart';
+import '../data/mapa_conteudo_db.dart';
 import '../logic/flashcards.dart';
+import '../logic/mapa_conteudo.dart';
 import '../state/arquivos.dart';
 import '../theme.dart';
 import '../util/texto.dart';
@@ -17,7 +19,9 @@ import '../widgets/comuns.dart';
 import '../widgets/escopo.dart';
 import '../widgets/questoes_topico.dart';
 import 'colar_flashcards_screen.dart';
+import 'colar_mapa_screen.dart';
 import 'cronometro_screen.dart';
+import 'mapa_conteudo_screen.dart';
 import 'flashcards_screen.dart';
 
 /// Um tópico do edital: resumos/mapas mentais anexados e flashcards.
@@ -83,6 +87,14 @@ class TopicoScreen extends StatelessWidget {
                           ],
                           const SizedBox(height: 20),
                           questoes,
+                          const SizedBox(height: 20),
+                          ComEscopo(
+                            builder: (context, escopo) => _CartaoMapa(
+                              topico: t,
+                              materia: m,
+                              concursoId: escopo,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -953,4 +965,103 @@ class _MiniaturaState extends State<_Miniatura> {
             ),
           ),
   );
+}
+
+// -----------------------------------------------------------------------------
+// Mapa do conteúdo (etapa 12)
+// -----------------------------------------------------------------------------
+
+class _CartaoMapa extends StatelessWidget {
+  const _CartaoMapa({
+    required this.topico,
+    required this.materia,
+    required this.concursoId,
+  });
+  final Topico topico;
+  final Materia materia;
+  final String? concursoId;
+
+  @override
+  Widget build(BuildContext context) {
+    final db = context.read<AppDatabase>();
+    return Assistir<MapaSalvo?>(
+      chave: ('mapa', topico.id),
+      stream: () => db.watchMapa(topico.id),
+      builder: (context, mapa) {
+        final contagem = mapa == null
+            ? const <TipoNoConteudo, int>{}
+            : contarPorTipo(mapa.nos);
+        final total = contagem.values.fold(0, (a, b) => a + b);
+        return _Cartao(
+          titulo: 'Mapa do conteúdo',
+          subtitulo: mapa == null
+              ? 'O tópico em árvore, com modo treino'
+              : '${mapa.titulo} · $total nós',
+          acoes: [
+            if (mapa != null)
+              FilledButton.icon(
+                key: const ValueKey('abrir-mapa'),
+                style: FilledButton.styleFrom(minimumSize: const Size(0, 48)),
+                onPressed: () => abrirMapaConteudo(context, topico.id),
+                icon: const Icon(Icons.account_tree_outlined),
+                label: const Text('Abrir mapa'),
+              ),
+            Pilula(
+              key: const ValueKey('colar-mapa'),
+              icone: Icons.content_paste_rounded,
+              rotulo: 'Colar mapa',
+              aoTocar: () => abrirColarMapa(
+                context,
+                materia: materia,
+                topico: topico,
+                concursoId: concursoId,
+              ),
+            ),
+            if (mapa != null)
+              Pilula(
+                key: const ValueKey('excluir-mapa'),
+                icone: Icons.delete_outline_rounded,
+                tooltip: 'Excluir mapa',
+                aoTocar: () async {
+                  final ok = await confirmar(
+                    context,
+                    titulo: 'Excluir o mapa?',
+                    mensagem:
+                        'O mapa do conteúdo deste tópico sai de todos os '
+                        'aparelhos. O tópico, as questões e os flashcards '
+                        'continuam.',
+                  );
+                  if (ok) await db.excluirMapa(topico.id);
+                },
+              ),
+          ],
+          child: mapa == null
+              ? const Text(
+                  'Nenhum mapa ainda. Peça um em "Pedir mais questões" '
+                  '(opção "Mapa do conteúdo") e cole aqui.',
+                  style: TextStyle(fontSize: 15, color: Cores.tintaSuave),
+                )
+              : Wrap(
+                  spacing: 14,
+                  runSpacing: 8,
+                  children: [
+                    for (final t in TipoNoConteudo.values)
+                      if (contagem[t] case final n?)
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconeTipo(t, tamanho: 18),
+                            const SizedBox(width: 4),
+                            Text(
+                              '$n ${t.rotulo.toLowerCase()}',
+                              style: const TextStyle(fontSize: 15),
+                            ),
+                          ],
+                        ),
+                  ],
+                ),
+        );
+      },
+    );
+  }
 }
