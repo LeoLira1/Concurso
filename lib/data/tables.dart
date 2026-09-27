@@ -275,3 +275,42 @@ class PrintsQuestao extends Table with Sincronizavel {
       text().references(QuestoesProva, #id, onDelete: KeyAction.cascade)();
   TextColumn get arquivo => text()();
 }
+
+// -----------------------------------------------------------------------------
+// Banco de questões por tópico (v7)
+// -----------------------------------------------------------------------------
+
+/// Questão avulsa ligada a um tópico ou subtópico (colada em JSON na tela
+/// do tópico ou da matéria). Como o tópico é da matéria compartilhada, a
+/// questão de Português vale para todos os concursos com Português.
+/// Repetição espaçada igual à dos flashcards (caixas de Leitner).
+@DataClassName('QuestaoTopico')
+class QuestoesTopico extends Table with Sincronizavel {
+  TextColumn get topicoId =>
+      text().references(Topicos, #id, onDelete: KeyAction.cascade)();
+
+  /// Enunciado normalizado (sem acento, pontuação e espaços repetidos):
+  /// a mesma questão colada de novo não é duplicada.
+  TextColumn get chave => text()();
+
+  /// 1 (fácil) a 5 (difícil).
+  IntColumn get dificuldade => integer().withDefault(const Constant(3))();
+  TextColumn get enunciado => text()();
+
+  /// JSON letra → texto.
+  TextColumn get alternativas => text()();
+  TextColumn get gabarito => text()();
+  TextColumn get explicacao => text().withDefault(const Constant(''))();
+
+  /// 0 = nova/errada ... 5 = bem sabida.
+  IntColumn get caixa => integer().withDefault(const Constant(0))();
+
+  /// Dia em que a questão volta a aparecer.
+  DateTimeColumn get proximaRevisao => dateTime().clientDefault(DateTime.now)();
+  IntColumn get acertos => integer().withDefault(const Constant(0))();
+  IntColumn get erros => integer().withDefault(const Constant(0))();
+
+  /// "Gabarito suspeito": marcada para revisar depois.
+  BoolColumn get suspeito => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get criadoEm => dateTime().clientDefault(DateTime.now)();
+}

@@ -33,6 +33,7 @@ const tabelasSincronizadas = [
   TabelaSinc('textos_base', ['id']),
   TabelaSinc('questoes_prova', ['id']),
   TabelaSinc('respostas', ['id']),
+  TabelaSinc('questoes_topico', ['id']),
 ];
 
 TabelaSinc? tabelaSinc(String nome) {

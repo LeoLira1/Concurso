@@ -67,4 +67,39 @@ void main() {
     await db.close();
     await dir.delete(recursive: true);
   });
+
+  test('migra banco v6 -> v7: cria o banco de questões por tópico', () async {
+    final dir = await Directory.systemTemp.createTemp('edital');
+    final arquivo = File('${dir.path}/edital.sqlite');
+    var db = AppDatabase(NativeDatabase(arquivo));
+    final c = await db.criarConcurso(nome: 'PM', cor: 1);
+    final m = await db.adicionarMateria(c, 'Português', 1);
+    final t = await db.adicionarTopico(m, 'Crase');
+    await db.customStatement('DROP TABLE questoes_topico');
+    await db.customStatement('PRAGMA user_version = 6');
+    await db.close();
+
+    db = AppDatabase(NativeDatabase(arquivo));
+    await db
+        .into(db.questoesTopico)
+        .insert(
+          QuestoesTopicoCompanion.insert(
+            topicoId: t,
+            chave: 'x',
+            enunciado: 'X?',
+            alternativas: '{"A":"a","B":"b"}',
+            gabarito: 'A',
+          ),
+        );
+    expect(await db.select(db.questoesTopico).get(), hasLength(1));
+    // O sync anota a questão nova.
+    final pend = await db
+        .customSelect(
+          "SELECT COUNT(*) AS n FROM sync_pendentes WHERE tabela = 'questoes_topico'",
+        )
+        .getSingle();
+    expect(pend.read<int>('n'), 1);
+    await db.close();
+    await dir.delete(recursive: true);
+  });
 }

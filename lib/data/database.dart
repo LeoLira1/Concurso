@@ -80,6 +80,7 @@ class ProgressoConcurso {
     QuestoesProva,
     Respostas,
     PrintsQuestao,
+    QuestoesTopico,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -87,7 +88,7 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? driftDatabase(name: 'edital'));
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -131,6 +132,7 @@ class AppDatabase extends _$AppDatabase {
         ''');
       }
       if (de < 6) await _criarTabelasProvas(m);
+      if (de < 7) await _criarSeFaltar(m, [questoesTopico]);
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
@@ -147,13 +149,18 @@ class AppDatabase extends _$AppDatabase {
     if (!cols.any((c) => c.read<String>('name') == 'origem')) {
       await m.addColumn(sessoes, sessoes.origem);
     }
-    for (final t in <TableInfo>[
+    await _criarSeFaltar(m, [
       provas,
       textosBase,
       questoesProva,
       respostas,
       printsQuestao,
-    ]) {
+    ]);
+  }
+
+  /// Cria só as tabelas que ainda não existem (idempotente).
+  Future<void> _criarSeFaltar(Migrator m, List<TableInfo> tabelas) async {
+    for (final t in tabelas) {
       final existe = await customSelect(
         "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?",
         variables: [Variable.withString(t.actualTableName)],

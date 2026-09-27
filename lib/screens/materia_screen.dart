@@ -5,6 +5,7 @@ import '../data/database.dart';
 import '../theme.dart';
 import '../widgets/assistir.dart';
 import '../widgets/comuns.dart';
+import '../widgets/questoes_topico.dart';
 import 'flashcards_screen.dart';
 import 'mapa_mental_screen.dart';
 import 'topico_screen.dart';
@@ -139,6 +140,10 @@ class MateriaScreen extends StatelessWidget {
                                   const SizedBox(height: 12),
                                   _Compartilhada(materiaId: m.id),
                                   _AtalhoFlashcards(
+                                    materia: m,
+                                    concursoId: concursoId,
+                                  ),
+                                  AtalhoQuestoesMateria(
                                     materia: m,
                                     concursoId: concursoId,
                                   ),
