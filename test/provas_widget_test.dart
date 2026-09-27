@@ -204,9 +204,18 @@ void main() {
     );
     await assentar(t);
     expect(find.textContaining('12:0'), findsNothing); // relógio corre
-    // O sorteio é aleatório: um enunciado longo deixa a alternativa fora da
-    // tela, e o toque erraria o alvo.
-    await t.ensureVisible(find.byKey(const ValueKey('alt-A')));
+    // O sorteio é aleatório: com um enunciado longo, a alternativa fica fora
+    // da tela e a lista (preguiçosa) nem a constrói ainda. Rola a lista
+    // vertical da questão (a do navegador é horizontal) até ela aparecer.
+    await t.scrollUntilVisible(
+      find.byKey(const ValueKey('alt-A')),
+      300,
+      scrollable: find
+          .byWidgetPredicate(
+            (w) => w is Scrollable && w.axisDirection == AxisDirection.down,
+          )
+          .first,
+    );
     await t.pump();
     await t.tap(find.byKey(const ValueKey('alt-A')));
     await t.pump();
