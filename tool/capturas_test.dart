@@ -15,6 +15,7 @@ import 'package:edital/screens/cronometro_screen.dart';
 import 'package:edital/screens/edital_screen.dart';
 import 'package:edital/screens/home_screen.dart';
 import 'package:edital/screens/mapa_mental_screen.dart';
+import 'package:edital/screens/desempenho_screen.dart';
 import 'package:edital/screens/mapa_conteudo_screen.dart';
 import 'package:edital/screens/colar_mapa_screen.dart';
 import 'package:edital/data/mapa_conteudo_db.dart';
@@ -1067,6 +1068,84 @@ NOÇÕES DE DIREITO ADMINISTRATIVO: 1 Noções de organização administrativa. 
       (db) => app(db, ColarMapaScreen(textoInicial: mapaCrase)),
       preparar: dadosMapaConteudo,
       antes: (t) => t.tap(find.byKey(const ValueKey('conferir-mapa'))),
+    ),
+  );
+
+  // ---------------------------------------------------------------------------
+  // Etapa 13: desempenho por tópico
+  // ---------------------------------------------------------------------------
+
+  Future<void> dadosDesempenho(AppDatabase db) async {
+    final foco = (await db.watchFoco().first)!;
+    final mats = await db.watchMaterias(foco.id).first;
+    final agora = DateTime.now();
+    DateTime atras(int n) => DateTime(agora.year, agora.month, agora.day - n);
+    // (matéria, tópico, [(dias atrás, feitas, acertos)])
+    const plano = [
+      (
+        'Língua Portuguesa',
+        'Crase',
+        [(75, 10, 9), (48, 12, 10), (35, 10, 9), (12, 10, 5), (3, 12, 5)],
+      ),
+      (
+        'Língua Portuguesa',
+        'Regência nominal e verbal',
+        [(60, 10, 4), (20, 10, 5), (6, 10, 4)],
+      ),
+      (
+        'Língua Portuguesa',
+        'Pontuação',
+        [(70, 8, 5), (40, 10, 6), (15, 10, 8), (2, 12, 11)],
+      ),
+      ('Língua Portuguesa', 'Pronomes', [(33, 10, 9)]),
+    ];
+    for (final (mat, top, sessoes) in plano) {
+      final m = mats.firstWhere((x) => x.materia.nome == mat).materia;
+      final t = (await db.watchTopicos(m.id).first).firstWhere(
+        (x) => x.nome == top,
+      );
+      for (final (d, f, a) in sessoes) {
+        await db.registrarSessao(
+          dia: atras(d),
+          minutos: 40,
+          materiaId: m.id,
+          topicoId: t.id,
+          questoesFeitas: f,
+          questoesAcertos: a,
+        );
+      }
+    }
+  }
+
+  testWidgets(
+    'desempenho paisagem',
+    (t) => captura(
+      t,
+      '49_desempenho_paisagem',
+      paisagem,
+      (db) => app(db, const DesempenhoScreen()),
+      preparar: dadosDesempenho,
+    ),
+  );
+  testWidgets(
+    'desempenho celular',
+    (t) => captura(
+      t,
+      '49b_desempenho_celular',
+      celular,
+      (db) => app(db, const DesempenhoScreen()),
+      preparar: dadosDesempenho,
+    ),
+  );
+  testWidgets(
+    'desempenho topico paisagem',
+    (t) => captura(
+      t,
+      '50_desempenho_topico_paisagem',
+      paisagem,
+      (db) => app(db, const DesempenhoScreen()),
+      preparar: dadosDesempenho,
+      antes: (t) => t.tap(find.textContaining('caiu').first),
     ),
   );
 
