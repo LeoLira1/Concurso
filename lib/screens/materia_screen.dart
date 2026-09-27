@@ -6,6 +6,7 @@ import '../theme.dart';
 import '../widgets/assistir.dart';
 import '../widgets/comuns.dart';
 import '../widgets/questoes_topico.dart';
+import 'colar_flashcards_screen.dart';
 import 'flashcards_screen.dart';
 import 'mapa_mental_screen.dart';
 import 'topico_screen.dart';
@@ -527,18 +528,34 @@ class _AtalhoFlashcards extends StatelessWidget {
       ),
       builder: (context, l) {
         final n = l?.length ?? 0;
-        if (n == 0) return const SizedBox.shrink();
         return Padding(
           padding: const EdgeInsets.only(top: 12),
-          child: Pilula(
-            icone: Icons.style_outlined,
-            rotulo: 'Flashcards · $n para revisar',
-            aoTocar: () => abrirEstudoFlashcards(
-              context,
-              titulo: materia.nome,
-              materiaId: materia.id,
-              concursoId: concursoId,
-            ),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              if (n > 0)
+                Pilula(
+                  icone: Icons.style_outlined,
+                  rotulo: 'Flashcards · $n para revisar',
+                  aoTocar: () => abrirEstudoFlashcards(
+                    context,
+                    titulo: materia.nome,
+                    materiaId: materia.id,
+                    concursoId: concursoId,
+                  ),
+                ),
+              Pilula(
+                key: const ValueKey('colar-flashcards'),
+                icone: Icons.content_paste_rounded,
+                rotulo: 'Colar flashcards',
+                aoTocar: () => abrirColarFlashcards(
+                  context,
+                  materia: materia,
+                  concursoId: concursoId,
+                ),
+              ),
+            ],
           ),
         );
       },
