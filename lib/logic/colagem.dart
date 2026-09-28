@@ -31,6 +31,10 @@ abstract class ItemColado {
   /// Preenchido na prévia: já existe no banco (ou repete outro da lista).
   bool repetida = false;
 
+  /// Com qual item a [repetida] bateu (tópico e começo do texto, ou
+  /// "item N desta lista"), para conferir na prévia.
+  String? repetidaDe;
+
   bool get valida => erros.isEmpty;
   bool get entra => valida && !repetida;
 
@@ -140,10 +144,14 @@ LeituraColagem<T> lerColagem<T extends ItemColado>(
   }
 
   // Repetidos dentro da própria lista: vale o primeiro.
-  final vistas = <String>{};
+  final vistas = <String, int>{};
   for (final q in itens) {
     if (!q.valida) continue;
-    if (!vistas.add(q.chave)) q.repetida = true;
+    final primeiro = vistas.putIfAbsent(q.chave, () => q.indice);
+    if (primeiro != q.indice) {
+      q.repetida = true;
+      q.repetidaDe = 'item $primeiro desta lista';
+    }
   }
   return LeituraColagem(itens);
 }

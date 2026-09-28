@@ -21,7 +21,7 @@ final tipoQuestoes = TipoColagem<QuestaoColada>(
   instrucao:
       'Cole a lista de questões em JSON. Antes de importar, você vê a '
       'prévia. Tópicos que não existem no edital são criados, e questões '
-      'com o mesmo enunciado não são duplicadas.',
+      'com o mesmo enunciado e as mesmas alternativas não são duplicadas.',
   campos:
       'materia, topico, subtopico (opcional), dificuldade (1 a 5), '
       'enunciado, alternativas (A a E), gabarito e explicacao',

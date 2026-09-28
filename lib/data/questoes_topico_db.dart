@@ -43,14 +43,30 @@ extension QuestoesTopicoDb on AppDatabase {
   // Colar questões (a parte comum fica em colagem_db.dart)
   // ---------------------------------------------------------------------------
 
-  /// Marca as questões cujo enunciado já está no banco.
-  Future<void> marcarRepetidas(LeituraQuestoes l) async => marcarRepetidos(l, {
+  /// Marca as questões que já estão no banco (mesmo enunciado E mesmas
+  /// alternativas). A chave é recalculada aqui, e não lida da coluna
+  /// `chave`, porque as questões antigas foram gravadas só com o enunciado.
+  Future<void> marcarRepetidas(LeituraQuestoes l) async {
+    final chaves = <String, String>{};
     for (final r in await customSelect(
-      'SELECT chave FROM questoes_topico',
-      readsFrom: {questoesTopico},
-    ).get())
-      r.read<String>('chave'),
-  });
+      'SELECT q.enunciado, q.alternativas, t.nome, p.nome AS pai '
+      'FROM questoes_topico q JOIN topicos t ON t.id = q.topico_id '
+      'LEFT JOIN topicos p ON p.id = t.pai_id ORDER BY q.criado_em, q.rowid',
+      readsFrom: {questoesTopico, topicos},
+    ).get()) {
+      final enunciado = r.read<String>('enunciado');
+      final alts = Map<String, String>.from(
+        jsonDecode(r.read<String>('alternativas')) as Map,
+      );
+      final pai = r.read<String?>('pai');
+      final nome = r.read<String>('nome');
+      chaves.putIfAbsent(
+        chaveQuestao(enunciado, alts),
+        () => descreverRepetido(pai == null ? nome : '$pai › $nome', enunciado),
+      );
+    }
+    marcarRepetidos(l, chaves);
+  }
 
   /// Importa as questões válidas e não repetidas (ver [importarColagem]).
   Future<ResultadoColagem> importarQuestoesTopico(

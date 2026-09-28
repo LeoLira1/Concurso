@@ -39,11 +39,25 @@ class ResultadoColagem {
   final List<String> materiasCriadas;
 }
 
-/// Marca os itens válidos cuja [ItemColado.chave] está em [chaves].
-void marcarRepetidos(LeituraColagem l, Set<String> chaves) {
+/// Marca os itens válidos cuja [ItemColado.chave] está em [chaves]. O
+/// valor de cada chave descreve o item do banco com que bateu (vai para
+/// [ItemColado.repetidaDe]).
+void marcarRepetidos(LeituraColagem l, Map<String, String> chaves) {
   for (final q in l.itens) {
-    if (q.valida && chaves.contains(q.chave)) q.repetida = true;
+    if (!q.valida || q.repetida) continue;
+    final de = chaves[q.chave];
+    if (de != null) {
+      q.repetida = true;
+      q.repetidaDe = de;
+    }
   }
+}
+
+/// "Conjunções: “Assinale a alternativa em que…”" (para a prévia).
+String descreverRepetido(String topico, String texto) {
+  final t = texto.replaceAll(RegExp(r'\s+'), ' ').trim();
+  final inicio = t.length > 70 ? '${t.substring(0, 69)}…' : t;
+  return '$topico: “$inicio”';
 }
 
 extension ColagemDb on AppDatabase {
