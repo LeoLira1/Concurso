@@ -119,6 +119,38 @@ void main() {
       );
       expect(l.novas, 1);
       expect(l.repetidas, 1);
+      expect(l.questoes[1].repetidaDe, 'item 1 desta lista');
+    });
+
+    test('mesmo enunciado com alternativas diferentes: as duas entram', () {
+      const enunciado =
+          'Assinale a alternativa em que o acento grave está empregado '
+          'corretamente.';
+      final l = lerQuestoes(
+        lista([
+          questao(enunciado: enunciado),
+          {
+            ...questao(enunciado: enunciado),
+            'alternativas': {
+              'A': 'Fui à Bahia.',
+              'B': 'Refiro-me à você.',
+              'C': 'Saiu à cavalo.',
+              'D': 'Chegou à uma hora.',
+              'E': 'Andou à pé.',
+            },
+            'gabarito': 'A',
+          },
+        ]),
+      );
+      expect(l.novas, 2);
+      expect(l.repetidas, 0);
+    });
+
+    test('duas questões idênticas no mesmo lote: só uma entra', () {
+      final l = lerQuestoes(lista([questao(), questao(), questao()]));
+      expect(l.novas, 1);
+      expect(l.repetidas, 2);
+      expect(l.questoes.first.repetida, isFalse);
     });
   });
 
@@ -190,6 +222,66 @@ void main() {
         hasLength(4),
       );
     });
+
+    test('igual à do banco (só maiúsculas, acentos e espaços): fica de fora, '
+        'dizendo com qual bateu', () async {
+      await db.importarQuestoesTopico(
+        lerQuestoes(lista([questao()])),
+        concursoId: pm,
+      );
+      final de2 = lerQuestoes(
+        lista([
+          {
+            ...questao(
+              enunciado:
+                  '  NA FRASE "ESTUDEI, MAS NAO PASSEI",   A CONJUNCAO E: ',
+            ),
+            'alternativas': {
+              'A': 'ADITIVA',
+              'B': ' Conclusiva ',
+              'C': 'adversatíva',
+              'D': 'explicativa.',
+              'E': 'alternativa',
+            },
+          },
+        ]),
+      );
+      await db.marcarRepetidas(de2);
+      final q = de2.questoes.single;
+      expect(q.repetida, isTrue);
+      expect(q.repetidaDe, startsWith('Conjunções › Adversativas: “Na frase'));
+      final r = await db.importarQuestoesTopico(de2, concursoId: pm);
+      expect(r.novas, 0);
+      expect(r.repetidas, 1);
+    });
+
+    test(
+      'mesmo enunciado do banco com alternativas diferentes entra',
+      () async {
+        await db.importarQuestoesTopico(
+          lerQuestoes(lista([questao()])),
+          concursoId: pm,
+        );
+        final de2 = lerQuestoes(
+          lista([
+            {
+              ...questao(),
+              'alternativas': {
+                'A': 'concessiva',
+                'B': 'conclusiva',
+                'C': 'adversativa',
+                'D': 'causal',
+                'E': 'final',
+              },
+            },
+          ]),
+        );
+        await db.marcarRepetidas(de2);
+        expect(de2.repetidas, 0);
+        final r = await db.importarQuestoesTopico(de2, concursoId: pm);
+        expect(r.novas, 1);
+      },
+    );
 
     test('questão de Português vale para os dois concursos', () async {
       await db.importarQuestoesTopico(lerQuestoes(lista([questao()])));
@@ -264,7 +356,11 @@ void main() {
     tearDown(() => db.close());
 
     test('errada volta hoje na caixa 0; certa sobe e volta depois', () async {
-      final hoje = DateTime(2026, 9, 27, 15);
+      // As questões importadas vencem no dia de hoje (data real).
+      final agora = DateTime.now();
+      final hoje = DateTime(agora.year, agora.month, agora.day, 15);
+      final dia = soDia(hoje),
+          diaSeguinte = DateTime(dia.year, dia.month, dia.day + 1);
       var fila = await db.filaQuestoesTopico(materiaId: portugues, hoje: hoje);
       // Novas, das mais fáceis para as mais difíceis.
       expect(
@@ -278,7 +374,7 @@ void main() {
         hoje: hoje,
       );
       expect(certa.caixa, 1);
-      expect(certa.proximaRevisao, DateTime(2026, 9, 28));
+      expect(certa.proximaRevisao, diaSeguinte);
       final errada = await db.responderQuestaoTopico(
         fila[2].questao,
         acertou: false,
@@ -286,14 +382,14 @@ void main() {
       );
       expect(errada.caixa, 0);
       expect(errada.erros, 1);
-      expect(errada.proximaRevisao, DateTime(2026, 9, 27));
+      expect(errada.proximaRevisao, dia);
 
       // A errada vem antes das novas; a certa só volta amanhã.
       fila = await db.filaQuestoesTopico(materiaId: portugues, hoje: hoje);
       expect([for (final q in fila) q.questao.enunciado], ['Difícil', 'Média']);
       final amanha = await db.filaQuestoesTopico(
         materiaId: portugues,
-        hoje: DateTime(2026, 9, 28),
+        hoje: diaSeguinte,
       );
       expect(amanha.first.questao.enunciado, 'Difícil');
       expect(amanha.map((q) => q.questao.enunciado), contains('Fácil'));

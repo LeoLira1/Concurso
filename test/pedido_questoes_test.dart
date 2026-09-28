@@ -87,6 +87,21 @@ void main() {
       expect(t, contains('EXATAMENTE'));
       expect(t, contains('Não invente tópicos'));
       expect(t, contains('nem reescritos com outras palavras'));
+      final regras = t.substring(t.indexOf('REGRAS'), t.indexOf('CONTEXTO'));
+      expect(
+        regras,
+        contains(
+          'Cada questão precisa ter um enunciado diferente: não repita o '
+          'enunciado de outra questão deste lote nem os da lista "Já existem".',
+        ),
+      );
+      expect(
+        regras,
+        contains(
+          'Evite enunciados genéricos como "Assinale a alternativa '
+          'correta": inclua no enunciado o assunto específico',
+        ),
+      );
       expect(t, contains('Concurso em foco: Guarda Municipal de Araucária'));
       expect(t, contains('Banca: IBFC'));
     });

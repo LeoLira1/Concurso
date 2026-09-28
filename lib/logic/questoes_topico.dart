@@ -15,9 +15,19 @@ import 'importar_edital.dart' show chaveTexto;
 
 export 'colagem.dart' show ItemColado, LeituraColagem;
 
-/// Enunciado normalizado: a mesma questão colada de novo (com outra
-/// pontuação, acento ou quebra de linha) não é duplicada.
-String chaveEnunciado(String enunciado) => chaveTexto(enunciado);
+/// Chave que identifica a questão: enunciado E alternativas normalizados
+/// (sem maiúsculas, acentos, espaços extras e pontuação).
+/// Duas questões com o mesmo enunciado genérico ("Assinale a alternativa
+/// correta") e alternativas diferentes não são repetidas; a mesma questão
+/// colada de novo (mudando só maiúscula, acento ou espaço) é.
+String chaveQuestao(String enunciado, Map<String, String> alternativas) {
+  final letras = alternativas.keys.toList()..sort();
+  return [
+    chaveTexto(enunciado),
+    for (final l in letras)
+      '${l.trim().toUpperCase()}) ${chaveTexto(alternativas[l]!)}',
+  ].join('\n');
+}
 
 /// Uma questão lida do JSON.
 class QuestaoColada extends ItemColado {
@@ -41,7 +51,7 @@ class QuestaoColada extends ItemColado {
   final String explicacao;
 
   @override
-  String get chave => chaveEnunciado(enunciado);
+  String get chave => chaveQuestao(enunciado, alternativas);
 }
 
 /// Resultado da leitura das questões coladas.

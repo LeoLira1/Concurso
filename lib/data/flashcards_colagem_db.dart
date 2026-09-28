@@ -11,7 +11,15 @@ extension FlashcardsColagemDb on AppDatabase {
   /// Marca os cartões cuja frente já existe (em qualquer tópico).
   Future<void> marcarFlashcardsRepetidos(LeituraFlashcards l) async =>
       marcarRepetidos(l, {
-        for (final f in await select(flashcards).get()) chaveFrente(f.frente),
+        for (final r in await customSelect(
+          'SELECT f.frente, t.nome FROM flashcards f '
+          'JOIN topicos t ON t.id = f.topico_id',
+          readsFrom: {flashcards, topicos},
+        ).get())
+          chaveFrente(r.read<String>('frente')): descreverRepetido(
+            r.read<String>('nome'),
+            r.read<String>('frente'),
+          ),
       });
 
   /// Importa os cartões válidos e não repetidos (ver [importarColagem]).

@@ -258,6 +258,16 @@ String montarPedido(
     '- Não repita o conceito dos itens que já existem (lista "Já existem"), '
     'nem reescritos com outras palavras.',
   );
+  if (comQuestoes) {
+    linha(
+      '- Cada questão precisa ter um enunciado diferente: não repita o '
+      'enunciado de outra questão deste lote nem os da lista "Já existem".',
+    );
+    linha(
+      '- Evite enunciados genéricos como "Assinale a alternativa correta": '
+      'inclua no enunciado o assunto específico que está sendo cobrado.',
+    );
+  }
   linha();
 
   _contextoENomes(o, c, t0);

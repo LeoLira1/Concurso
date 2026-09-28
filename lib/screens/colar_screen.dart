@@ -537,7 +537,10 @@ class _Linha<T extends ItemColado> extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   [
-                    if (q.repetida) 'já existe',
+                    if (q.repetida)
+                      q.repetidaDe == null
+                          ? 'já existe'
+                          : 'já existe (igual a ${q.repetidaDe})',
                     ...tipo.detalhes(q),
                   ].join(' · '),
                   style: TextStyle(
